@@ -1,7 +1,55 @@
 fileFormatVersion: 2
 guid: f0c1ad0a525ecdc4c8d6ee405af9cc52
 TextureImporter:
-  fileIDToRecycleName: {}
+  fileIDToRecycleName:
+    21300000: DirtTilesetSprite_0
+    21300002: DirtTilesetSprite_1
+    21300004: DirtTilesetSprite_2
+    21300006: DirtTilesetSprite_3
+    21300008: DirtTilesetSprite_4
+    21300010: DirtTilesetSprite_5
+    21300012: DirtTilesetSprite_6
+    21300014: DirtTilesetSprite_7
+    21300016: DirtTilesetSprite_8
+    21300018: DirtTilesetSprite_9
+    21300020: DirtTilesetSprite_10
+    21300022: DirtTilesetSprite_11
+    21300024: DirtTilesetSprite_12
+    21300026: DirtTilesetSprite_13
+    21300028: DirtTilesetSprite_14
+    21300030: DirtTilesetSprite_15
+    21300032: DirtTilesetSprite_16
+    21300034: DirtTilesetSprite_17
+    21300036: DirtTilesetSprite_18
+    21300038: DirtTilesetSprite_19
+    21300040: DirtTilesetSprite_20
+    21300042: DirtTilesetSprite_21
+    21300044: DirtTilesetSprite_22
+    21300046: DirtTilesetSprite_23
+    21300048: DirtTilesetSprite_24
+    21300050: DirtTilesetSprite_25
+    21300052: DirtTilesetSprite_26
+    21300054: DirtTilesetSprite_27
+    21300056: DirtTilesetSprite_28
+    21300058: DirtTilesetSprite_29
+    21300060: DirtTilesetSprite_30
+    21300062: DirtTilesetSprite_31
+    21300064: DirtTilesetSprite_32
+    21300066: DirtTilesetSprite_33
+    21300068: DirtTilesetSprite_34
+    21300070: DirtTilesetSprite_35
+    21300072: DirtTilesetSprite_36
+    21300074: DirtTilesetSprite_37
+    21300076: DirtTilesetSprite_38
+    21300078: DirtTilesetSprite_39
+    21300080: DirtTilesetSprite_40
+    21300082: DirtTilesetSprite_41
+    21300084: DirtTilesetSprite_42
+    21300086: DirtTilesetSprite_43
+    21300088: DirtTilesetSprite_44
+    21300090: DirtTilesetSprite_45
+    21300092: DirtTilesetSprite_46
+    21300094: DirtTilesetSprite_47
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
