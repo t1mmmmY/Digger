@@ -14,18 +14,27 @@ public class FormulaDrawer : MonoBehaviour
 	int level = 0;
 	Formula formula;
 	int rightAnswerNumber = 0;
+	bool gameOver = false;
 
 	public static System.Action<bool> OnAnswer;
 
 	public void Answer(int buttonNumber)
 	{
+		if (gameOver)
+		{
+			return;
+		}
+
 		if (buttonNumber == rightAnswerNumber)
 		{
 			if (OnAnswer != null)
 			{
 				OnAnswer(true);
 			}
-			else
+		}
+		else
+		{
+			if (OnAnswer != null)
 			{
 				OnAnswer(false);
 			}
@@ -34,13 +43,16 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnEnable()
 	{
-		StartGame();
 		Digger.onDig += OnDig;
+		GameManager.OnStartGame += OnStartGame;
+		GameManager.OnGameOver += OnGameOver;
 	}
 
 	void OnDisable()
 	{
 		Digger.onDig -= OnDig;
+		GameManager.OnStartGame -= OnStartGame;
+		GameManager.OnGameOver -= OnGameOver;
 	}
 
 	void Update()
@@ -62,11 +74,17 @@ public class FormulaDrawer : MonoBehaviour
 		}
 	}
 
-	void StartGame()
+	void OnStartGame()
 	{
+		gameOver = false;
 		level = 0;
 		levelText.text = level.ToString();
 		GenerateQuestion();
+	}
+
+	void OnGameOver()
+	{
+		gameOver = true;
 	}
 
 	void OnDig()
