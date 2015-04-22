@@ -7,13 +7,15 @@ public class GameManager : MonoBehaviour
 	[SerializeField] Camera camera;
 
 	float forceShake = 0;
+	int level = 0;
 
 	public static System.Action OnStartGame;
 	public static System.Action OnGameOver;
 
 	void Start()
 	{
-		StartGame();
+		Invoke("StartGame", 0.5f);
+//		StartGame();
 	}
 
 	void OnEnable()
@@ -44,12 +46,23 @@ public class GameManager : MonoBehaviour
 
 	public void GameOver()
 	{
+		int bestLevel = PlayerPrefs.GetInt("BestLevel", 0);
+		if (level > bestLevel)
+		{
+			PlayerPrefs.SetInt("BestLevel", level);
+		}
+
 		if (OnGameOver != null)
 		{
 			OnGameOver();
 		}
 
 		StartCoroutine("InvokeRestart", 1.0f);
+	}
+
+	public static int GetBestScore()
+	{
+		return PlayerPrefs.GetInt("BestLevel", 0);
 	}
 
 	public void RestartGame()
@@ -61,6 +74,7 @@ public class GameManager : MonoBehaviour
 	{
 		if (isRight)
 		{
+			level++;
 			StopCoroutine("GameLoop");
 			StartCoroutine("GameLoop");
 		}
@@ -81,6 +95,8 @@ public class GameManager : MonoBehaviour
 	{
 		float elapsedTime = 0.0f;
 
+		MoveCameraToStartPosition();
+
 		do
 		{
 			yield return new WaitForSeconds(1.0f);
@@ -94,7 +110,18 @@ public class GameManager : MonoBehaviour
 
 		} while (elapsedTime < timeForOneTurn);
 
+		yield return new WaitForSeconds(1.0f);
+
 		GameOver();
+	}
+
+	void MoveCameraToStartPosition()
+	{
+		Hashtable hash = new Hashtable();
+		hash.Add("position", Vector3.zero);
+		hash.Add("isLocal", true);
+		hash.Add("time", 1.0f);
+		iTween.MoveTo(camera.gameObject, hash);
 	}
 
 	void ShakeCamera(float time)
@@ -102,10 +129,6 @@ public class GameManager : MonoBehaviour
 		forceShake = (Mathf.Exp(time + 5 - timeForOneTurn) - 1) / 1000.0f;
 		
 		iTween.ShakePosition(camera.gameObject, new Vector3(forceShake, forceShake), 1.0f);
-	}
-
-	void ShakeCamera()
-	{
 	}
 
 }

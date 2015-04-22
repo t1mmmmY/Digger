@@ -10,11 +10,12 @@ public class FormulaDrawer : MonoBehaviour
 	public Button[] buttons;
 	public Text[] textVariants;
 	public Text levelText;
+	public Text bestLevelText;
 
 	int level = 0;
 	Formula formula;
 	int rightAnswerNumber = 0;
-	bool gameOver = false;
+	bool gameOver = true;
 
 	public static System.Action<bool> OnAnswer;
 
@@ -46,6 +47,8 @@ public class FormulaDrawer : MonoBehaviour
 		Digger.onDig += OnDig;
 		GameManager.OnStartGame += OnStartGame;
 		GameManager.OnGameOver += OnGameOver;
+
+		ClearTexts();
 	}
 
 	void OnDisable()
@@ -53,6 +56,17 @@ public class FormulaDrawer : MonoBehaviour
 		Digger.onDig -= OnDig;
 		GameManager.OnStartGame -= OnStartGame;
 		GameManager.OnGameOver -= OnGameOver;
+	}
+
+	void ClearTexts()
+	{
+		textFormula.text = "";
+		foreach (Text t in textVariants)
+		{
+			t.text = "";
+		}
+		levelText.text = "";
+		bestLevelText.text = "";
 	}
 
 	void Update()
@@ -79,6 +93,7 @@ public class FormulaDrawer : MonoBehaviour
 		gameOver = false;
 		level = 0;
 		levelText.text = level.ToString();
+		bestLevelText.text = GameManager.GetBestScore().ToString();
 		GenerateQuestion();
 	}
 
@@ -86,6 +101,7 @@ public class FormulaDrawer : MonoBehaviour
 	{
 		gameOver = true;
 	}
+
 
 	void OnDig()
 	{

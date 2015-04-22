@@ -44,10 +44,10 @@ public class Digger : MonoBehaviour
 	//On wrong answer
 	void Hit()
 	{
-		if (onDig != null)
-		{
-			onDig();
-		}
+//		if (onDig != null)
+//		{
+//			onDig();
+//		}
 	}
 
 }
