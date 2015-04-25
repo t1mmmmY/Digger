@@ -4,6 +4,11 @@ using System.Collections;
 public class MainMenu : MonoBehaviour 
 {
 
+	void Start()
+	{
+		MultiplayerController.Instance.TrySilentSignIn();
+	}
+
 	public void StartGame()
 	{
 		LevelLoader.Instance.LoadLevel(1);

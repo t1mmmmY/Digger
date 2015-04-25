@@ -15,9 +15,14 @@ public class GameManager : MonoBehaviour
 	void Start()
 	{
 		Invoke("StartGame", 0.5f);
-//		MultiplayerController.Instance.SignInAndStartMPGame();
-//		MultiplayerController.Instance.TrySilentSignIn();
-//		StartGame();
+	}
+
+	void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			LevelLoader.Instance.LoadLevel(0);
+		}
 	}
 
 	void OnEnable()
