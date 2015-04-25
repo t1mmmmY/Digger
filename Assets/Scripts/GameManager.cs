@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
 	void Start()
 	{
 		Invoke("StartGame", 0.5f);
+		MultiplayerController.Instance.TrySilentSignIn();
 //		StartGame();
 	}
 

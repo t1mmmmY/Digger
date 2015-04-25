@@ -1,0 +1,6 @@
+lastUpgrade=00915
+ios.ClientId=373900887193-7pi3b0a5e6oqiu3vn6ulm8e5ji1g7qlj.apps.googleusercontent.com
+ios.BundleId=com.OctoGames.Digger
+ios.SetupDone=true
+proj.AppId=373900887193
+android.SetupDone=true
