@@ -15,7 +15,8 @@ public class GameManager : MonoBehaviour
 	void Start()
 	{
 		Invoke("StartGame", 0.5f);
-		MultiplayerController.Instance.TrySilentSignIn();
+//		MultiplayerController.Instance.SignInAndStartMPGame();
+//		MultiplayerController.Instance.TrySilentSignIn();
 //		StartGame();
 	}
 
@@ -68,7 +69,7 @@ public class GameManager : MonoBehaviour
 
 	public void RestartGame()
 	{
-		Application.LoadLevel(0);
+		LevelLoader.Instance.LoadLevel(1);
 	}
 
 	void OnAnswer(bool isRight)

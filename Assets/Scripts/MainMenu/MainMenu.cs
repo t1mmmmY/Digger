@@ -1,0 +1,19 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class MainMenu : MonoBehaviour 
+{
+
+	public void StartGame()
+	{
+		LevelLoader.Instance.LoadLevel(1);
+	}
+
+	public void SignInToGoogle()
+	{
+		MultiplayerController.Instance.SignInAndStartMPGame();
+	}
+
+
+
+}
