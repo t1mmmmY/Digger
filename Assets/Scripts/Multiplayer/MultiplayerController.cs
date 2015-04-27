@@ -101,6 +101,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	{
 		if (success) 
 		{
+			LevelLoader.Instance.LoadLevel(1);
 			ShowMPStatus("We are connected to the room! I would probably start our game now.");
 		} 
 		else 
@@ -127,6 +128,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	{
 		if (success) 
 		{
+			LevelLoader.Instance.LoadLevel(1);
 			ShowMPStatus("We are connected to the room! I would probably start our game now.");
 		} 
 		else 
