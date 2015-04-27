@@ -72,4 +72,9 @@ public class MultiplayerController
 		}
 	}
 
+	public void ShowLeaderboard()
+	{
+		PlayGamesPlatform.Instance.ShowLeaderboardUI();//"CgkImYnr8fAKEAIQAg");
+	}
+
 }

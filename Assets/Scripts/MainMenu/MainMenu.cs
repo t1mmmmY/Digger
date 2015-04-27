@@ -19,6 +19,9 @@ public class MainMenu : MonoBehaviour
 		MultiplayerController.Instance.SignInAndStartMPGame();
 	}
 
-
+	public void ShowLeaderboard()
+	{
+		MultiplayerController.Instance.ShowLeaderboard();
+	}
 
 }
