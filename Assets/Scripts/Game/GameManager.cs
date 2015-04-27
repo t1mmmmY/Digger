@@ -57,6 +57,7 @@ public class GameManager : MonoBehaviour
 		if (level > bestLevel)
 		{
 			PlayerPrefs.SetInt("BestLevel", level);
+			MultiplayerController.Instance.SetBestSore(level);
 		}
 
 		if (OnGameOver != null)
