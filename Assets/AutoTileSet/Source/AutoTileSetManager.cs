@@ -1,14 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum Brush
+{
+	Brush1,
+	Brush2,
+	Brush3
+}
+
 public class AutoTileSetManager : MonoBehaviour {
 	[Header("Grid Options")]
 	public Vector2 gridSize=Vector2.one;
 	public Vector3 offset;
 	public bool displayGrid=true;
 	public Color gridColor;
+
 	[Header("Draw Options")]
-	public GameObject currentTile;
+	public Brush brush = Brush.Brush1;
+//	public GameObject[] currentTile1;
+//	public GameObject[] currentTile2;
+//	public GameObject[] currentTile3;
+	public GameObject currentTile1;
+	public GameObject currentTile2;
+	public GameObject currentTile3;
+
+	public GameObject[] dungeonLevels;
 
 	public static AutoTileSetManager instance;
 
@@ -48,7 +64,24 @@ public class AutoTileSetManager : MonoBehaviour {
 
 	public GameObject CreateTile(Vector2 position)
 	{
-		GameObject newObject = currentTile;
+		GameObject newObject;// = dungeonLevels[Random.Range(0, dungeonLevels.Length)];
+		int randomNumber = Random.Range(0, 2);
+		switch (randomNumber)
+		{
+		case 0:
+			newObject = currentTile1;//[Random.Range(0, currentTile1.Length)];
+			break;
+		case 1:
+			newObject = currentTile2;//[Random.Range(0, currentTile2.Length)];
+			break;
+		case 2:
+			newObject = currentTile3;//[Random.Range(0, currentTile3.Length)];
+			break;
+		default:
+			newObject = currentTile1;//[Random.Range(0, currentTile1.Length)];
+			break;
+		}
+//		GameObject newObject = currentTile;
 		//GameObject newObject=(GameObject)serializedObject.FindProperty("currentTile").objectReferenceValue;
 		try {
 			newObject=(GameObject)GameObject.Instantiate(newObject);

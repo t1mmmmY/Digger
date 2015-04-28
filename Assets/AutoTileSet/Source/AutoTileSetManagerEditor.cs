@@ -84,8 +84,8 @@ public class AutoTileSetManagerEditor : Editor {
 	
 	void ColorPickTile() {
 		if (pointHit) {
-			GameObject newPrefab=pointHit.gameObject;
-			((AutoTileSetManager)serializedObject.targetObject).currentTile=(GameObject)PrefabUtility.GetPrefabParent(newPrefab);
+//			GameObject newPrefab=pointHit.gameObject;
+//			((AutoTileSetManager)serializedObject.targetObject).currentTile=(GameObject)PrefabUtility.GetPrefabParent(newPrefab);
 		}
 	}
 
@@ -97,7 +97,25 @@ public class AutoTileSetManagerEditor : Editor {
 
 	void CreateTile(Vector2 position)
 	{
-		GameObject newObject=(GameObject)serializedObject.FindProperty("currentTile").objectReferenceValue;
+		GameObject newObject;
+		Brush brush = (Brush)serializedObject.FindProperty("brush").enumValueIndex;
+		switch (brush)
+		{
+		case Brush.Brush1:
+			newObject = (GameObject)serializedObject.FindProperty("currentTile1").objectReferenceValue;
+			break;
+		case Brush.Brush2:
+			newObject = (GameObject)serializedObject.FindProperty("currentTile2").objectReferenceValue;
+			break;
+		case Brush.Brush3:
+			newObject = (GameObject)serializedObject.FindProperty("currentTile3").objectReferenceValue;
+			break;
+		default:
+			newObject = (GameObject)serializedObject.FindProperty("currentTile1").objectReferenceValue;
+			break;
+		}
+//		GameObject[] allObjects=(GameObject[])serializedObject.FindProperty("currentTile1").objectReferenceValue;
+
 		try {
 			newObject=(GameObject)PrefabUtility.InstantiatePrefab(newObject);
 			newObject.transform.position=HandleUtility.GUIPointToWorldRay(position).origin;
@@ -117,8 +135,11 @@ public class AutoTileSetManagerEditor : Editor {
 	}
 	
 	void EraseTool() {
-		if (pointHit && pointHit.gameObject.GetComponent<AutoTile>()!=null) {
-			DestroyImmediate(pointHit.gameObject);
+		if (pointHit != null)
+		{
+			if (pointHit && (pointHit.gameObject.GetComponent<AutoTile>()!=null) || (pointHit.gameObject.GetComponent<SimpleTile>()!=null)) {
+				DestroyImmediate(pointHit.gameObject);
+			}
 		}
 	}
 	
