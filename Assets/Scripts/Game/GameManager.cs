@@ -57,7 +57,9 @@ public class GameManager : MonoBehaviour
 		if (level > bestLevel)
 		{
 			PlayerPrefs.SetInt("BestLevel", level);
+#if UNITY_IOS || UNITY_ANDROID
 			MultiplayerController.Instance.SetBestSore(level);
+#endif
 		}
 
 		if (OnGameOver != null)
@@ -75,7 +77,11 @@ public class GameManager : MonoBehaviour
 
 	public void RestartGame()
 	{
+#if UNITY_IOS || UNITY_ANDROID
 		LevelLoader.Instance.LoadLevel(1);
+#else
+		LevelLoader.Instance.LoadLevel(0);
+#endif
 	}
 
 	void OnAnswer(bool isRight)
