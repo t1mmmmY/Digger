@@ -7,9 +7,9 @@ public class InfiniteMap : MonoBehaviour
 	public int maxLines = 10;
 	public int linesCount = 0;
 
-	List<AutoTileSetQuad> allTiles;
-	List<AutoTileSetQuad> lastLine;
-	List<AutoTileSetQuad> topLine;
+	List<SimpleTile> allTiles;
+	List<SimpleTile> lastLine;
+	List<SimpleTile> topLine;
 
 
 	void OnEnable()
@@ -29,10 +29,10 @@ public class InfiniteMap : MonoBehaviour
 
 	void FindAllTiles()
 	{
-		allTiles = new List<AutoTileSetQuad>();
+		allTiles = new List<SimpleTile>();
 
-		AutoTileSetQuad[] tempAllTiles = FindObjectsOfType<AutoTileSetQuad>();
-		foreach (AutoTileSetQuad tile in tempAllTiles)
+		SimpleTile[] tempAllTiles = FindObjectsOfType<SimpleTile>();
+		foreach (SimpleTile tile in tempAllTiles)
 		{
 			allTiles.Add(tile);
 		}
@@ -40,11 +40,11 @@ public class InfiniteMap : MonoBehaviour
 
 	void FindLastLine()
 	{
-		lastLine = new List<AutoTileSetQuad>();
+		lastLine = new List<SimpleTile>();
 		float lastLineNumber = float.MaxValue;
 		
 		//Find last line number
-		foreach (AutoTileSetQuad tile in allTiles)
+		foreach (SimpleTile tile in allTiles)
 		{
 			if (tile.transform.position.y < lastLineNumber)
 			{
@@ -53,7 +53,7 @@ public class InfiniteMap : MonoBehaviour
 		}
 		
 		//Find all last line tiles
-		foreach (AutoTileSetQuad tile in allTiles)
+		foreach (SimpleTile tile in allTiles)
 		{
 			if (tile.transform.position.y == lastLineNumber)
 			{
@@ -64,11 +64,11 @@ public class InfiniteMap : MonoBehaviour
 
 	void FindTopLine()
 	{
-		topLine = new List<AutoTileSetQuad>();
+		topLine = new List<SimpleTile>();
 		float topLineNumber = float.MinValue;
 		
 		//Find top line number
-		foreach (AutoTileSetQuad tile in allTiles)
+		foreach (SimpleTile tile in allTiles)
 		{
 			if (tile != null)
 			{
@@ -80,7 +80,7 @@ public class InfiniteMap : MonoBehaviour
 		}
 		
 		//Find all top line tiles
-		foreach (AutoTileSetQuad tile in allTiles)
+		foreach (SimpleTile tile in allTiles)
 		{
 			if (tile != null)
 			{
@@ -118,7 +118,7 @@ public class InfiniteMap : MonoBehaviour
 		for (int i = 0; i < lastLine.Count; i++)
 		{
 			GameObject newTile = AutoTileSetManager.instance.CreateTile(lastLine[i].transform.position - Vector3.up * lastLine[i].tileSize);
-			AutoTileSetQuad newTileQuad = newTile.GetComponent<AutoTileSetQuad>();
+			SimpleTile newTileQuad = newTile.GetComponent<SimpleTile>();
 			if (newTileQuad != null)
 			{
 				lastLine[i] = newTileQuad;
