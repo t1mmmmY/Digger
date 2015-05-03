@@ -1,23 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameManager : MonoBehaviour 
+public abstract class GameManager : MonoBehaviour 
 {
 	[SerializeField] float timeForOneTurn = 5.0f;
 	[SerializeField] Camera camera;
 
 	float forceShake = 0;
-	int level = 0;
+	protected int level = 0;
 
-	public static System.Action OnStartGame;
+//	public static System.Action OnStartGame;
 	public static System.Action OnGameOver;
 
-	void Start()
+	protected virtual void Start()
 	{
-		Invoke("StartGame", 0.5f);
+//		Invoke("StartGame", 0.5f);
 	}
 
-	void Update()
+	protected virtual void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.Escape))
 		{
@@ -25,47 +25,47 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	void OnEnable()
+	protected virtual void OnEnable()
 	{
 		FormulaDrawer.OnAnswer += OnAnswer;
 	}
 
-	void OnDisable()
+	protected virtual void OnDisable()
 	{
 		FormulaDrawer.OnAnswer -= OnAnswer;
 		StopGame();
 	}
 
-	public void StartGame()
+	public virtual void StartGame()
 	{
-		if (OnStartGame != null)
-		{
-			OnStartGame();
-		}
+//		if (OnStartGame != null)
+//		{
+//			OnStartGame();
+//		}
 
 		StartCoroutine("GameLoop");
 	}
 
-	public void StopGame()
+	public virtual void StopGame()
 	{
 		StopCoroutine("GameLoop");
 	}
 
-	public void GameOver()
+	public virtual void GameOver()
 	{
-		int bestLevel = PlayerPrefs.GetInt("BestLevel", 0);
-		if (level > bestLevel)
-		{
-			PlayerPrefs.SetInt("BestLevel", level);
-			MultiplayerController.Instance.SetBestSore(level);
-		}
+//		int bestLevel = PlayerPrefs.GetInt("BestLevel", 0);
+//		if (level > bestLevel)
+//		{
+//			PlayerPrefs.SetInt("BestLevel", level);
+//			MultiplayerController.Instance.SetBestSore(level);
+//		}
+//
+//		if (OnGameOver != null)
+//		{
+//			OnGameOver();
+//		}
 
-		if (OnGameOver != null)
-		{
-			OnGameOver();
-		}
-
-		StartCoroutine("InvokeRestart", 1.0f);
+//		StartCoroutine("InvokeRestart", 1.0f);
 	}
 
 	public static int GetBestScore()
@@ -73,12 +73,12 @@ public class GameManager : MonoBehaviour
 		return PlayerPrefs.GetInt("BestLevel", 0);
 	}
 
-	public void RestartGame()
+	public virtual void RestartGame()
 	{
 		LevelLoader.Instance.LoadLevel(1);
 	}
 
-	void OnAnswer(bool isRight)
+	protected virtual void OnAnswer(bool isRight)
 	{
 		if (isRight)
 		{
@@ -123,7 +123,7 @@ public class GameManager : MonoBehaviour
 		GameOver();
 	}
 
-	void MoveCameraToStartPosition()
+	protected virtual void MoveCameraToStartPosition()
 	{
 		Hashtable hash = new Hashtable();
 		hash.Add("position", Vector3.zero);
@@ -132,7 +132,7 @@ public class GameManager : MonoBehaviour
 		iTween.MoveTo(camera.gameObject, hash);
 	}
 
-	void ShakeCamera(float time)
+	protected virtual void ShakeCamera(float time)
 	{
 		forceShake = (Mathf.Exp(time + 5 - timeForOneTurn) - 1) / 1000.0f;
 		

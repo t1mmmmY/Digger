@@ -2,15 +2,17 @@
 using System.Collections;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
+using Newtonsoft.Json;
 
 public class MultiplayerController : RealTimeMultiplayerListener
 {
 	private static MultiplayerController _instance = null;
+	public static System.Action<bool, string, byte[]> onRealTimeMessageReceived;
 
 	private uint minimumOpponents = 1;
 	private uint maximumOpponents = 1;
 	private uint gameVariation = 0;
-	
+
 	private MultiplayerController() 
 	{
 		PlayGamesPlatform.DebugLogEnabled = true;
@@ -89,7 +91,11 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void StartMatchMakingRealTime() 
 	{
+#if UNITY_EDITOR
+		LevelLoader.Instance.LoadLevel(2);
+#elif
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
+#endif
 	}
 
 	public void StartMatchMakingTurnBased() 
@@ -101,7 +107,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	{
 		if (success) 
 		{
-			LevelLoader.Instance.LoadLevel(1);
+			LevelLoader.Instance.LoadLevel(2);
 			ShowMPStatus("We are connected to the room! I would probably start our game now.");
 		} 
 		else 
@@ -120,30 +126,24 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void OnRoomSetupProgress (float percent)
 	{
 		ShowMPStatus ("We are " + percent + "% done with setup");
-
-//		throw new System.NotImplementedException ();
 	}
 
 	public void OnRoomConnected (bool success)
 	{
 		if (success) 
 		{
-			LevelLoader.Instance.LoadLevel(1);
+			LevelLoader.Instance.LoadLevel(2);
 			ShowMPStatus("We are connected to the room! I would probably start our game now.");
 		} 
 		else 
 		{
 			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
 		}
-
-//		throw new System.NotImplementedException ();
 	}
 
 	public void OnLeftRoom ()
 	{
 		ShowMPStatus ("We have left the room. We should probably perform some clean-up tasks.");
-
-//		throw new System.NotImplementedException ();
 	}
 
 	public void OnPeersConnected (string[] participantIds)
@@ -152,7 +152,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		{
 			ShowMPStatus ("Player " + participantID + " has joined.");
 		}
-//		throw new System.NotImplementedException ();
 	}
 
 	public void OnPeersDisconnected (string[] participantIds)
@@ -161,15 +160,60 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		{
 			ShowMPStatus ("Player " + participantID + " has left.");
 		}
-
-//		throw new System.NotImplementedException ();
 	}
 
 	public void OnRealTimeMessageReceived (bool isReliable, string senderId, byte[] data)
 	{
+		if (onRealTimeMessageReceived != null)
+		{
+			onRealTimeMessageReceived(isReliable, senderId, data);
+		}
 		ShowMPStatus ("We have received some gameplay messages from participant ID:" + senderId);
+	}
 
-//		throw new System.NotImplementedException ();
+	public static byte[] Serialize(object obj)
+	{
+		string text = JsonConvert.SerializeObject(obj);
+		return MultiplayerController.GetBytes(text);
+	}
+
+	public static object Deserialize(byte[] data, System.Type type = null)
+	{
+		string text = GetString(data);
+		if (type == null)
+		{
+			return JsonConvert.DeserializeObject(text);
+		}
+		else
+		{
+			object obj = JsonConvert.DeserializeObject(text, type);
+			return obj;
+		}
+	}
+
+	public static byte[] GetBytes(string str)
+	{
+		byte[] bytes = new byte[str.Length * sizeof(char)];
+		System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+		return bytes;
+	}
+	
+	public static string GetString(byte[] bytes)
+	{
+		char[] chars = new char[bytes.Length / sizeof(char)];
+		System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+		return new string(chars);
+	}
+	
+	public void SendRealTimeMessage(object data, bool reliable = true)
+	{
+		byte[] bData = MultiplayerController.Serialize(data);
+
+#if UNITY_EDITOR
+		OnRealTimeMessageReceived(true, "", bData);
+#elif
+		PlayGamesPlatform.Instance.RealTime.SendMessageToAll(reliable, bData);
+#endif
 	}
 
 }

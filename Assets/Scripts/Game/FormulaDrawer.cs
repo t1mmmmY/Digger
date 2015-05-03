@@ -11,6 +11,10 @@ public class FormulaDrawer : MonoBehaviour
 	public Text[] textVariants;
 	public Text levelText;
 	public Text bestLevelText;
+	public Text opponentScore;
+
+	public Color colorRightAnswer = Color.green;
+	public Color colorWrongAnswer = Color.red;
 
 	int level = 0;
 	Formula formula;
@@ -45,7 +49,9 @@ public class FormulaDrawer : MonoBehaviour
 	void OnEnable()
 	{
 		Digger.onDig += OnDig;
-		GameManager.OnStartGame += OnStartGame;
+		SingleplayerGameManager.OnStartSinglePlayerGame += OnStartSinglePlayerGame;
+		MultiplayerGameManager.OnStartMultiplayerGame += OnStartMultiplayerGame;
+//		GameManager.OnStartGame += OnStartGame;
 		GameManager.OnGameOver += OnGameOver;
 
 		ClearTexts();
@@ -54,7 +60,8 @@ public class FormulaDrawer : MonoBehaviour
 	void OnDisable()
 	{
 		Digger.onDig -= OnDig;
-		GameManager.OnStartGame -= OnStartGame;
+		SingleplayerGameManager.OnStartSinglePlayerGame -= OnStartSinglePlayerGame;
+		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
 		GameManager.OnGameOver -= OnGameOver;
 	}
 
@@ -88,8 +95,11 @@ public class FormulaDrawer : MonoBehaviour
 		}
 	}
 
-	void OnStartGame()
+	void OnStartSinglePlayerGame()
 	{
+		bestLevelText.enabled = true;
+		opponentScore.enabled = false;
+
 		gameOver = false;
 		level = 0;
 		levelText.text = level.ToString();
@@ -97,9 +107,29 @@ public class FormulaDrawer : MonoBehaviour
 		GenerateQuestion();
 	}
 
+	void OnStartMultiplayerGame()
+	{
+		bestLevelText.enabled = false;
+		opponentScore.enabled = true;
+
+		gameOver = false;
+		level = 0;
+		levelText.text = level.ToString();
+		bestLevelText.text = GameManager.GetBestScore().ToString();
+		GenerateQuestion();
+
+		MultiplayerGameManager.OnOpponentTurn += OnOpponentTurn;
+	}
+
+	void OnOpponentTurn(Messages.OneTurn oneTurn)
+	{
+		opponentScore.text = oneTurn.turnNumber.ToString();
+	}
+
 	void OnGameOver()
 	{
 		gameOver = true;
+		MultiplayerGameManager.OnOpponentTurn -= OnOpponentTurn;
 	}
 
 
@@ -157,6 +187,9 @@ public class FormulaDrawer : MonoBehaviour
 		rightAnswerNumber = Random.Range(0, textVariants.Length);
 		List<string> answers = new List<string>();
 
+		//Heighlight right answer
+//		SetButtonsColor(rightAnswerNumber);
+
 
 		for (int i = 0; i < textVariants.Length; i++)
 		{
@@ -197,6 +230,16 @@ public class FormulaDrawer : MonoBehaviour
 		}
 
 
+	}
+
+	void SetButtonsColor(int rightAnswer)
+	{
+		for (int i = 0; i < buttons.Length; i++)
+		{
+			ColorBlock colorBlock = buttons[i].colors;
+			colorBlock.pressedColor = i == rightAnswer ? colorRightAnswer : colorWrongAnswer;
+			buttons[i].colors = colorBlock;
+		}
 	}
 
 }
