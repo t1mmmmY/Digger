@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
 using Newtonsoft.Json;
@@ -12,6 +13,8 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private uint minimumOpponents = 1;
 	private uint maximumOpponents = 1;
 	private uint gameVariation = 0;
+
+//	private List<string> opponentId = "";
 
 	private MultiplayerController() 
 	{
@@ -83,6 +86,19 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
 	}
 
+	public int GetRang()
+	{
+		//Local for now
+		return PlayerPrefs.GetInt("PlayerRang", 100);
+	}
+
+
+	public void ChangeRang(int score, System.Action<bool> callback = null)
+	{
+		PlayGamesPlatform.Instance.ReportScore((long)(GetRang() + score), "CgkImYnr8fAKEAIQAw", callback);
+		PlayerPrefs.SetInt("PlayerRang", GetRang() + score);
+	}
+
 	public void ShowLeaderboard()
 	{
 		PlayGamesPlatform.Instance.ShowLeaderboardUI();//"CgkImYnr8fAKEAIQAg");
@@ -91,16 +107,30 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void StartMatchMakingRealTime() 
 	{
+//		opponentId = new List<string>();
 #if UNITY_EDITOR
 		LevelLoader.Instance.LoadLevel(2);
-#elif
+#else
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
+#endif
+	}
+
+	public void Disconnect()
+	{
+#if UNITY_EDITOR
+#else
+		PlayGamesPlatform.Instance.RealTime.LeaveRoom();
 #endif
 	}
 
 	public void StartMatchMakingTurnBased() 
 	{
-		PlayGamesPlatform.Instance.TurnBased.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, TurnCallback);
+#if UNITY_EDITOR
+		LevelLoader.Instance.LoadLevel(2);
+#else
+		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
+#endif
+		//		PlayGamesPlatform.Instance.TurnBased.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, TurnCallback);
 	}
 
 	private void TurnCallback(bool success, TurnBasedMatch match)
@@ -146,10 +176,14 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		ShowMPStatus ("We have left the room. We should probably perform some clean-up tasks.");
 	}
 
-	public void OnPeersConnected (string[] participantIds)
+	public void OnPeersConnected(string[] participantIds)
 	{
 		foreach (string participantID in participantIds) 
 		{
+//			if (participantID != PlayGamesPlatform.Instance.GetUserId())
+//			{
+//				opponentId.Add(participantID);
+//			}
 			ShowMPStatus ("Player " + participantID + " has joined.");
 		}
 	}
@@ -205,15 +239,66 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		return new string(chars);
 	}
 	
-	public void SendRealTimeMessage(object data, bool reliable = true)
+	public void SendRealTimeMessage(object data, bool toAll = false, bool reliable = true)
 	{
 		byte[] bData = MultiplayerController.Serialize(data);
-
 #if UNITY_EDITOR
 		OnRealTimeMessageReceived(true, "", bData);
-#elif
-		PlayGamesPlatform.Instance.RealTime.SendMessageToAll(reliable, bData);
+#else
+		if (!toAll)
+		{
+			foreach (Participant opponent in PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants())
+			{
+				if (opponent != PlayGamesPlatform.Instance.RealTime.GetSelf())
+				{
+//					Debug.LogWarning("Opponent");
+					PlayGamesPlatform.Instance.RealTime.SendMessage(reliable, opponent.ParticipantId, bData);
+				}
+				else
+				{
+//					Debug.LogWarning("Me");
+				}
+			}
+		}
+		else
+		{
+			foreach (Participant opponent in PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants())
+			{
+				if (opponent != PlayGamesPlatform.Instance.RealTime.GetSelf())
+				{
+					Debug.LogWarning("Opponent");
+//					PlayGamesPlatform.Instance.RealTime.SendMessage(reliable, opponent.ParticipantId, bData);
+				}
+				else
+				{
+					Debug.LogWarning("Me");
+				}
+			}
+			PlayGamesPlatform.Instance.RealTime.SendMessageToAll(reliable, bData);
+		}
 #endif
 	}
 
+	public bool IsFirstPlayer()
+	{
+#if UNITY_EDITOR
+		return true;
+#else
+
+		int number = 0;
+		foreach (Participant participant in PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants())
+		{
+			if (participant == PlayGamesPlatform.Instance.RealTime.GetSelf() && number == 0)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+			number++;
+		}
+		return false;
+#endif
+	}
 }

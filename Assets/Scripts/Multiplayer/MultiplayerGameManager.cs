@@ -6,20 +6,24 @@ using Messages;
 public class MultiplayerGameManager : GameManager 
 {
 	public int maximumScore = 240;
+	public int gameSessionTime = 60;
 
-	AllFormulas allFormulas;
+	public iTweenEvent winEvent;
+	public iTweenEvent looseEvent;
+	public iTweenEvent pairEvent;
+	
+	int opponentLevel = 0;
+	AllFormulas allFormulas = null;
+	bool gameStarted = false;
 
 	public static System.Action<OneTurn> OnOpponentTurn;
-	public static System.Action OnStartMultiplayerGame;
+	public static System.Action<int> OnTick;
+	public static System.Action<AllFormulas> OnStartMultiplayerGame;
 
 
 	protected override void Start()
 	{
-		if (allFormulas == null)
-		{
-			allFormulas = GenerateStartFormulas();
-			MultiplayerController.Instance.SendRealTimeMessage(allFormulas);
-		}
+//		Debug.LogWarning("Start");
 		//Invoke("StartGame", 0.5f);
 		base.Start();
 	}
@@ -28,30 +32,68 @@ public class MultiplayerGameManager : GameManager
 	{
 		object obj;
 
-		//If initial message - AllFormulas
 		obj	= MultiplayerController.Deserialize(data, typeof(AllFormulas));
-		if (obj != null)
+		try
 		{
-			allFormulas = (AllFormulas)obj;
+			AllFormulas tempFormulas = (AllFormulas)obj;
+			foreach (Formula formula in tempFormulas.formulas)
+			{
+//				Debug.Log(formula.ToString());
+			}
+			
+//			Debug.LogWarning("Receive formulas");
+
+			allFormulas = new AllFormulas(new List<Formula>());
+			allFormulas.Copy(tempFormulas);
 			StartGame();
+			return;
+		}
+		catch (System.Exception ex)
+		{
+			Debug.Log("Not an AllFormulas object");
+		}
+
+		obj	= MultiplayerController.Deserialize(data, typeof(OneTurn));
+		try
+		{
+			OneTurn opponentTurn = (OneTurn)obj;
+			if (OnOpponentTurn != null)
+			{
+				OnOpponentTurn(opponentTurn);
+			}
+			opponentLevel = opponentTurn.turnNumber;
+			return;
+		}
+		catch (System.Exception ex2)
+		{
+			Debug.Log("Not an OneTurn object");
+		}
+
+
+		//If initial message - AllFormulas
+//		obj	= MultiplayerController.Deserialize(data, typeof(AllFormulas));
+//		if (obj != null)
+//		{
+//			allFormulas = (AllFormulas)obj;
+//			StartGame();
 //			foreach (Formula formula in allFormulas.formulas)
 //			{
 //				Debug.Log(formula.ToString());
 //			}
-		}
-		else
-		{
-			//If OneTurn message
-			obj = MultiplayerController.Deserialize(data, typeof(OneTurn));
-			if (obj != null)
-			{
-				OneTurn opponentTurn = (OneTurn)obj;
-				if (OnOpponentTurn != null)
-				{
-					OnOpponentTurn(opponentTurn);
-				}
-			}
-		}
+//		}
+//		else
+//		{
+//			//If OneTurn message
+//			obj = MultiplayerController.Deserialize(data, typeof(OneTurn));
+//			if (obj != null)
+//			{
+//				OneTurn opponentTurn = (OneTurn)obj;
+//				if (OnOpponentTurn != null)
+//				{
+//					OnOpponentTurn(opponentTurn);
+//				}
+//			}
+//		}
 	}
 
 	AllFormulas GenerateStartFormulas()
@@ -73,21 +115,44 @@ public class MultiplayerGameManager : GameManager
 	protected override void OnEnable ()
 	{
 		MultiplayerController.onRealTimeMessageReceived += OnRealTimeMessageReceived;
+
+		if (MultiplayerController.Instance.IsFirstPlayer())
+		{
+//			Debug.LogWarning("Generate formulas");
+			allFormulas = GenerateStartFormulas();
+			foreach (Formula formula in allFormulas.formulas)
+			{
+//				Debug.Log(formula.ToString());
+			}
+
+			MultiplayerController.Instance.SendRealTimeMessage(allFormulas);
+			Invoke("StartGame", 0.5f);
+		}
+
 		base.OnEnable();
 	}
 
 	protected override void OnDisable ()
 	{
 		MultiplayerController.onRealTimeMessageReceived -= OnRealTimeMessageReceived;
+		MultiplayerController.Instance.Disconnect();
 		base.OnDisable();
 	}
 
 	public override void StartGame ()
 	{
+		if (gameStarted)
+		{
+			return;
+		}
+		gameStarted = true;
 		if (OnStartMultiplayerGame != null)
 		{
-			OnStartMultiplayerGame();
+			OnStartMultiplayerGame(allFormulas);
 		}
+
+		StartTimer();
+
 		base.StartGame();
 	}
 
@@ -96,15 +161,47 @@ public class MultiplayerGameManager : GameManager
 		base.StopGame();
 	}
 
+	public override void WrongAnswer()
+	{
+		base.WrongAnswer();
+	}
+
+	protected override void OnFinishClick()
+	{
+		LevelLoader.Instance.LoadLevel(0);
+		base.OnFinishClick();
+	}
+
 	public override void GameOver ()
 	{
+		//Set player score
+		if (level > opponentLevel) //Win
+		{
+			MultiplayerController.Instance.ChangeRang(1);
+			winEvent.gameObject.SetActive(true);
+			winEvent.Play();
+		}
+		else if (level < opponentLevel) //Loose
+		{
+			MultiplayerController.Instance.ChangeRang(-1);
+			looseEvent.gameObject.SetActive(true);
+			looseEvent.Play();
+		}
+		else //Pair
+		{
+			MultiplayerController.Instance.ChangeRang(0);
+			pairEvent.gameObject.SetActive(true);
+			pairEvent.Play();
+		}
+		
 		if (OnGameOver != null)
 		{
 			OnGameOver();
 		}
-
-		StartCoroutine("InvokeToLobby", 1.0f);
-		base.GameOver();
+		
+//		StartCoroutine("InvokeToLobby", 2.0f);
+		
+		base.GameOver ();
 	}
 
 	IEnumerator InvokeToLobby(float time)
@@ -116,12 +213,16 @@ public class MultiplayerGameManager : GameManager
 
 	public override void RestartGame ()
 	{
+		gameStarted = false;
 		base.RestartGame();
 	}
 
 	protected override void OnAnswer (bool isRight)
 	{
-		OneTurn oneTurn = new OneTurn(isRight, level);
+		MoveCameraToStartPosition();
+
+		int currentLevel = isRight ? level + 1 : level;
+		OneTurn oneTurn = new OneTurn(isRight, currentLevel);
 		MultiplayerController.Instance.SendRealTimeMessage(oneTurn, true);
 		base.OnAnswer(isRight);
 	}
@@ -133,6 +234,53 @@ public class MultiplayerGameManager : GameManager
 
 	protected override void ShakeCamera (float time)
 	{
-		base.ShakeCamera(time);
+		forceShake = (Mathf.Exp(time + 5 - gameSessionTime) - 1) / 1000.0f;
+		
+		iTween.ShakePosition(camera.gameObject, new Vector3(forceShake, forceShake), 1.0f);
+	}
+
+	void StartTimer()
+	{
+		Debug.LogWarning("StartTimer");
+		StartCoroutine("MultiplayerGameLoop", gameSessionTime);
+	}
+
+	void StopTimer()
+	{
+	}
+
+	IEnumerator MultiplayerGameLoop(float allTime)
+	{
+		float elapsedTime = 0;
+
+		if (OnTick != null)
+		{
+			OnTick((int)(allTime-elapsedTime));
+		}
+		
+		MoveCameraToStartPosition();
+
+		do
+		{
+			yield return new WaitForSeconds(1.0f);
+			elapsedTime += 1.0f;
+
+			if (OnTick != null)
+			{
+				OnTick((int)(allTime-elapsedTime));
+			}
+//			MoveCameraToStartPosition();
+			
+			//			Debug.Log(elapsedTime);
+			if (elapsedTime >= allTime - 5)
+			{
+				ShakeCamera(elapsedTime);
+			}
+			
+		} while (elapsedTime < allTime);
+		
+		yield return new WaitForSeconds(1.0f);
+
+		GameOver();
 	}
 }

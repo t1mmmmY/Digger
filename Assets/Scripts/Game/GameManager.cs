@@ -4,13 +4,14 @@ using System.Collections;
 public abstract class GameManager : MonoBehaviour 
 {
 	[SerializeField] float timeForOneTurn = 5.0f;
-	[SerializeField] Camera camera;
+	[SerializeField] protected Camera camera;
 
-	float forceShake = 0;
+	protected float forceShake = 0;
 	protected int level = 0;
 
 //	public static System.Action OnStartGame;
 	public static System.Action OnGameOver;
+	public static System.Action OnWrongAnswer;
 
 	protected virtual void Start()
 	{
@@ -28,11 +29,13 @@ public abstract class GameManager : MonoBehaviour
 	protected virtual void OnEnable()
 	{
 		FormulaDrawer.OnAnswer += OnAnswer;
+		FormulaDrawer.OnFinishClick += OnFinishClick;
 	}
 
 	protected virtual void OnDisable()
 	{
 		FormulaDrawer.OnAnswer -= OnAnswer;
+		FormulaDrawer.OnFinishClick -= OnFinishClick;
 		StopGame();
 	}
 
@@ -49,6 +52,18 @@ public abstract class GameManager : MonoBehaviour
 	public virtual void StopGame()
 	{
 		StopCoroutine("GameLoop");
+	}
+
+	public virtual void WrongAnswer()
+	{
+		if (OnWrongAnswer != null)
+		{
+			OnWrongAnswer();
+		}
+	}
+
+	protected virtual void OnFinishClick()
+	{
 	}
 
 	public virtual void GameOver()
@@ -73,6 +88,7 @@ public abstract class GameManager : MonoBehaviour
 		return PlayerPrefs.GetInt("BestLevel", 0);
 	}
 
+
 	public virtual void RestartGame()
 	{
 		LevelLoader.Instance.LoadLevel(1);
@@ -88,7 +104,8 @@ public abstract class GameManager : MonoBehaviour
 		}
 		else
 		{
-			GameOver();
+			WrongAnswer();
+//			GameOver();
 		}
 	}
 
@@ -120,7 +137,8 @@ public abstract class GameManager : MonoBehaviour
 
 		yield return new WaitForSeconds(1.0f);
 
-		GameOver();
+		WrongAnswer();
+//		GameOver();
 	}
 
 	protected virtual void MoveCameraToStartPosition()

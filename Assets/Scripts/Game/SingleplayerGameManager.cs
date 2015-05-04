@@ -40,6 +40,20 @@ public class SingleplayerGameManager : GameManager
 	{
 		base.StopGame ();
 	}
+
+	public override void WrongAnswer()
+	{
+		GameOver();
+
+		base.WrongAnswer();
+	}
+
+	protected override void OnFinishClick()
+	{
+		RestartGame();
+
+		base.OnFinishClick();
+	}
 	
 	public override void GameOver ()
 	{
@@ -55,7 +69,7 @@ public class SingleplayerGameManager : GameManager
 			OnGameOver();
 		}
 
-		StartCoroutine("InvokeRestart", 1.0f);
+//		StartCoroutine("InvokeRestart", 1.0f);
 
 		base.GameOver ();
 	}

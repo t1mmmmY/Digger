@@ -12,6 +12,11 @@ namespace Messages
 		{
 			formulas = allFormulas;
 		}
+
+		public void Copy(AllFormulas other)
+		{
+			formulas = other.formulas;
+		}
 	}
 
 	public class OneTurn
