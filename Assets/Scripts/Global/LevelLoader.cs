@@ -36,14 +36,14 @@ public class LevelLoader : MonoBehaviour
 	{
 		AsyncOperation async = Application.LoadLevelAsync(levelNumber);
 		yield return async;
-		Debug.Log("Loading complete");
+//		Debug.Log("Loading complete");
 	}
 
 	IEnumerator LoadLevelCoroutine(string levelName)
 	{
 		AsyncOperation async = Application.LoadLevelAsync(levelName);
 		yield return async;
-		Debug.Log("Loading complete");
+//		Debug.Log("Loading complete");
 	}
 
 }
