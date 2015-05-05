@@ -41,10 +41,6 @@ public abstract class GameManager : MonoBehaviour
 
 	public virtual void StartGame()
 	{
-//		if (OnStartGame != null)
-//		{
-//			OnStartGame();
-//		}
 
 		StartCoroutine("GameLoop");
 	}

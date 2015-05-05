@@ -18,7 +18,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	private MultiplayerController() 
 	{
-		PlayGamesPlatform.DebugLogEnabled = true;
+		PlayGamesPlatform.DebugLogEnabled = false;
 		PlayGamesPlatform.Activate ();
 	}
 	
@@ -35,7 +35,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	}
 
 
-	public void SignInAndStartMPGame() 
+	public void SignIn() 
 	{
 		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
 		{
@@ -111,6 +111,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_EDITOR
 		LevelLoader.Instance.LoadLevel(2);
 #else
+		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 	}
@@ -123,11 +124,12 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #endif
 	}
 
-	public void StartMatchMakingTurnBased() 
+	public void StartMatchMakingRealTimeFast() 
 	{
 #if UNITY_EDITOR
 		LevelLoader.Instance.LoadLevel(2);
 #else
+		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 		//		PlayGamesPlatform.Instance.TurnBased.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, TurnCallback);
@@ -142,6 +144,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		} 
 		else 
 		{
+			MainMenu.Instance.SetActiveAllButtons(true);
 			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
 		}
 	}
@@ -167,6 +170,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		} 
 		else 
 		{
+			MainMenu.Instance.SetActiveAllButtons(true);
 			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
 		}
 	}
@@ -301,4 +305,5 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		return false;
 #endif
 	}
+	
 }

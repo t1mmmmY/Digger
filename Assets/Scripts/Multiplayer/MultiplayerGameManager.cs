@@ -69,31 +69,6 @@ public class MultiplayerGameManager : GameManager
 			Debug.Log("Not an OneTurn object");
 		}
 
-
-		//If initial message - AllFormulas
-//		obj	= MultiplayerController.Deserialize(data, typeof(AllFormulas));
-//		if (obj != null)
-//		{
-//			allFormulas = (AllFormulas)obj;
-//			StartGame();
-//			foreach (Formula formula in allFormulas.formulas)
-//			{
-//				Debug.Log(formula.ToString());
-//			}
-//		}
-//		else
-//		{
-//			//If OneTurn message
-//			obj = MultiplayerController.Deserialize(data, typeof(OneTurn));
-//			if (obj != null)
-//			{
-//				OneTurn opponentTurn = (OneTurn)obj;
-//				if (OnOpponentTurn != null)
-//				{
-//					OnOpponentTurn(opponentTurn);
-//				}
-//			}
-//		}
 	}
 
 	AllFormulas GenerateStartFormulas()
@@ -141,11 +116,20 @@ public class MultiplayerGameManager : GameManager
 
 	public override void StartGame ()
 	{
+//		Debug.LogWarning("Start Game");
 		if (gameStarted)
 		{
+//			Debug.LogWarning("Game already started");
 			return;
 		}
+
+
 		gameStarted = true;
+
+//#if UNITY_EDITOR
+//		LevelLoader.Instance.LoadLevel(2);
+//#endif
+
 		if (OnStartMultiplayerGame != null)
 		{
 			OnStartMultiplayerGame(allFormulas);

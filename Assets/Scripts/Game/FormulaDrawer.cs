@@ -58,7 +58,7 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnEnable()
 	{
-		
+		Debug.Log("OnEnable");
 		oldColor = buttons[0].colors.disabledColor;
 
 //		allFormulas = null;
@@ -75,6 +75,7 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnDisable()
 	{
+		Debug.Log("OnEnable");
 		Digger.onDig -= OnDig;
 		SingleplayerGameManager.OnStartSinglePlayerGame -= OnStartSinglePlayerGame;
 		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
@@ -273,12 +274,12 @@ public class FormulaDrawer : MonoBehaviour
 		lastAnswer = -1;
 		if (isMultiplayer && allFormulas != null/* && allFormulas.formulas.Count > level + 1*/)
 		{
-//			Debug.Log("Get Formula");
+			Debug.Log("Get Formula");
 			return allFormulas.formulas[level];
 		}
 		else
 		{
-//			Debug.Log("Generate Formula");
+			Debug.Log("Generate Formula");
 			return Mathematician.GetFormula(level);
 		}
 	}
