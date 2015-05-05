@@ -6,6 +6,7 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
+		Application.targetFrameRate = 30;
 		MultiplayerController.Instance.SignInAndStartMPGame();
 	}
 

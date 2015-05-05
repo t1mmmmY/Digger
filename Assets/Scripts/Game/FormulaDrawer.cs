@@ -11,13 +11,24 @@ public class FormulaDrawer : MonoBehaviour
 	public Text[] textVariants;
 	public Text levelText;
 	public Text bestLevelText;
+	public Text opponentScore;
+	public Text timer;
+
+	public Color colorRightAnswer = Color.green;
+	public Color colorWrongAnswer = Color.red;
+	public int disableTime = 5;
 
 	int level = 0;
 	Formula formula;
-	int rightAnswerNumber = 0;
+	int rightAnswerNumber = -1;
 	bool gameOver = true;
+	Messages.AllFormulas allFormulas;
+	bool isMultiplayer = false;
+	int lastAnswer = -1;
+	Color oldColor;
 
 	public static System.Action<bool> OnAnswer;
+	public static System.Action OnFinishClick;
 
 	public void Answer(int buttonNumber)
 	{
@@ -25,6 +36,8 @@ public class FormulaDrawer : MonoBehaviour
 		{
 			return;
 		}
+
+		lastAnswer = buttonNumber;
 
 		if (buttonNumber == rightAnswerNumber)
 		{
@@ -35,6 +48,7 @@ public class FormulaDrawer : MonoBehaviour
 		}
 		else
 		{
+
 			if (OnAnswer != null)
 			{
 				OnAnswer(false);
@@ -44,17 +58,27 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnEnable()
 	{
+		
+		oldColor = buttons[0].colors.disabledColor;
+
+//		allFormulas = null;
 		Digger.onDig += OnDig;
-		GameManager.OnStartGame += OnStartGame;
+		SingleplayerGameManager.OnStartSinglePlayerGame += OnStartSinglePlayerGame;
+		MultiplayerGameManager.OnStartMultiplayerGame += OnStartMultiplayerGame;
+//		GameManager.OnStartGame += OnStartGame;
+		GameManager.OnWrongAnswer += OnWrongAnswer;
 		GameManager.OnGameOver += OnGameOver;
 
 		ClearTexts();
+		DisableButtons();
 	}
 
 	void OnDisable()
 	{
 		Digger.onDig -= OnDig;
-		GameManager.OnStartGame -= OnStartGame;
+		SingleplayerGameManager.OnStartSinglePlayerGame -= OnStartSinglePlayerGame;
+		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
+		GameManager.OnWrongAnswer -= OnWrongAnswer;
 		GameManager.OnGameOver -= OnGameOver;
 	}
 
@@ -71,6 +95,17 @@ public class FormulaDrawer : MonoBehaviour
 
 	void Update()
 	{
+		if (gameOver)
+		{
+			if (Input.GetMouseButtonDown(0))
+			{
+				if (OnFinishClick != null)
+				{
+					OnFinishClick();
+				}
+			}
+		}
+
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
 			PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
@@ -88,31 +123,164 @@ public class FormulaDrawer : MonoBehaviour
 		}
 	}
 
-	void OnStartGame()
+	void OnStartSinglePlayerGame()
 	{
+		allFormulas = null;
+		bestLevelText.enabled = true;
+		if (opponentScore != null)
+		{
+			opponentScore.enabled = false;
+		}
+		isMultiplayer = false;
+
 		gameOver = false;
+		rightAnswerNumber = -1;
+		lastAnswer = -1;
 		level = 0;
 		levelText.text = level.ToString();
 		bestLevelText.text = GameManager.GetBestScore().ToString();
 		GenerateQuestion();
+
+		EnableButtons();
+	}
+
+	void OnStartMultiplayerGame(Messages.AllFormulas allGeneratedFormulas)
+	{
+		Debug.Log("OnStartMultiplayerGame");
+		allFormulas = allGeneratedFormulas;
+
+		bestLevelText.enabled = false;
+		if (opponentScore != null)
+		{
+			opponentScore.enabled = true;
+		}
+		isMultiplayer = true;
+
+		gameOver = false;
+		rightAnswerNumber = -1;
+		lastAnswer = -1;
+		level = 0;
+		levelText.text = level.ToString();
+		bestLevelText.text = GameManager.GetBestScore().ToString();
+		GenerateQuestion();
+
+		EnableButtons();
+
+		MultiplayerGameManager.OnOpponentTurn += OnOpponentTurn;
+		MultiplayerGameManager.OnTick += OnTick;
+	}
+
+	void OnOpponentTurn(Messages.OneTurn oneTurn)
+	{
+		if (opponentScore != null)
+		{
+			opponentScore.text = oneTurn.turnNumber.ToString();
+		}
+	}
+
+	void OnWrongAnswer()
+	{
+		if (isMultiplayer)
+		{
+			StartCoroutine("FreezeButtons", disableTime);
+		}
+		else
+		{
+			DisableButtons();
+		}
+	}
+
+	void DisableButtons()
+	{
+		ColorBlock colorBlock;
+		if (lastAnswer != -1)
+		{
+			colorBlock = buttons[lastAnswer].colors;
+			colorBlock.disabledColor = colorWrongAnswer;
+			buttons[lastAnswer].colors = colorBlock;
+		}
+		if (!isMultiplayer && rightAnswerNumber != -1)
+		{
+			colorBlock = buttons[rightAnswerNumber].colors;
+			colorBlock.disabledColor = colorRightAnswer;
+			buttons[rightAnswerNumber].colors = colorBlock;
+		}
+		foreach (Button button in buttons)
+		{
+			button.interactable = false;
+		}
+	}
+
+	void EnableButtons()
+	{ 
+		ColorBlock colorBlock;
+		if (lastAnswer != -1)
+		{
+			colorBlock = buttons[lastAnswer].colors;
+			colorBlock.disabledColor = oldColor;
+			buttons[lastAnswer].colors = colorBlock;
+		}
+		if (!isMultiplayer && rightAnswerNumber != -1)
+		{
+			colorBlock = buttons[rightAnswerNumber].colors;
+			colorBlock.disabledColor = oldColor;
+			buttons[rightAnswerNumber].colors = colorBlock;
+		}
+
+		foreach (Button button in buttons)
+		{
+			button.interactable = true;
+		}
+	}
+
+	IEnumerator FreezeButtons(float time)
+	{
+		DisableButtons();
+
+		yield return new WaitForSeconds(time);
+
+		EnableButtons();
 	}
 
 	void OnGameOver()
 	{
 		gameOver = true;
+		MultiplayerGameManager.OnOpponentTurn -= OnOpponentTurn;
+		MultiplayerGameManager.OnTick -= OnTick;
+
+		DisableButtons();
 	}
 
 
 	void OnDig()
 	{
+//		Debug.Log("OnDig");
 		level++;
 		levelText.text = level.ToString();
 		GenerateQuestion();
 	}
 
+	void OnTick(int tick)
+	{
+		if (timer != null)
+		{
+			timer.text = tick.ToString();
+		}
+	}
+
 	Formula GetFormula(int level)
 	{
-		return Mathematician.GetFormula(level);
+		lastAnswer = -1;
+		if (isMultiplayer && allFormulas != null/* && allFormulas.formulas.Count > level + 1*/)
+		{
+			Debug.Log("Get Formula");
+			return allFormulas.formulas[level];
+		}
+		else
+		{
+			Debug.Log("Generate Formula");
+			return Mathematician.GetFormula(level);
+		}
 	}
 
 	void GenerateQuestion()
@@ -157,6 +325,9 @@ public class FormulaDrawer : MonoBehaviour
 		rightAnswerNumber = Random.Range(0, textVariants.Length);
 		List<string> answers = new List<string>();
 
+		//Heighlight right answer
+//		SetButtonsColor(rightAnswerNumber);
+
 
 		for (int i = 0; i < textVariants.Length; i++)
 		{
@@ -197,6 +368,16 @@ public class FormulaDrawer : MonoBehaviour
 		}
 
 
+	}
+
+	void SetButtonsColor(int rightAnswer)
+	{
+		for (int i = 0; i < buttons.Length; i++)
+		{
+			ColorBlock colorBlock = buttons[i].colors;
+			colorBlock.pressedColor = i == rightAnswer ? colorRightAnswer : colorWrongAnswer;
+			buttons[i].colors = colorBlock;
+		}
 	}
 
 }
