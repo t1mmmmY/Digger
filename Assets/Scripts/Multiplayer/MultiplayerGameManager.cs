@@ -152,7 +152,7 @@ public class MultiplayerGameManager : GameManager
 
 	protected override void OnFinishClick()
 	{
-		LevelLoader.Instance.LoadLevel(0);
+		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 		base.OnFinishClick();
 	}
 
@@ -192,7 +192,7 @@ public class MultiplayerGameManager : GameManager
 	{
 		yield return new WaitForSeconds(time);
 		
-		LevelLoader.Instance.LoadLevel(0);
+		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
 
 	public override void RestartGame ()

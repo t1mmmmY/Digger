@@ -20,10 +20,10 @@ public abstract class GameManager : MonoBehaviour
 
 	protected virtual void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Escape))
-		{
-			LevelLoader.Instance.LoadLevel(0);
-		}
+//		if (Input.GetKeyDown(KeyCode.Escape))
+//		{
+//			LevelLoader.Instance.LoadLevel(Scene.Lobby);
+//		}
 	}
 
 	protected virtual void OnEnable()
@@ -48,6 +48,7 @@ public abstract class GameManager : MonoBehaviour
 	public virtual void StopGame()
 	{
 		StopCoroutine("GameLoop");
+		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
 
 	public virtual void WrongAnswer()
@@ -87,7 +88,7 @@ public abstract class GameManager : MonoBehaviour
 
 	public virtual void RestartGame()
 	{
-		LevelLoader.Instance.LoadLevel(1);
+		LevelLoader.Instance.LoadLevel(Scene.SinglePlayer);
 	}
 
 	protected virtual void OnAnswer(bool isRight)

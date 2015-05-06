@@ -22,28 +22,38 @@ public class LevelLoader : MonoBehaviour
 		DontDestroyOnLoad(this.gameObject);
 	}
 
-	public void LoadLevel(int levelNumber, System.Action callback = null)
+//	public void LoadLevel(int levelNumber, System.Action callback = null)
+//	{
+//		StartCoroutine("LoadLevelCoroutine", levelNumber);
+//	}
+//
+//	public void LoadLevel(string levelName, System.Action callback = null)
+//	{
+//		StartCoroutine("LoadLevelCoroutine", levelName);
+//	}
+
+	public void LoadLevel(Scene level, System.Action callback = null)
 	{
-		StartCoroutine("LoadLevelCoroutine", levelNumber);
+		StartCoroutine(LoadLevelCoroutine((int)level, callback));
 	}
 
-	public void LoadLevel(string levelName, System.Action callback = null)
-	{
-		StartCoroutine("LoadLevelCoroutine", levelName);
-	}
-
-	IEnumerator LoadLevelCoroutine(int levelNumber)
+	IEnumerator LoadLevelCoroutine(int levelNumber, System.Action callback)
 	{
 		AsyncOperation async = Application.LoadLevelAsync(levelNumber);
 		yield return async;
+
+		if (callback != null)
+		{
+			callback();
+		}
 //		Debug.Log("Loading complete");
 	}
 
-	IEnumerator LoadLevelCoroutine(string levelName)
-	{
-		AsyncOperation async = Application.LoadLevelAsync(levelName);
-		yield return async;
-//		Debug.Log("Loading complete");
-	}
+//	IEnumerator LoadLevelCoroutine(string levelName)
+//	{
+//		AsyncOperation async = Application.LoadLevelAsync(levelName);
+//		yield return async;
+////		Debug.Log("Loading complete");
+//	}
 
 }

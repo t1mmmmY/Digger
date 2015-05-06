@@ -16,15 +16,15 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
-		Application.targetFrameRate = 30;
-		MultiplayerController.Instance.SignIn();
+//		Application.targetFrameRate = 30;
+//		MultiplayerController.Instance.SignIn();
 		SetActiveAllButtons(true);
 	}
 
 	public void StartSingleGame()
 	{
 		SetActiveAllButtons(false);
-		LevelLoader.Instance.LoadLevel(1);
+		LevelLoader.Instance.LoadLevel(Scene.SinglePlayer);
 	}
 
 	public void StartMultiplayerGame()
