@@ -32,8 +32,11 @@ public class Digger : MonoBehaviour
 
 	void Dig()
 	{
-		RaycastHit2D hit = Physics2D.Raycast(player.transform.position, -Vector2.up, 100, 1 << 8);
-		Destroy(hit.transform.gameObject);
+		RaycastHit hit; 
+		if (Physics.Raycast(player.transform.position, -Vector2.up, out hit, 100, 1 << 8))
+		{
+			Destroy(hit.transform.gameObject);
+		}
 
 		if (onDig != null)
 		{

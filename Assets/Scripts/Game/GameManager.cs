@@ -36,7 +36,7 @@ public abstract class GameManager : MonoBehaviour
 	{
 		FormulaDrawer.OnAnswer -= OnAnswer;
 		FormulaDrawer.OnFinishClick -= OnFinishClick;
-		StopGame();
+//		StopGame();
 	}
 
 	public virtual void StartGame()
