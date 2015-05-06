@@ -4,24 +4,29 @@ using System.Collections;
 public class Digger : MonoBehaviour 
 {
 	public Transform player;
+	[SerializeField] Animator playerAnimator;
 
 	public static System.Action onDig;
-
+	int level = 0;
 
 	void OnEnable()
 	{
+		level = 0;
 		FormulaDrawer.OnAnswer += OnAnswer;
+		GameManager.OnGameOver += OnGameOver;
 	}
 
 	void OnDisable()
 	{
 		FormulaDrawer.OnAnswer -= OnAnswer;
+		GameManager.OnGameOver -= OnGameOver;
 	}
 
 	void OnAnswer(bool isRightAnswer)
 	{
 		if (isRightAnswer)
 		{
+			level++;
 			Dig();
 		}
 		else
@@ -44,13 +49,33 @@ public class Digger : MonoBehaviour
 		}
 	}
 
+	void OnGameOver()
+	{
+		if (level > 0)
+		{
+			if (playerAnimator != null)
+			{
+				playerAnimator.SetTrigger("Die");
+			}
+			else
+			{
+				Debug.LogError("Animator not found");
+			}
+			
+
+			Rigidbody playerRigidbody = player.GetComponent<Rigidbody>();
+			playerRigidbody.isKinematic = true;
+			Collider[] playerColliders = player.GetComponents<Collider>();
+			foreach (Collider col in playerColliders)
+			{
+				col.enabled = false;
+			}
+		}
+	}
+
 	//On wrong answer
 	void Hit()
 	{
-//		if (onDig != null)
-//		{
-//			onDig();
-//		}
 	}
 
 }

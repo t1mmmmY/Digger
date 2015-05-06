@@ -57,16 +57,16 @@ public class SingleplayerGameManager : GameManager
 	
 	public override void GameOver ()
 	{
+		if (OnGameOver != null)
+		{
+			OnGameOver();
+		}
+
 		int bestLevel = PlayerPrefs.GetInt("BestLevel", 0);
 		if (level > bestLevel)
 		{
 			PlayerPrefs.SetInt("BestLevel", level);
 			MultiplayerController.Instance.SetBestSore(level);
-		}
-		
-		if (OnGameOver != null)
-		{
-			OnGameOver();
 		}
 
 //		StartCoroutine("InvokeRestart", 1.0f);

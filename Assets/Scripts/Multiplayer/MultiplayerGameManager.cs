@@ -158,6 +158,11 @@ public class MultiplayerGameManager : GameManager
 
 	public override void GameOver ()
 	{
+		if (OnGameOver != null)
+		{
+			OnGameOver();
+		}
+
 		//Set player score
 		if (level > opponentLevel) //Win
 		{
@@ -177,12 +182,7 @@ public class MultiplayerGameManager : GameManager
 			pairEvent.gameObject.SetActive(true);
 			pairEvent.Play();
 		}
-		
-		if (OnGameOver != null)
-		{
-			OnGameOver();
-		}
-		
+
 //		StartCoroutine("InvokeToLobby", 2.0f);
 		
 		base.GameOver ();
@@ -221,6 +221,11 @@ public class MultiplayerGameManager : GameManager
 		forceShake = (Mathf.Exp(time + 5 - gameSessionTime) - 1) / 1000.0f;
 		
 		iTween.ShakePosition(camera.gameObject, new Vector3(forceShake, forceShake), 1.0f);
+
+		if (OnShake != null)
+		{
+			OnShake(forceShake, level);
+		}
 	}
 
 	void StartTimer()

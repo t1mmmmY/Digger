@@ -12,6 +12,7 @@ public abstract class GameManager : MonoBehaviour
 //	public static System.Action OnStartGame;
 	public static System.Action OnGameOver;
 	public static System.Action OnWrongAnswer;
+	public static System.Action<float, int> OnShake;
 
 	protected virtual void Start()
 	{
@@ -41,8 +42,7 @@ public abstract class GameManager : MonoBehaviour
 
 	public virtual void StartGame()
 	{
-
-		StartCoroutine("GameLoop");
+//		StartCoroutine("GameLoop");
 	}
 
 	public virtual void StopGame()
@@ -152,6 +152,11 @@ public abstract class GameManager : MonoBehaviour
 		forceShake = (Mathf.Exp(time + 5 - timeForOneTurn) - 1) / 1000.0f;
 		
 		iTween.ShakePosition(camera.gameObject, new Vector3(forceShake, forceShake), 1.0f);
+
+		if (OnShake != null)
+		{
+			OnShake(forceShake, level);
+		}
 	}
 
 }
