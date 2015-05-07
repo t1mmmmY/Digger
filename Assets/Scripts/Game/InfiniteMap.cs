@@ -11,6 +11,56 @@ public class InfiniteMap : MonoBehaviour
 	List<SimpleTile> lastLine;
 	List<SimpleTile> topLine;
 
+	public static System.Action OnInit;
+	public static System.Action OnAddLine;
+
+	public List<SimpleTile> GetCentralColumn()
+	{
+		List<SimpleTile> centralColumn = new List<SimpleTile>();
+
+		foreach (SimpleTile tile in allTiles)
+		{
+			if (tile.transform.localPosition.x == 0)
+			{
+				centralColumn.Add(tile);
+			}
+		}
+
+		return centralColumn;
+	}
+
+	public List<SimpleTile> GetLastCentralColumn()
+	{
+		List<SimpleTile> centralColumn = new List<SimpleTile>();
+		
+		foreach (SimpleTile tile in lastLine)
+		{
+			if (tile.transform.localPosition.x == 0)
+			{
+				centralColumn.Add(tile);
+			}
+		}
+		
+		return centralColumn;
+	}
+
+	public List<SimpleTile> GetAllTiles()
+	{
+		return allTiles;
+	}
+
+	public List<SimpleTile> GetLastLine()
+	{
+		return lastLine;
+	}
+
+//	void Awake()
+//	{
+//		FindAllTiles();
+//		FindLastLine();
+//		FindTopLine();
+//		linesCount = GetLinesCount();
+//	}
 
 	void OnEnable()
 	{
@@ -20,6 +70,11 @@ public class InfiniteMap : MonoBehaviour
 		linesCount = GetLinesCount();
 
 		Digger.onDig += OnDig;
+
+		if (OnInit != null)
+		{
+			OnInit();
+		}
 	}
 
 	void OnDisable()
@@ -46,16 +101,16 @@ public class InfiniteMap : MonoBehaviour
 		//Find last line number
 		foreach (SimpleTile tile in allTiles)
 		{
-			if (tile.transform.position.y < lastLineNumber)
+			if (tile.transform.localPosition.y < lastLineNumber)
 			{
-				lastLineNumber = tile.transform.position.y;
+				lastLineNumber = tile.transform.localPosition.y;
 			}
 		}
 		
 		//Find all last line tiles
 		foreach (SimpleTile tile in allTiles)
 		{
-			if (tile.transform.position.y == lastLineNumber)
+			if (tile.transform.localPosition.y == lastLineNumber)
 			{
 				lastLine.Add(tile);
 			}
@@ -72,9 +127,9 @@ public class InfiniteMap : MonoBehaviour
 		{
 			if (tile != null)
 			{
-				if (tile.transform.position.y > topLineNumber)
+				if (tile.transform.localPosition.y > topLineNumber)
 				{
-					topLineNumber = tile.transform.position.y;
+					topLineNumber = tile.transform.localPosition.y;
 				}
 			}
 		}
@@ -84,7 +139,7 @@ public class InfiniteMap : MonoBehaviour
 		{
 			if (tile != null)
 			{
-				if (tile.transform.position.y == topLineNumber)
+				if (tile.transform.localPosition.y == topLineNumber)
 				{
 					topLine.Add(tile);
 				}
@@ -96,7 +151,7 @@ public class InfiniteMap : MonoBehaviour
 	{
 		if (topLine != null && lastLine != null)
 		{
-			return (int)(topLine[0].transform.position.y - lastLine[0].transform.position.y);
+			return (int)(topLine[0].transform.localPosition.y - lastLine[0].transform.localPosition.y);
 		}
 		else
 		{
@@ -117,7 +172,7 @@ public class InfiniteMap : MonoBehaviour
 	{
 		for (int i = 0; i < lastLine.Count; i++)
 		{
-			GameObject newTile = AutoTileSetManager.instance.CreateTile(lastLine[i].transform.position - Vector3.up * lastLine[i].tileSize);
+			GameObject newTile = AutoTileSetManager.instance.CreateTile(lastLine[i].transform.localPosition - Vector3.up * lastLine[i].tileSize);
 			SimpleTile newTileQuad = newTile.GetComponent<SimpleTile>();
 			if (newTileQuad != null)
 			{
@@ -126,6 +181,11 @@ public class InfiniteMap : MonoBehaviour
 			}
 		}
 		linesCount++;
+
+		if (OnAddLine != null)
+		{
+			OnAddLine();
+		}
 	}
 
 	void RemoveTopLine()

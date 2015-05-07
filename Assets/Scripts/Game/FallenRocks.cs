@@ -25,7 +25,7 @@ public class FallenRocks : MonoBehaviour
 	{
 		playerLevel = level;
 		//multiply by 10 for normal size
-		Debug.Log(force);
+//		Debug.Log(force);
 		if (level > 3)
 		{
 			Vector3 newPos = transform.position;

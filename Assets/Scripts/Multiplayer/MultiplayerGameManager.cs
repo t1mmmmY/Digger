@@ -36,10 +36,10 @@ public class MultiplayerGameManager : GameManager
 		try
 		{
 			AllFormulas tempFormulas = (AllFormulas)obj;
-			foreach (Formula formula in tempFormulas.formulas)
-			{
-//				Debug.Log(formula.ToString());
-			}
+//			foreach (Formula formula in tempFormulas.formulas)
+//			{
+////				Debug.Log(formula.ToString());
+//			}
 			
 //			Debug.LogWarning("Receive formulas");
 

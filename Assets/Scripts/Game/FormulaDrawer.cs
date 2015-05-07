@@ -58,7 +58,7 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnEnable()
 	{
-		Debug.Log("OnEnable");
+//		Debug.Log("OnEnable");
 		oldColor = buttons[0].colors.disabledColor;
 
 //		allFormulas = null;
@@ -75,7 +75,7 @@ public class FormulaDrawer : MonoBehaviour
 
 	void OnDisable()
 	{
-		Debug.Log("OnEnable");
+//		Debug.Log("OnEnable");
 		Digger.onDig -= OnDig;
 		SingleplayerGameManager.OnStartSinglePlayerGame -= OnStartSinglePlayerGame;
 		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
