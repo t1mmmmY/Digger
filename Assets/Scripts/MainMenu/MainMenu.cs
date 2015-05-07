@@ -9,6 +9,12 @@ public class MainMenu : MonoBehaviour
 
 	public static MainMenu Instance;
 
+//	bool _isStopLoading = false;
+//	public bool isStopLoading
+//	{
+//		get { return _isStopLoading; }
+//	}
+
 	void Awake()
 	{
 		Instance = this;
@@ -29,12 +35,14 @@ public class MainMenu : MonoBehaviour
 
 	public void StartMultiplayerGame()
 	{
+//		_isStopLoading = false;
 		SetActiveAllButtons(false);
 		MultiplayerController.Instance.StartMatchMakingRealTime();
 	}
 
 	public void StartFastMultiplayerGame()
 	{
+//		_isStopLoading = false;
 		SetActiveAllButtons(false);
 		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
 	}
@@ -61,24 +69,39 @@ public class MainMenu : MonoBehaviour
 
 	public void StartTimerTimeout()
 	{
-		Debug.LogWarning("TimerStart");
-		StartCoroutine(TimeoutCoroutine(EndTimerTimeout));
+//		Debug.LogWarning("TimerStart");
+//		StartCoroutine(TimeoutCoroutine(EndTimerTimeout));
 	}
-	
-	void EndTimerTimeout()
+
+	public void StopTimer()
 	{
-		Debug.LogWarning("TimerEnd");
+//		_isStopLoading = true;
 		SetActiveAllButtons(true);
+//		StopCoroutine(TimeoutCoroutine(EndTimerTimeout));
 	}
 	
-	IEnumerator TimeoutCoroutine(System.Action callback)
-	{
-		yield return new WaitForSeconds(timeout);
-		
-		if (callback != null)
-		{
-			callback();
-		}
-	}
+//	void EndTimerTimeout()
+//	{
+//		Debug.LogWarning("TimerEnd");
+//		SetActiveAllButtons(true);
+//	}
+	
+//	IEnumerator TimeoutCoroutine(System.Action callback)
+//	{
+//		yield return new WaitForSeconds(timeout);
+//
+//		if (_isStopLoading)
+//		{
+//			yield break;
+//		}
+//		else
+//		{
+//			Debug.Log("CALLBACK");
+//			if (callback != null)
+//			{
+//				callback();
+//			}
+//		}
+//	}
 
 }

@@ -109,7 +109,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	{
 //		opponentId = new List<string>();
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
+//		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
 		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
@@ -127,7 +127,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void StartMatchMakingRealTimeFast() 
 	{
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
+//		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
 		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
