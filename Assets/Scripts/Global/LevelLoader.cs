@@ -42,9 +42,12 @@ public class LevelLoader : MonoBehaviour
 		AsyncOperation async = Application.LoadLevelAsync(levelNumber);
 		yield return async;
 
-		if (callback != null)
+		if (async.isDone)
 		{
-			callback();
+			if (callback != null)
+			{
+				callback();
+			}
 		}
 //		Debug.Log("Loading complete");
 	}

@@ -108,7 +108,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void StartMatchMakingRealTime() 
 	{
 //		opponentId = new List<string>();
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBPLAYER
 		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
 		MainMenu.Instance.StartTimerTimeout();
@@ -118,7 +118,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void Disconnect()
 	{
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBPLAYER
 #else
 		PlayGamesPlatform.Instance.RealTime.LeaveRoom();
 #endif
@@ -126,7 +126,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void StartMatchMakingRealTimeFast() 
 	{
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBPLAYER
 		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
 		MainMenu.Instance.StartTimerTimeout();
@@ -246,7 +246,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void SendRealTimeMessage(object data, bool toAll = false, bool reliable = true)
 	{
 		byte[] bData = MultiplayerController.Serialize(data);
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBPLAYER
 		OnRealTimeMessageReceived(true, "", bData);
 #else
 		if (!toAll)
@@ -285,7 +285,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public bool IsFirstPlayer()
 	{
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_WEBPLAYER
 		return true;
 #else
 

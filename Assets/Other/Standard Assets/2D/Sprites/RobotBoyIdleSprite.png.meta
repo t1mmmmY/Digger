@@ -122,10 +122,6 @@ TextureImporter:
     maxTextureSize: 1024
     textureFormat: -1
     compressionQuality: 50
-  - buildTarget: iPhone
-    maxTextureSize: 512
-    textureFormat: -3
-    compressionQuality: 50
   spriteSheet:
     sprites:
     - name: RobotBoyIdleSprite_0
@@ -428,7 +424,7 @@ TextureImporter:
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-  spritePackingTag: 
+  spritePackingTag: Robot
   userData: 
   assetBundleName: 
   assetBundleVariant: 

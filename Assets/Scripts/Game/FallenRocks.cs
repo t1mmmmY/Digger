@@ -5,6 +5,7 @@ public class FallenRocks : MonoBehaviour
 {
 	[SerializeField] ParticleSystem[] rockParticels;
 	[SerializeField] float defaultSize = 0.3f;
+	[SerializeField] AnimationCurve rockSizeCurve;
 	int playerLevel = 0;
 
 	void OnEnable()
@@ -24,7 +25,7 @@ public class FallenRocks : MonoBehaviour
 	{
 		playerLevel = level;
 		//multiply by 10 for normal size
-//		Debug.Log(force);
+		Debug.Log(force);
 		if (level > 3)
 		{
 			Vector3 newPos = transform.position;
@@ -37,15 +38,15 @@ public class FallenRocks : MonoBehaviour
 			newPos.y = 0;
 			transform.position = newPos;
 		}
-
-		BurstParticles(force * 8.0f);
+		BurstParticles(rockSizeCurve.Evaluate(force));
+//		BurstParticles(force * 8.0f);
 	}
 
 	void OnGameOver()
 	{
 		if (playerLevel > 0)
 		{
-			BurstParticles(1.5f);
+			BurstParticles(rockSizeCurve.Evaluate(1.0f));
 		}
 	}
 
@@ -65,10 +66,11 @@ public class FallenRocks : MonoBehaviour
 		}
 	}
 
-	void BurstParticles(float size)
+	void BurstParticles(float size, float emission = 50)
 	{
 		foreach(ParticleSystem particle in rockParticels)
 		{
+			particle.emissionRate = emission;
 			particle.startSize = size;
 			particle.Play();
 		}

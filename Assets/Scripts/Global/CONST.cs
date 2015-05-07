@@ -11,5 +11,5 @@ public enum Scene
 
 public static class CONST 
 {
-
+	public static readonly string MUSIC_PATH = "Music/Sweet_MusicLoop";
 }
