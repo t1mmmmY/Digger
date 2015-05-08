@@ -13,4 +13,12 @@ public class SplashScreen : MonoBehaviour
 		}
 	}
 
+	void Update()
+	{
+		if (Input.GetMouseButtonDown(0))
+		{
+			EndLogoAnimation();
+		}
+	}
+
 }

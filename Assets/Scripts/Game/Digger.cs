@@ -40,7 +40,10 @@ public class Digger : MonoBehaviour
 		RaycastHit hit; 
 		if (Physics.Raycast(player.transform.position, -Vector2.up, out hit, 100, 1 << 8))
 		{
-			Destroy(hit.transform.gameObject);
+			SimpleTile tile = hit.transform.GetComponent<SimpleTile>();
+			tile.DigMe();
+
+//			Destroy(hit.transform.gameObject);
 		}
 
 		if (onDig != null)

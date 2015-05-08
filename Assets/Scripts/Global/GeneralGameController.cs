@@ -5,10 +5,23 @@ public class GeneralGameController : MonoBehaviour
 {
 	public AudioSource music;
 
+	private static GeneralGameController _instance;
+	public static GeneralGameController Instance
+	{
+		get { return _instance; }
+	}
+
+	public static System.Action onLoadLobby;
+
+	void Awake()
+	{
+		_instance = this;
+	}
+
 	void Start()
 	{
-		DontDestroyOnLoad(this.gameObject);
 		Application.targetFrameRate = 30;
+		BankController.Init();
 	}
 
 	void OnEnable()
@@ -30,6 +43,12 @@ public class GeneralGameController : MonoBehaviour
 	{
 		Debug.Log("OnLoadLobby");
 		LoadMusicAndPlay();
+
+		if (onLoadLobby != null)
+		{
+			onLoadLobby();
+		}
+
 		MultiplayerController.Instance.SignIn();
 	}
 

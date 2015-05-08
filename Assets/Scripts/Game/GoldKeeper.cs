@@ -58,12 +58,9 @@ public class GoldKeeper : MonoBehaviour
 				if (randomValue > goldDensityBarier)
 				{
 					float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-					if (perlinValue >= goldDensityBarier)
-					{
-						CreateMineral(tile, perlinValue);
-					}
+
+					CreateMineral(tile, perlinValue);
 				}
-//				Debug.Log(Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift));
 			}
 		}
 
@@ -73,25 +70,18 @@ public class GoldKeeper : MonoBehaviour
 			if (randomValue > goldDensityBarier)
 			{
 				float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-				if (perlinValue >= goldDensityBarier)
-				{
-					CreateMineral(tile, perlinValue);
-				}
+
+				CreateMineral(tile, perlinValue);
 			}
-			//				Debug.Log(Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift));
 		}
 	}
 
 	void CreateMineral(SimpleTile tile, float value)
 	{
-		int mineralNumber = Mathf.RoundToInt((mineralPrefabs.Length * value) - 1);
-		mineralNumber = mineralNumber < 0 ? 0 : mineralNumber;
+		int mineralNumber = Mathf.RoundToInt((mineralPrefabs.Length * value) / mineralPrefabs.Length);
 
-		GameObject go = GameObject.Instantiate(mineralPrefabs[mineralNumber].GetRandomMineral().gameObject) as GameObject;
-		go.transform.parent = tile.transform;
-		go.transform.localPosition = Vector3.zero;
-
-		allMinerals.Add(go.GetComponent<Mineral>());
+		Mineral mineral = tile.AddMineral(mineralPrefabs[mineralNumber].GetRandomMineral());
+		allMinerals.Add(mineral);
 	}
 
 	void ClearMapFromMinerals()
