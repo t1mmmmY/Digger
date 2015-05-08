@@ -78,7 +78,17 @@ public class GoldKeeper : MonoBehaviour
 
 	void CreateMineral(SimpleTile tile, float value)
 	{
-		int mineralNumber = Mathf.RoundToInt((mineralPrefabs.Length * value) / mineralPrefabs.Length);
+		int mineralNumber = 0;
+		float step = 1.0f / mineralPrefabs.Length;
+
+		for (int i = 0; i < mineralPrefabs.Length; i++)
+		{
+			if (value >= step * (i) && value <= step * (i + 1))
+			{
+				mineralNumber = i;
+				break;
+			}
+		}
 
 		Mineral mineral = tile.AddMineral(mineralPrefabs[mineralNumber].GetRandomMineral());
 		allMinerals.Add(mineral);

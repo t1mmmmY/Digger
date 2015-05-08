@@ -12,4 +12,16 @@ public enum Scene
 public static class CONST 
 {
 	public static readonly string MUSIC_PATH = "Music/Sweet_MusicLoop";
+
+	public static bool InGame()
+	{
+		if (Application.loadedLevel == (int)Scene.SinglePlayer || Application.loadedLevel == (int)Scene.Multiplayer)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 }
