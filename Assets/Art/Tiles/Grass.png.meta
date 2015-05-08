@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 3413de9ab9e908148a12a90cf8b5a452
-timeCreated: 1431117774
+guid: 292f5821d1bb6134092189609b1f5a92
+timeCreated: 1431120507
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName: {}
@@ -43,13 +43,13 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: .5, y: .5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 54
   alphaIsTransparency: 1
   textureType: 8
   buildTargetSettings: []
   spriteSheet:
     sprites: []
-  spritePackingTag: Level_Forest
+  spritePackingTag: Other
   userData: 
   assetBundleName: 
   assetBundleVariant: 
