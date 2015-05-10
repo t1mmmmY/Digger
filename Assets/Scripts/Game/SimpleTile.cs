@@ -40,10 +40,12 @@ public class SimpleTile : MonoBehaviour
 		return mineral;
 	}
 
-	public void DigMe()
+	public bool DigMe()
 	{
+		bool haveMineral = false;
 		if (mineral != null)
 		{
+			haveMineral = true;
 			mineral.TakeMineral();
 		}
 
@@ -54,7 +56,7 @@ public class SimpleTile : MonoBehaviour
 		render.material = backgroundMaterial;
 		render.sprite = backgroundSprite;
 
-//		Destroy(this.gameObject);
+		return haveMineral;
 	}
 
 }

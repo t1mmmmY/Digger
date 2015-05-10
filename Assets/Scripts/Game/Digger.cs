@@ -5,6 +5,9 @@ public class Digger : MonoBehaviour
 {
 	public Transform player;
 	[SerializeField] Animator playerAnimator;
+	[SerializeField] AudioSource audioPlayer;
+	[SerializeField] AudioClip[] emptyDigSound;
+	[SerializeField] AudioClip[] mineralDigSound;
 
 	public static System.Action onDig;
 	int level = 0;
@@ -41,7 +44,18 @@ public class Digger : MonoBehaviour
 		if (Physics.Raycast(player.transform.position, -Vector2.up, out hit, 100, 1 << 8))
 		{
 			SimpleTile tile = hit.transform.GetComponent<SimpleTile>();
-			tile.DigMe();
+			bool haveMineral = tile.DigMe();
+
+			if (haveMineral)
+			{
+				audioPlayer.clip = GetRandomClip(mineralDigSound);
+			}
+			else
+			{
+				audioPlayer.clip = GetRandomClip(emptyDigSound);
+			}
+
+			audioPlayer.Play();
 
 //			Destroy(hit.transform.gameObject);
 		}
@@ -50,6 +64,11 @@ public class Digger : MonoBehaviour
 		{
 			onDig();
 		}
+	}
+
+	AudioClip GetRandomClip(AudioClip[] arrayOfClips)
+	{
+		return arrayOfClips[Random.Range(0, arrayOfClips.Length)];
 	}
 
 	void OnGameOver()

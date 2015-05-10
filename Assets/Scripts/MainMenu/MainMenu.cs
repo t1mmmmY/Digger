@@ -83,6 +83,18 @@ public class MainMenu : MonoBehaviour
 		SetActiveAllButtons(true);
 //		StopCoroutine(TimeoutCoroutine(EndTimerTimeout));
 	}
+
+	public void MoveToShop()
+	{
+		SetActiveAllButtons(false);
+		mainMenuAnimator.SetBool("InShop", true);
+	}
+
+	public void ReturnToMenu()
+	{
+		SetActiveAllButtons(true);
+		mainMenuAnimator.SetBool("InShop", false);
+	}
 	
 //	void EndTimerTimeout()
 //	{
