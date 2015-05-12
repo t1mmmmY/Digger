@@ -6,6 +6,7 @@ public class MainMenu : MonoBehaviour
 {
 	public Button[] allButtons;
 	public uint timeout = 20;
+	[SerializeField] Animator mainMenuAnimator;
 
 	public static MainMenu Instance;
 
@@ -37,6 +38,7 @@ public class MainMenu : MonoBehaviour
 	{
 //		_isStopLoading = false;
 		SetActiveAllButtons(false);
+		mainMenuAnimator.SetBool("ButtonsVisible", false);
 		MultiplayerController.Instance.StartMatchMakingRealTime();
 	}
 
@@ -44,6 +46,7 @@ public class MainMenu : MonoBehaviour
 	{
 //		_isStopLoading = false;
 		SetActiveAllButtons(false);
+		mainMenuAnimator.SetBool("ButtonsVisible", false);
 		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
 	}
 
@@ -75,9 +78,22 @@ public class MainMenu : MonoBehaviour
 
 	public void StopTimer()
 	{
+		mainMenuAnimator.SetBool("ButtonsVisible", true);
 //		_isStopLoading = true;
 		SetActiveAllButtons(true);
 //		StopCoroutine(TimeoutCoroutine(EndTimerTimeout));
+	}
+
+	public void MoveToShop()
+	{
+		SetActiveAllButtons(false);
+		mainMenuAnimator.SetBool("InShop", true);
+	}
+
+	public void ReturnToMenu()
+	{
+		SetActiveAllButtons(true);
+		mainMenuAnimator.SetBool("InShop", false);
 	}
 	
 //	void EndTimerTimeout()

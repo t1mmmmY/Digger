@@ -62,7 +62,7 @@ public class InfiniteMap : MonoBehaviour
 //		linesCount = GetLinesCount();
 //	}
 
-	void OnEnable()
+	void Start()
 	{
 		FindAllTiles();
 		FindLastLine();
@@ -71,13 +71,14 @@ public class InfiniteMap : MonoBehaviour
 
 		Digger.onDig += OnDig;
 
+//		Debug.Log("OnInit");
 		if (OnInit != null)
 		{
 			OnInit();
 		}
 	}
 
-	void OnDisable()
+	void OnDestroy()
 	{
 		Digger.onDig -= OnDig;
 	}

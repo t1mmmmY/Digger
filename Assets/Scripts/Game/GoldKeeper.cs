@@ -16,19 +16,20 @@ public class MineralVariables
 public class GoldKeeper : MonoBehaviour 
 {
 	public float goldDensity = 0.5f;
-
+	
+	[SerializeField] AnimationCurve goldPerLevel;
 	[SerializeField] MineralVariables[] mineralPrefabs;
 	[SerializeField] InfiniteMap infiniteMap;
 
 	List<Mineral> allMinerals;
 
-	void OnEnable()
+	void Awake()
 	{
 		InfiniteMap.OnInit += OnInitInfiniteMap;
 		InfiniteMap.OnAddLine += OnAddLine;
 	}
 
-	void OnDisable()
+	void OnDestroy()
 	{
 		InfiniteMap.OnInit -= OnInitInfiniteMap;
 		InfiniteMap.OnAddLine -= OnAddLine;
@@ -52,28 +53,28 @@ public class GoldKeeper : MonoBehaviour
 
 		foreach (SimpleTile tile in allTiles)
 		{
-			if (!centralTiles.Contains(tile))
+//			if (!centralTiles.Contains(tile))
 			{
 				float randomValue = Random.Range(0.0f, 1.0f);
 				if (randomValue > goldDensityBarier)
 				{
 					float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-
+					perlinValue *= goldPerLevel.Evaluate(-tile.transform.localPosition.y);
 					CreateMineral(tile, perlinValue);
 				}
 			}
 		}
 
-		foreach (SimpleTile tile in centralTiles)
-		{
-			float randomValue = Random.Range(0.0f, 1.0f);
-			if (randomValue > goldDensityBarier)
-			{
-				float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-
-				CreateMineral(tile, perlinValue);
-			}
-		}
+//		foreach (SimpleTile tile in centralTiles)
+//		{
+//			float randomValue = Random.Range(0.0f, 1.0f);
+//			if (randomValue > goldDensityBarier)
+//			{
+//				float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
+//
+//				CreateMineral(tile, perlinValue);
+//			}
+//		}
 	}
 
 	void CreateMineral(SimpleTile tile, float value)
@@ -83,10 +84,10 @@ public class GoldKeeper : MonoBehaviour
 
 		for (int i = 0; i < mineralPrefabs.Length; i++)
 		{
-			if (value >= step * (i) && value <= step * (i + 1))
+			if (value >= step * (i)/* && value <= step * (i + 1)*/)
 			{
 				mineralNumber = i;
-				break;
+//				break;
 			}
 		}
 

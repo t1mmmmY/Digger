@@ -7,6 +7,7 @@ public class SimpleTile : MonoBehaviour
 	[SerializeField] bool fitToGrid = true;
 	public float tileSize = 1;
 	[SerializeField] Material backgroundMaterial;
+	[SerializeField] Sprite backgroundSprite;
 
 	protected Vector3 checkPosition;
 	protected Mineral mineral;
@@ -39,21 +40,23 @@ public class SimpleTile : MonoBehaviour
 		return mineral;
 	}
 
-	public void DigMe()
+	public bool DigMe()
 	{
+		bool haveMineral = false;
 		if (mineral != null)
 		{
+			haveMineral = true;
 			mineral.TakeMineral();
 		}
 
 		BoxCollider collider = this.GetComponent<BoxCollider>();
 		collider.enabled = false;
 
-		MeshRenderer render = this.GetComponent<MeshRenderer>();
+		SpriteRenderer render = this.GetComponent<SpriteRenderer>();
 		render.material = backgroundMaterial;
+		render.sprite = backgroundSprite;
 
-
-//		Destroy(this.gameObject);
+		return haveMineral;
 	}
 
 }
