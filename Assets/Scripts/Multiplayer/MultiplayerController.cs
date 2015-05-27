@@ -111,7 +111,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_EDITOR || UNITY_WEBPLAYER
 //		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
-		MainMenu.Instance.StartTimerTimeout();
+//		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 	}
@@ -129,7 +129,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_EDITOR || UNITY_WEBPLAYER
 //		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
-		MainMenu.Instance.StartTimerTimeout();
+//		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 		//		PlayGamesPlatform.Instance.TurnBased.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, TurnCallback);

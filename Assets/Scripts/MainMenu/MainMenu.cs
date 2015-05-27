@@ -10,11 +10,6 @@ public class MainMenu : MonoBehaviour
 
 	public static MainMenu Instance;
 
-//	bool _isStopLoading = false;
-//	public bool isStopLoading
-//	{
-//		get { return _isStopLoading; }
-//	}
 
 	void Awake()
 	{
@@ -23,8 +18,6 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
-//		Application.targetFrameRate = 30;
-//		MultiplayerController.Instance.SignIn();
 		SetActiveAllButtons(true);
 	}
 
@@ -36,7 +29,6 @@ public class MainMenu : MonoBehaviour
 
 	public void StartMultiplayerGame()
 	{
-//		_isStopLoading = false;
 		SetActiveAllButtons(false);
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
 		MultiplayerController.Instance.StartMatchMakingRealTime();
@@ -44,7 +36,6 @@ public class MainMenu : MonoBehaviour
 
 	public void StartFastMultiplayerGame()
 	{
-//		_isStopLoading = false;
 		SetActiveAllButtons(false);
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
 		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
@@ -70,54 +61,23 @@ public class MainMenu : MonoBehaviour
 	}
 	 
 
-	public void StartTimerTimeout()
-	{
-//		Debug.LogWarning("TimerStart");
-//		StartCoroutine(TimeoutCoroutine(EndTimerTimeout));
-	}
-
 	public void StopTimer()
 	{
 		mainMenuAnimator.SetBool("ButtonsVisible", true);
-//		_isStopLoading = true;
 		SetActiveAllButtons(true);
-//		StopCoroutine(TimeoutCoroutine(EndTimerTimeout));
 	}
 
 	public void MoveToShop()
 	{
-		SetActiveAllButtons(false);
-		mainMenuAnimator.SetBool("InShop", true);
+//		SetActiveAllButtons(false);
+//		mainMenuAnimator.SetBool("InShop", true);
 	}
 
 	public void ReturnToMenu()
 	{
-		SetActiveAllButtons(true);
-		mainMenuAnimator.SetBool("InShop", false);
-	}
-	
-//	void EndTimerTimeout()
-//	{
-//		Debug.LogWarning("TimerEnd");
 //		SetActiveAllButtons(true);
-//	}
-	
-//	IEnumerator TimeoutCoroutine(System.Action callback)
-//	{
-//		yield return new WaitForSeconds(timeout);
-//
-//		if (_isStopLoading)
-//		{
-//			yield break;
-//		}
-//		else
-//		{
-//			Debug.Log("CALLBACK");
-//			if (callback != null)
-//			{
-//				callback();
-//			}
-//		}
-//	}
+//		mainMenuAnimator.SetBool("InShop", false);
+	}
+
 
 }
