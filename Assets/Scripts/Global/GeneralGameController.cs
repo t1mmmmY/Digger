@@ -15,24 +15,48 @@ public class GeneralGameController : MonoBehaviour
 
 	void Awake()
 	{
+//		Debug.Log("Awake");
 		_instance = this;
 	}
 
 	void Start()
 	{
+//		Debug.Log("Start");
 		Application.targetFrameRate = 30;
 		BankController.Init();
 	}
 
 	void OnEnable()
 	{
+//		Debug.Log("OnEnable");
 		SplashScreen.OnLogoComplite += OnLogoComplite;
 	}
 
+//	void Update()
+//	{
+//		Debug.Log("Update");
+//	}
+
+//	void LateUpdate()
+//	{
+//		Debug.Log("LateUpdate");
+//	}
+
+//	void FixedUpdate()
+//	{
+//		Debug.Log("FixedUpdate");
+//	}
+
 	void OnDisable()
 	{
+//		Debug.Log("OnDisable");
 		SplashScreen.OnLogoComplite -= OnLogoComplite;
 	}
+
+//	void OnDestroy()
+//	{
+//		Debug.Log("OnDestroy");
+//	}
 
 	void OnLogoComplite()
 	{
