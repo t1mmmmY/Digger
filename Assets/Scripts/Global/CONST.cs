@@ -6,7 +6,8 @@ public enum Scene
 	Splash = 0,
 	Lobby = 1,
 	SinglePlayer = 2,
-	Multiplayer = 3
+	Multiplayer = 3,
+	Tavern = 4
 }
 
 public static class CONST 

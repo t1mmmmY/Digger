@@ -79,5 +79,10 @@ public class MainMenu : MonoBehaviour
 //		mainMenuAnimator.SetBool("InShop", false);
 	}
 
+	public void EnterTavern()
+	{
+		LevelLoader.Instance.LoadLevel(Scene.Tavern);
+	}
+
 
 }

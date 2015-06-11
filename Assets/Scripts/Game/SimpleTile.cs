@@ -20,12 +20,15 @@ public class SimpleTile : MonoBehaviour
 
 	void Update() 
 	{
-		Vector3 displacement = transform.position - checkPosition;
-		if (fitToGrid && (displacement.x != 0 || displacement.y != 0)) 
+		if (!Application.isPlaying)
 		{
-			transform.position = new Vector3(Mathf.Round(transform.position.x / tileSize) * tileSize, 
-			                                 Mathf.Round(transform.position.y / tileSize) * tileSize, 
-			                                 transform.position.z);
+			Vector3 displacement = transform.position - checkPosition;
+			if (fitToGrid && (displacement.x != 0 || displacement.y != 0)) 
+			{
+				transform.position = new Vector3(Mathf.Round(transform.position.x / tileSize) * tileSize, 
+				                                 Mathf.Round(transform.position.y / tileSize) * tileSize, 
+				                                 transform.position.z);
+			}
 		}
 	}
 

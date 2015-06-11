@@ -27,6 +27,8 @@ namespace UnityStandardAssets._2D
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
+
+			m_Anim.SetTrigger("Idle");
         }
 
 

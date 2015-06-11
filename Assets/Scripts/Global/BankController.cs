@@ -26,6 +26,12 @@ public static class BankController
 
 	public static void AddCoins(int count)
 	{
+		if (count < 0)
+		{
+			Debug.LogWarning("Coins should not be less than 0");
+			return;
+		}
+
 		_coins += count;
 		PlayerPrefs.SetInt(_coinsKey, _coins);
 
