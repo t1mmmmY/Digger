@@ -43,7 +43,7 @@ public class SimpleTile : MonoBehaviour
 		return mineral;
 	}
 
-	public bool DigMe()
+	public bool DigMe(float invokeTime)
 	{
 		bool haveMineral = false;
 		if (mineral != null)
@@ -52,14 +52,23 @@ public class SimpleTile : MonoBehaviour
 			mineral.TakeMineral();
 		}
 
+		StartCoroutine("DisableTile", invokeTime);
+
+		return haveMineral;
+	}
+
+	IEnumerator DisableTile(float invokeTime)
+	{
+		gameObject.layer = 0;
+
+		yield return new WaitForSeconds(invokeTime);
+
 		BoxCollider collider = this.GetComponent<BoxCollider>();
 		collider.enabled = false;
-
+		
 		SpriteRenderer render = this.GetComponent<SpriteRenderer>();
 		render.material = backgroundMaterial;
 		render.sprite = backgroundSprite;
-
-		return haveMineral;
 	}
 
 }

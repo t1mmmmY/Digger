@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class GameManager : MonoBehaviour 
+public abstract class GameManager : BaseSingleton<GameManager> 
 {
 	[SerializeField] float timeForOneTurn = 5.0f;
 	[SerializeField] protected Camera camera;
@@ -9,22 +9,23 @@ public abstract class GameManager : MonoBehaviour
 	protected float forceShake = 0;
 	protected int level = 0;
 
+	public int GetLevel()
+	{
+		return level;
+	}
+
 //	public static System.Action OnStartGame;
 	public static System.Action OnGameOver;
 	public static System.Action OnWrongAnswer;
 	public static System.Action<float, int> OnShake;
 
+
 	protected virtual void Start()
 	{
-//		Invoke("StartGame", 0.5f);
 	}
 
 	protected virtual void Update()
 	{
-//		if (Input.GetKeyDown(KeyCode.Escape))
-//		{
-//			LevelLoader.Instance.LoadLevel(Scene.Lobby);
-//		}
 	}
 
 	protected virtual void OnEnable()
@@ -65,19 +66,6 @@ public abstract class GameManager : MonoBehaviour
 
 	public virtual void GameOver()
 	{
-//		int bestLevel = PlayerPrefs.GetInt("BestLevel", 0);
-//		if (level > bestLevel)
-//		{
-//			PlayerPrefs.SetInt("BestLevel", level);
-//			MultiplayerController.Instance.SetBestSore(level);
-//		}
-//
-//		if (OnGameOver != null)
-//		{
-//			OnGameOver();
-//		}
-
-//		StartCoroutine("InvokeRestart", 1.0f);
 	}
 
 	public static int GetBestScore()

@@ -18,7 +18,7 @@ public class FormulaDrawer : MonoBehaviour
 	public Color colorWrongAnswer = Color.red;
 	public int disableTime = 5;
 
-	int level = 0;
+//	int level = 0;
 	Formula formula;
 	int rightAnswerNumber = -1;
 	bool gameOver = true;
@@ -137,8 +137,8 @@ public class FormulaDrawer : MonoBehaviour
 		gameOver = false;
 		rightAnswerNumber = -1;
 		lastAnswer = -1;
-		level = 0;
-		levelText.text = level.ToString();
+//		level = 0;
+		levelText.text = GameManager.Instance.GetLevel().ToString();
 		bestLevelText.text = GameManager.GetBestScore().ToString();
 		GenerateQuestion();
 
@@ -160,8 +160,8 @@ public class FormulaDrawer : MonoBehaviour
 		gameOver = false;
 		rightAnswerNumber = -1;
 		lastAnswer = -1;
-		level = 0;
-		levelText.text = level.ToString();
+//		level = 0;
+		levelText.text = GameManager.Instance.GetLevel().ToString();
 		bestLevelText.text = GameManager.GetBestScore().ToString();
 		GenerateQuestion();
 
@@ -256,8 +256,8 @@ public class FormulaDrawer : MonoBehaviour
 	void OnDig()
 	{
 //		Debug.Log("OnDig");
-		level++;
-		levelText.text = level.ToString();
+//		level++;
+		levelText.text = GameManager.Instance.GetLevel().ToString();
 		GenerateQuestion();
 	}
 
@@ -286,8 +286,8 @@ public class FormulaDrawer : MonoBehaviour
 
 	void GenerateQuestion()
 	{
-		formula = GetFormula(level);
-		int sector = Mathematician.GetSector(Mathematician.GetDifficult(level));
+		formula = GetFormula(GameManager.Instance.GetLevel());
+		int sector = Mathematician.GetSector(Mathematician.GetDifficult(GameManager.Instance.GetLevel()));
 
 		int randValue = Random.Range(0, sector);
 

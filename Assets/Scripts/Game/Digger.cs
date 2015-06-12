@@ -4,17 +4,17 @@ using System.Collections;
 public class Digger : MonoBehaviour 
 {
 	public Transform player;
-	[SerializeField] Animator playerAnimator;
+//	[SerializeField] Animator playerAnimator;
 	[SerializeField] AudioSource audioPlayer;
 	[SerializeField] AudioClip[] emptyDigSound;
 	[SerializeField] AudioClip[] mineralDigSound;
 
 	public static System.Action onDig;
-	int level = 0;
+//	int level = 0;
 
 	void OnEnable()
 	{
-		level = 0;
+//		level = 0;
 		FormulaDrawer.OnAnswer += OnAnswer;
 		GameManager.OnGameOver += OnGameOver;
 	}
@@ -29,7 +29,7 @@ public class Digger : MonoBehaviour
 	{
 		if (isRightAnswer)
 		{
-			level++;
+//			level++;
 			Dig();
 		}
 		else
@@ -44,7 +44,7 @@ public class Digger : MonoBehaviour
 		if (Physics.Raycast(player.transform.position, -Vector2.up, out hit, 100, 1 << 8))
 		{
 			SimpleTile tile = hit.transform.GetComponent<SimpleTile>();
-			bool haveMineral = tile.DigMe();
+			bool haveMineral = tile.DigMe(0.25f);
 
 			if (haveMineral)
 			{
@@ -73,25 +73,27 @@ public class Digger : MonoBehaviour
 
 	void OnGameOver()
 	{
-		if (level > 0)
+		if (GameManager.Instance.GetLevel() > 0)
 		{
-			if (playerAnimator != null)
-			{
-				playerAnimator.SetTrigger("Die");
-			}
-			else
-			{
-				Debug.LogError("Animator not found");
-			}
+//			if (playerAnimator != null)
+//			{
+//				playerAnimator.SetTrigger("Die");
+//			}
+//			else
+//			{
+//				Debug.LogError("Animator not found");
+//			}
 			
 
-			Rigidbody playerRigidbody = player.GetComponent<Rigidbody>();
-			playerRigidbody.isKinematic = true;
-			Collider[] playerColliders = player.GetComponents<Collider>();
-			foreach (Collider col in playerColliders)
-			{
-				col.enabled = false;
-			}
+//			Rigidbody playerRigidbody = player.GetComponent<Rigidbody>();
+//			playerRigidbody.isKinematic = true;
+
+
+//			Collider[] playerColliders = player.GetComponents<Collider>();
+//			foreach (Collider col in playerColliders)
+//			{
+//				col.enabled = false;
+//			}
 		}
 	}
 
