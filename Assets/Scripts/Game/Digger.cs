@@ -8,6 +8,7 @@ public class Digger : MonoBehaviour
 	[SerializeField] AudioSource audioPlayer;
 	[SerializeField] AudioClip[] emptyDigSound;
 	[SerializeField] AudioClip[] mineralDigSound;
+	[SerializeField] float tileLifetime = 0.25f;
 
 	public static System.Action onDig;
 //	int level = 0;
@@ -44,7 +45,7 @@ public class Digger : MonoBehaviour
 		if (Physics.Raycast(player.transform.position, -Vector2.up, out hit, 100, 1 << 8))
 		{
 			SimpleTile tile = hit.transform.GetComponent<SimpleTile>();
-			bool haveMineral = tile.DigMe(0.25f);
+			bool haveMineral = tile.DigMe(tileLifetime);
 
 			if (haveMineral)
 			{
