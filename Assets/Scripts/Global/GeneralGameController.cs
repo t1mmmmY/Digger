@@ -1,62 +1,49 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GeneralGameController : MonoBehaviour 
+public class GeneralGameController : BaseSingleton<GeneralGameController> 
 {
 	public AudioSource music;
+	Character currentCharacter;
+	int currentCharacterNumber = 0;
 
-	private static GeneralGameController _instance;
-	public static GeneralGameController Instance
+	public int characterNumber
 	{
-		get { return _instance; }
+		get { return currentCharacterNumber; }
 	}
 
 	public static System.Action onLoadLobby;
-
-	void Awake()
-	{
-//		Debug.Log("Awake");
-		_instance = this;
-	}
+	public static System.Action<Character> onSelectCharacter;
 
 	void Start()
 	{
-//		Debug.Log("Start");
 		Application.targetFrameRate = 30;
 		BankController.Init();
 	}
 
 	void OnEnable()
 	{
-//		Debug.Log("OnEnable");
 		SplashScreen.OnLogoComplite += OnLogoComplite;
 	}
 
-//	void Update()
-//	{
-//		Debug.Log("Update");
-//	}
-
-//	void LateUpdate()
-//	{
-//		Debug.Log("LateUpdate");
-//	}
-
-//	void FixedUpdate()
-//	{
-//		Debug.Log("FixedUpdate");
-//	}
 
 	void OnDisable()
 	{
-//		Debug.Log("OnDisable");
 		SplashScreen.OnLogoComplite -= OnLogoComplite;
 	}
 
-//	void OnDestroy()
-//	{
-//		Debug.Log("OnDestroy");
-//	}
+
+	public void SelectCharacter(Character character)
+	{
+		currentCharacter = character;
+		currentCharacterNumber = currentCharacter.number;
+
+		if (onSelectCharacter != null)
+		{
+			onSelectCharacter(character);
+		}
+	}
+
 
 	void OnLogoComplite()
 	{
@@ -117,4 +104,5 @@ public class GeneralGameController : MonoBehaviour
 			}
 		}
 	}
+
 }

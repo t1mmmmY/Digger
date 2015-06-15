@@ -7,6 +7,12 @@ public class Follower : MonoBehaviour
 	public float speed = 1.0f;
 	[SerializeField] Vector3 offset = new Vector3(0, 0, -10);
 
+
+	public void SetTarget(Transform newTarget)
+	{
+		target = newTarget;
+	}
+
 	void Update () 
 	{
 		FollowTarget();

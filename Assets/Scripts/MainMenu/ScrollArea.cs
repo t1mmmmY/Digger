@@ -1,15 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ScrollArea : MonoBehaviour 
 {
 	[SerializeField] Camera camera;
 	[SerializeField] Transform cameraTransform;
-	[SerializeField] Bounds[] cameraPositions;
+	[SerializeField] List<Bounds> cameraPositions; //550
 	[SerializeField] Bounds scrollArea;
 	[SerializeField] float scale = 10;
 	[SerializeField] float minShift = 1;
 	[SerializeField] int currentPosition = 0;
+
+	[Range(0, 500)]
+	[SerializeField] float maxShift = 100;
 
 	Vector2 oldPosition;
 	Vector2 deltaPosition;
@@ -25,13 +29,36 @@ public class ScrollArea : MonoBehaviour
 
 	ScrollState state = ScrollState.Nothing;
 
-//	[SerializeField] bool canDrag = true;
 
+	void Awake()
+	{
+//		cameraPositions = new List<Bounds>();
+	}
 
 	void Start()
 	{
 		MoveToPosition(0);
 	}
+
+	public Bounds GetScrollArea()
+	{
+		return scrollArea;
+	}
+
+	public void AddPoint(Bounds bound)
+	{
+		if (cameraPositions == null)
+		{
+			cameraPositions = new List<Bounds>();
+		}
+		cameraPositions.Add(bound);
+	}
+
+	public void ChangeScrollArea(Bounds bound)
+	{
+		scrollArea = bound;
+	}
+
 
 	void Update()
 	{
@@ -73,78 +100,56 @@ public class ScrollArea : MonoBehaviour
 
 	void BeginScroll()
 	{
-//		Debug.Log("Begin");
 		oldPosition = Input.mousePosition;
 		deltaPosition = Vector2.zero;
-
-//		state = ScrollState.Scroll;
 	}
 
 	void Scroll()
 	{
-//		Debug.Log("Scroll");
 		deltaPosition = oldPosition - (Vector2)Input.mousePosition;
 
-//		if (deltaPosition.magnitude < minShift)
-//		{
-//			return;
-//		}
-
 		deltaPosition.x = (deltaPosition.x / Screen.width) * 100 * scale;
-//		deltaPosition.y = (deltaPosition.y / Screen.height) * 100 * scale;
 		oldPosition = Input.mousePosition;
 
-//		Debug.Log(deltaPosition);
 		Vector3 newPosition = cameraTransform.localPosition;
 		newPosition.x += deltaPosition.x;
-//		newPosition.y += deltaPosition.y;
 
 		cameraTransform.localPosition = newPosition;
 
+//		if (!cameraPositions[currentPosition].Contains(cameraTransform.position))
+//		{
+//			cameraTransform.position = cameraPositions[currentPosition].ClosestPoint(cameraTransform.position);
+//		}
+
 		if (!scrollArea.Contains(cameraTransform.position))
 		{
-//			cameraTransform.position = Vector3.Lerp(cameraTransform.position, scrollArea.ClosestPoint(cameraTransform.position), Time.deltaTime * 10);
 			cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
 		}
 	}
 
 	void EndScroll()
 	{
-//		Debug.Log("End");
-//		oldPosition = Vector2.zero;
-//		deltaPosition = Vector2.zero;
-
 		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
 	}
 
 	int FindNearetPosition(Vector3 position)
 	{
-		if (cameraPositions.Length == 0)
+		if (cameraPositions.Count == 0)
 		{
 			return 0;
 		}
 
-//		Rect cameraRect = camera.pixelRect;
-//		Bounds cameraBounds = new Bounds(cameraTransform.localPosition, new Vector3(cameraRect.width, cameraRect.height, 1000));
-
 		Bounds cameraBounds = new Bounds(cameraTransform.localPosition, new Vector3(720, 1280, 1000));
-//		Debug.Log(cameraBounds);
 
 		float minDistance = float.MaxValue;
 		int number = currentPosition;
 
-		for (int i = 0; i < cameraPositions.Length; i++)
+		for (int i = 0; i < cameraPositions.Count; i++)
 		{
 			if (cameraPositions[i].Intersects(cameraBounds) && i != currentPosition)
 			{
 				number = i;
 			}
-//			float distance = Vector3.Distance(position, cameraPositions[i].center);
-//			if (distance < minDistance && i != currentPosition)
-//			{
-//				minDistance = distance;
-//				number = i;
-//			}
 		}
 
 		return number;
@@ -152,7 +157,7 @@ public class ScrollArea : MonoBehaviour
 
 	public void MoveToPosition(int positionNumber)
 	{
-		if (positionNumber >= cameraPositions.Length)
+		if (positionNumber >= cameraPositions.Count)
 		{
 			Debug.LogWarning("Out of range positions!");
 			return;
@@ -160,10 +165,6 @@ public class ScrollArea : MonoBehaviour
 
 		state = ScrollState.Animate;
 
-//		float distance = Vector3.Distance(cameraTransform.localPosition, cameraPositions[positionNumber].center);
-//		float time = distance / 1000.0f;
-//		Debug.Log(time);
-//		canDrag = false;
 
 		Hashtable hash = new Hashtable();
 		hash.Add("position", cameraPositions[positionNumber].center);
@@ -180,7 +181,6 @@ public class ScrollArea : MonoBehaviour
 	void OnFinishMove()
 	{
 		state = ScrollState.Nothing;
-//		canDrag = true;
 	}
 
 	void OnDrawGizmos()

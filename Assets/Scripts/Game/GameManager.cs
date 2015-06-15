@@ -5,6 +5,8 @@ public abstract class GameManager : BaseSingleton<GameManager>
 {
 	[SerializeField] float timeForOneTurn = 5.0f;
 	[SerializeField] protected Camera camera;
+	[SerializeField] Transform characterStartPosition;
+	[SerializeField] Follower follower;
 
 	protected float forceShake = 0;
 	protected int level = 0;
@@ -22,6 +24,7 @@ public abstract class GameManager : BaseSingleton<GameManager>
 
 	protected virtual void Start()
 	{
+		LoadCharacter();
 	}
 
 	protected virtual void Update()
@@ -91,6 +94,29 @@ public abstract class GameManager : BaseSingleton<GameManager>
 		{
 			WrongAnswer();
 //			GameOver();
+		}
+	}
+
+	private void LoadCharacter()
+	{
+		int characterNumber = 0;
+		if (GeneralGameController.Instance != null)
+		{
+			characterNumber = GeneralGameController.Instance.characterNumber;
+		}
+
+		Object obj = Resources.Load(string.Format("{0}{1}", CONST.PLAYABLE_PLAYERS_PATH, CONST.PLAYER_NAMES[characterNumber]));
+		if (obj != null)
+		{
+			GameObject characterGO = GameObject.Instantiate<GameObject>((GameObject)obj);
+			characterGO.transform.parent = characterStartPosition;
+			characterGO.transform.localPosition = Vector3.zero;
+
+			follower.SetTarget(characterGO.transform);
+		}
+		else
+		{
+			Debug.LogError("Cannot load character!");
 		}
 	}
 
