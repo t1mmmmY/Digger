@@ -26,6 +26,19 @@ public static class CONST
 		"WalterWhite_copy"
 	};
 
+	public static readonly string[] DESCRIPTOIN_NAMES = { 
+		"Drunken Digger",
+		"Walter White",
+		"Drunken Digger again",
+		"Walter White again"
+	};
+
+	public static readonly string[] PLAYER_KEYS = {
+		"DrunkenDigger",
+		"WalterWhite",
+		"DrunkenDigger_copy",
+		"WalterWhite_copy"
+	};
 
 
 	public static bool InGame()

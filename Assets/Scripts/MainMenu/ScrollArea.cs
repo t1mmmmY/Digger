@@ -11,12 +11,15 @@ public class ScrollArea : MonoBehaviour
 	[SerializeField] float scale = 10;
 	[SerializeField] float minShift = 1;
 	[SerializeField] int currentPosition = 0;
+	int oldPositionNumber = 0;
 
 	[Range(0, 500)]
 	[SerializeField] float maxShift = 100;
 
 	Vector2 oldPosition;
 	Vector2 deltaPosition;
+
+	bool beginScroll = false;
 
 	enum ScrollState
 	{
@@ -29,6 +32,9 @@ public class ScrollArea : MonoBehaviour
 
 	ScrollState state = ScrollState.Nothing;
 
+	public static System.Action onStartMoving;
+	public static System.Action<int> onChangePosition;
+	public static System.Action onEndMoving;
 
 	void Awake()
 	{
@@ -84,12 +90,14 @@ public class ScrollArea : MonoBehaviour
 			switch (state)
 			{
 			case ScrollState.Begin:
+
 				BeginScroll();
 				break;
 			case ScrollState.Scroll:
 				Scroll();
 				break;
 			case ScrollState.End:
+
 				EndScroll();
 				break;
 			}
@@ -102,6 +110,8 @@ public class ScrollArea : MonoBehaviour
 	{
 		oldPosition = Input.mousePosition;
 		deltaPosition = Vector2.zero;
+
+		beginScroll = true;
 	}
 
 	void Scroll()
@@ -109,6 +119,16 @@ public class ScrollArea : MonoBehaviour
 		deltaPosition = oldPosition - (Vector2)Input.mousePosition;
 
 		deltaPosition.x = (deltaPosition.x / Screen.width) * 100 * scale;
+
+		if (beginScroll && deltaPosition.magnitude > 0)
+		{
+			if (onStartMoving != null)
+			{
+				onStartMoving();
+			}
+			beginScroll = false;
+		}
+
 		oldPosition = Input.mousePosition;
 
 		Vector3 newPosition = cameraTransform.localPosition;
@@ -116,10 +136,6 @@ public class ScrollArea : MonoBehaviour
 
 		cameraTransform.localPosition = newPosition;
 
-//		if (!cameraPositions[currentPosition].Contains(cameraTransform.position))
-//		{
-//			cameraTransform.position = cameraPositions[currentPosition].ClosestPoint(cameraTransform.position);
-//		}
 
 		if (!scrollArea.Contains(cameraTransform.position))
 		{
@@ -130,6 +146,15 @@ public class ScrollArea : MonoBehaviour
 	void EndScroll()
 	{
 		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
+
+//		if (oldPositionNumber != currentPosition)
+//		{
+		if (onChangePosition != null)
+		{
+			onChangePosition(currentPosition);
+		}
+//		}
+		beginScroll = false;
 	}
 
 	int FindNearetPosition(Vector3 position)
@@ -175,12 +200,23 @@ public class ScrollArea : MonoBehaviour
 
 		iTween.MoveTo(cameraTransform.gameObject, hash);
 
+		oldPositionNumber = currentPosition;
 		currentPosition = positionNumber;
+
+		if (onEndMoving != null)
+		{
+			onEndMoving();
+		}
 	}
 
 	void OnFinishMove()
 	{
 		state = ScrollState.Nothing;
+
+//		if (onChangePosition != null)
+//		{
+//			onChangePosition(currentPosition);
+//		}
 	}
 
 	void OnDrawGizmos()

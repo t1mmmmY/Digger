@@ -70,34 +70,34 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 
 	void PlayMusic(Object clip)
 	{
-		Debug.Log("Object == null");
+//		Debug.Log("Object == null");
 		if (clip != null)
 		{
-			Debug.Log("Load something");
+//			Debug.Log("Load something");
 
 			music.clip = (AudioClip)clip;
 			if (music.clip != null)
 			{
-				Debug.Log("Everything okay");
+//				Debug.Log("Everything okay");
 				music.Play();
 			}
 			else
 			{
-				Debug.Log("music.clip == null");
+//				Debug.Log("music.clip == null");
 			}
 		}
 	}
 
 	IEnumerator LoadAsset(string path, System.Type type, System.Action<Object> callback)
 	{
-		Debug.Log("Start loading");
+//		Debug.Log("Start loading");
 		ResourceRequest request = Resources.LoadAsync(path, type);
 
 		yield return request;
 
 		if (request.isDone)
 		{
-			Debug.Log("Done");
+//			Debug.Log("Done");
 			if (callback != null)
 			{
 				callback(request.asset);

@@ -1,17 +1,24 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class TavernManager : BaseSingleton<TavernManager>
 {
 	[SerializeField] Transform background;
 	[SerializeField] ScrollArea scrollArea;
 	[SerializeField] WallPart tavernPartPrefab;
+	[SerializeField] Text characterNameLabel;
+	[SerializeField] Button buyCharacterButton;
+	[SerializeField] Button playCharacterButton;
+	[SerializeField] Animator canvasAnimator;
 
-	[SerializeField] List<WallPart> walls;
-	[SerializeField] List<Character> characters;
+	List<WallPart> walls;
+	List<Character> characters;
 
-
+	int showDescriptionHash = Animator.StringToHash("ShowDescription");
+	int hideDescriptionHash = Animator.StringToHash("HideDescription");
+	int selectCharacterHash = Animator.StringToHash("SelectCharacter");
 
 	protected override void Awake()
 	{
@@ -24,6 +31,22 @@ public class TavernManager : BaseSingleton<TavernManager>
 	void Start()
 	{
 		StartCoroutine("LoadCharacters");
+		ShowDescription(0);
+	}
+
+	void OnEnable()
+	{
+		ScrollArea.onChangePosition += OnChangePosition;
+		ScrollArea.onStartMoving += OnStartMoving;
+		ScrollArea.onEndMoving += OnEndMoving;
+
+	}
+
+	void OnDestroy()
+	{
+		ScrollArea.onChangePosition -= OnChangePosition;
+		ScrollArea.onStartMoving -= OnStartMoving;
+		ScrollArea.onEndMoving -= OnEndMoving;
 	}
 
 	IEnumerator LoadCharacters()
@@ -142,15 +165,96 @@ public class TavernManager : BaseSingleton<TavernManager>
 		return character;
 	}
 
+
+	void OnStartMoving()
+	{
+//		Debug.Log("HideDescription");
+		HideDescription();
+	}
+
+	void OnEndMoving()
+	{
+//		ShowDescription();
+	}
+
+	void OnChangePosition(int newPositionNumber)
+	{
+//		Debug.Log("OnChangePosition");
+		ShowDescription(newPositionNumber);
+	}
+
+	void HideDescription()
+	{
+		canvasAnimator.SetTrigger(hideDescriptionHash);
+	}
+
+	void ShowDescription(int positionNumber)
+	{
+		switch (PlayerStatsController.Instance.GetStatus(positionNumber))
+		{
+		case PlayerStatus.NotBought:
+			buyCharacterButton.gameObject.SetActive(true);
+			playCharacterButton.gameObject.SetActive(false);
+			break;
+		case PlayerStatus.Bought:
+			buyCharacterButton.gameObject.SetActive(false);
+			playCharacterButton.gameObject.SetActive(true);
+			break;
+		}
+
+		characterNameLabel.text = CONST.DESCRIPTOIN_NAMES[positionNumber];
+
+		AnimatorStateInfo stateInfo = canvasAnimator.GetCurrentAnimatorStateInfo(0);
+		if (stateInfo.IsName("HideDescription"))
+		{
+			canvasAnimator.SetTrigger(showDescriptionHash);
+		}
+	}
+
+
 	public void SelectCharacter(Character character)
 	{
-		Debug.Log("Select " + character.number);
+//		Debug.Log("Select " + character.number);
+		PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
+		switch (playerStatus)
+		{
+		case PlayerStatus.Bought:
+			PlaySelectAnimation(character);
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(character);
+			}
+			break;
+		case PlayerStatus.NotBought:
 
-		GeneralGameController.Instance.SelectCharacter(character);
+			PlayerStatsController.Instance.SetStatus(character.number, PlayerStatus.Bought);
+			//Temp
+			PlaySelectAnimation(character);
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(character);
+			}
+			break;
+		}
+
+
 	}
 
 	public void ReturnToMenu()
 	{
+		LevelLoader.Instance.LoadLevel(Scene.Lobby);
+	}
+
+	void PlaySelectAnimation(Character character)
+	{
+		canvasAnimator.SetTrigger(selectCharacterHash);
+		StartCoroutine("InvokeLoadLevel", 1.0f);
+//		playCharacterButton.Select();
+	}
+
+	IEnumerator InvokeLoadLevel(float time)
+	{
+		yield return new WaitForSeconds(time);
 		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
 }

@@ -6,7 +6,7 @@ public class TavernCharacter : MonoBehaviour
 	[SerializeField] Character character;
 
 	Vector3 oldPosition = Vector3.zero;
-	float maxDistance = 0.0f;
+	float maxDistance = 0.1f;
 
 	void OnMouseDown()
 	{
