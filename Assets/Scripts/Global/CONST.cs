@@ -22,6 +22,7 @@ public static class CONST
 	public static readonly string[] PLAYER_NAMES = { 
 		"DrunkenDigger",
 		"WalterWhite",
+		"Batman",
 		"DrunkenDigger_copy",
 		"WalterWhite_copy"
 	};
@@ -29,6 +30,7 @@ public static class CONST
 	public static readonly string[] DESCRIPTOIN_NAMES = { 
 		"Drunken Digger",
 		"Walter White",
+		"BadMan",
 		"Drunken Digger again",
 		"Walter White again"
 	};
@@ -36,6 +38,7 @@ public static class CONST
 	public static readonly string[] PLAYER_KEYS = {
 		"DrunkenDigger",
 		"WalterWhite",
+		"Batman",
 		"DrunkenDigger_copy",
 		"WalterWhite_copy"
 	};

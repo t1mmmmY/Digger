@@ -10,10 +10,36 @@ public enum PlayerStatus
 public class PlayerStatsController : BaseSingleton<PlayerStatsController> 
 {
 //	PlayerStatus[] playerStatus;
+	string currentPlayerKey = "CURRENT_PLAYER";
 
 	void Start()
 	{
 //		SetDefault();
+	}
+
+	void OnEnable()
+	{
+		GeneralGameController.onSelectCharacter += OnSelectCharacter;
+	}
+
+	void OnDisable()
+	{
+		GeneralGameController.onSelectCharacter -= OnSelectCharacter;
+	}
+
+	void OnSelectCharacter(Character character)
+	{
+		SetCurrentPlayer(character.number);
+	}
+
+	void SetCurrentPlayer(int number)
+	{
+		PlayerPrefs.SetInt(currentPlayerKey, number);
+	}
+
+	public int GetCurrentPlayerNumber()
+	{
+		return PlayerPrefs.GetInt(currentPlayerKey, 0);
 	}
 
 	public PlayerStatus GetStatus(int number)
