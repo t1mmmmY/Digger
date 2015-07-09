@@ -54,7 +54,14 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	PlayerStatus LoadState(int number)
 	{
-		return (PlayerStatus)PlayerPrefs.GetInt(CONST.PLAYER_KEYS[number], (int)PlayerStatus.NotBought);
+		if (number == 0)
+		{
+			return PlayerStatus.Bought;
+		}
+		else
+		{
+			return (PlayerStatus)PlayerPrefs.GetInt(CONST.PLAYER_KEYS[number], (int)PlayerStatus.NotBought);
+		}
 	}
 
 	void SaveState(int number, PlayerStatus status)

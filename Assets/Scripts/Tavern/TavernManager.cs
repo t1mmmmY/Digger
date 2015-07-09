@@ -20,6 +20,8 @@ public class TavernManager : BaseSingleton<TavernManager>
 	int hideDescriptionHash = Animator.StringToHash("HideDescription");
 	int selectCharacterHash = Animator.StringToHash("SelectCharacter");
 
+    int currentCharacterNumber = 0;
+
 	protected override void Awake()
 	{
 		walls = new List<WallPart>();
@@ -180,6 +182,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 	void OnChangePosition(int newPositionNumber)
 	{
 //		Debug.Log("OnChangePosition");
+        currentCharacterNumber = newPositionNumber;
 		ShowDescription(newPositionNumber);
 	}
 
@@ -211,35 +214,45 @@ public class TavernManager : BaseSingleton<TavernManager>
 		}
 	}
 
+    public void SelectCharacter()
+    {
+        Character[] allCharacters = GameObject.FindObjectsOfType<Character>();
+        foreach(Character character in allCharacters)
+        {
+            if (character.number == currentCharacterNumber)
+            {
+
+                SelectCharacter(character);
+            }
+        }
+    }
 
 	public void SelectCharacter(Character character)
 	{
 //		Debug.Log("Select " + character.number);
-		PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
-		switch (playerStatus)
-		{
-		case PlayerStatus.Bought:
-			PlaySelectAnimation(character);
-			if (GeneralGameController.Instance != null)
-			{
-				GeneralGameController.Instance.SelectCharacter(character);
-			}
-			break;
-		case PlayerStatus.NotBought:
+        PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
+        switch (playerStatus)
+        {
+            case PlayerStatus.Bought:
+                PlaySelectAnimation(character);
+                if (GeneralGameController.Instance != null)
+                {
+                    GeneralGameController.Instance.SelectCharacter(character);
+                }
+                break;
+            case PlayerStatus.NotBought:
 
-			PlayerStatsController.Instance.SetStatus(character.number, PlayerStatus.Bought);
-			//Temp
-			PlaySelectAnimation(character);
-			if (GeneralGameController.Instance != null)
-			{
-				GeneralGameController.Instance.SelectCharacter(character);
-			}
-			break;
-		}
-
-
+                PlayerStatsController.Instance.SetStatus(character.number, PlayerStatus.Bought);
+                //Temp
+                PlaySelectAnimation(character);
+                if (GeneralGameController.Instance != null)
+                {
+                    GeneralGameController.Instance.SelectCharacter(character);
+                }
+                break;
+        }
 	}
-
+    
 	public void ReturnToMenu()
 	{
 		LevelLoader.Instance.LoadLevel(Scene.Lobby);
