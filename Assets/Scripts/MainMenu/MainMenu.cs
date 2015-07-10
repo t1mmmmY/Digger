@@ -4,9 +4,10 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour 
 {
-	public Button[] allButtons;
+	[SerializeField] Button[] allButtons;
 	public uint timeout = 20;
 	[SerializeField] Animator mainMenuAnimator;
+    [SerializeField] Transform characterStartPosition;
 
 	public static MainMenu Instance;
 
@@ -19,7 +20,31 @@ public class MainMenu : MonoBehaviour
 	void Start()
 	{
 		SetActiveAllButtons(true);
+        LoadCharacter();
 	}
+
+    private void LoadCharacter()
+    {
+        int characterNumber = 0;
+        if (GeneralGameController.Instance != null)
+        {
+            characterNumber = GeneralGameController.Instance.characterNumber;
+        }
+
+        Object obj = Resources.Load(string.Format("{0}{1}", CONST.PLAYABLE_PLAYERS_PATH, CONST.PLAYER_NAMES[characterNumber]));
+        if (obj != null)
+        {
+            GameObject characterGO = GameObject.Instantiate<GameObject>((GameObject)obj);
+            characterGO.transform.parent = characterStartPosition;
+            characterGO.transform.localPosition = Vector3.zero;
+
+            //follower.SetTarget(characterGO.transform);
+        }
+        else
+        {
+            Debug.LogError("Cannot load character!");
+        }
+    }
 
 	public void StartSingleGame()
 	{
