@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour 
@@ -108,6 +109,33 @@ public class MainMenu : MonoBehaviour
 	{
 		LevelLoader.Instance.LoadLevel(Scene.Tavern);
 	}
+	
+	public void BuyRandomCharacter()
+	{
+		List<int> canBuy = new List<int>();
+		for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
+		{
+			PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
+			if (status == PlayerStatus.NotBought)
+			{
+				canBuy.Add(i);
+			}
+		}
 
+		if (canBuy.Count == 0)
+		{
+			Debug.LogWarning("Nothing to buy!");
+			mainMenuAnimator.SetTrigger("BuyRandomCharacter");
+			return;
+		}
+
+		int randomNumber = Random.Range(0, canBuy.Count);
+		int randomCharacterNumber = canBuy[randomNumber];
+
+		if (GeneralGameController.Instance != null)
+		{
+			GeneralGameController.Instance.SelectCharacter(randomCharacterNumber);
+		}
+	}
 
 }

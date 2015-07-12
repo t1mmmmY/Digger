@@ -4,7 +4,7 @@ using System.Collections;
 public class GeneralGameController : BaseSingleton<GeneralGameController> 
 {
 	public AudioSource music;
-	Character currentCharacter;
+//	Character currentCharacter;
 	int currentCharacterNumber = 0;
 
 	public int characterNumber
@@ -13,7 +13,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 	}
 
 	public static System.Action onLoadLobby;
-	public static System.Action<Character> onSelectCharacter;
+	public static System.Action<int> onSelectCharacter;
 
 	void Start()
 	{
@@ -34,14 +34,16 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 	}
 
 
-	public void SelectCharacter(Character character)
+	public void SelectCharacter(int characterNumber)
 	{
-		currentCharacter = character;
-		currentCharacterNumber = currentCharacter.number;
+		PlayerStatsController.Instance.SetStatus(characterNumber, PlayerStatus.Bought);
+
+//		currentCharacter = character;
+		currentCharacterNumber = characterNumber;
 
 		if (onSelectCharacter != null)
 		{
-			onSelectCharacter(character);
+			onSelectCharacter(characterNumber);
 		}
 	}
 

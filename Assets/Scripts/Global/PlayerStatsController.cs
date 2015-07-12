@@ -27,9 +27,9 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 		GeneralGameController.onSelectCharacter -= OnSelectCharacter;
 	}
 
-	void OnSelectCharacter(Character character)
+	void OnSelectCharacter(int characterNumber)
 	{
-		SetCurrentPlayer(character.number);
+		SetCurrentPlayer(characterNumber);
 	}
 
 	void SetCurrentPlayer(int number)
@@ -71,6 +71,8 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	void SetDefault()
 	{
+		Debug.LogWarning("SetDefault");
+
 		foreach(string key in CONST.PLAYER_KEYS)
 		{
 			PlayerPrefs.SetInt(key, (int)PlayerStatus.NotBought);

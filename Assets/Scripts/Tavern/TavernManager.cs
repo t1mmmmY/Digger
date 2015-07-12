@@ -216,41 +216,72 @@ public class TavernManager : BaseSingleton<TavernManager>
 
     public void SelectCharacter()
     {
-        Character[] allCharacters = GameObject.FindObjectsOfType<Character>();
-        foreach(Character character in allCharacters)
-        {
-            if (character.number == currentCharacterNumber)
-            {
+		SelectCharacter(currentCharacterNumber);
 
-                SelectCharacter(character);
-            }
-        }
+//        Character[] allCharacters = GameObject.FindObjectsOfType<Character>();
+//        foreach(Character character in allCharacters)
+//        {
+//            if (character.number == currentCharacterNumber)
+//            {
+//
+//                SelectCharacter(character);
+//            }
+//        }
     }
 
 	public void SelectCharacter(Character character)
 	{
+		SelectCharacter(character.number);
 //		Debug.Log("Select " + character.number);
-        PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
-        switch (playerStatus)
-        {
-            case PlayerStatus.Bought:
-                PlaySelectAnimation(character);
-                if (GeneralGameController.Instance != null)
-                {
-                    GeneralGameController.Instance.SelectCharacter(character);
-                }
-                break;
-            case PlayerStatus.NotBought:
+//        PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
+//        switch (playerStatus)
+//        {
+//            case PlayerStatus.Bought:
+//                PlaySelectAnimation(character);
+//
+//                if (GeneralGameController.Instance != null)
+//                {
+//                    GeneralGameController.Instance.SelectCharacter(character);
+//                }
+//                break;
+//            case PlayerStatus.NotBought:
+//
+//                //Temp
+//                PlaySelectAnimation(character);
+//
+//                if (GeneralGameController.Instance != null)
+//                {
+//                    GeneralGameController.Instance.SelectCharacter(character);
+//                }
+//                break;
+//        }
+	}
 
-                PlayerStatsController.Instance.SetStatus(character.number, PlayerStatus.Bought);
-                //Temp
-                PlaySelectAnimation(character);
-                if (GeneralGameController.Instance != null)
-                {
-                    GeneralGameController.Instance.SelectCharacter(character);
-                }
-                break;
-        }
+	public void SelectCharacter(int characterNumber)
+	{
+		//		Debug.Log("Select " + character.number);
+		PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
+		switch (playerStatus)
+		{
+		case PlayerStatus.Bought:
+			PlaySelectAnimation(characterNumber);
+			
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(characterNumber);
+			}
+			break;
+		case PlayerStatus.NotBought:
+			
+			//Temp
+			PlaySelectAnimation(characterNumber);
+			
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(characterNumber);
+			}
+			break;
+		}
 	}
     
 	public void ReturnToMenu()
@@ -258,7 +289,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
 
-	void PlaySelectAnimation(Character character)
+	void PlaySelectAnimation(int characterNumber)
 	{
 		canvasAnimator.SetTrigger(selectCharacterHash);
 		StartCoroutine("InvokeLoadLevel", 1.0f);
