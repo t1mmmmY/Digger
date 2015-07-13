@@ -14,7 +14,7 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	void Start()
 	{
-        SetDefault();
+        //SetDefault();
 	}
 
 	void OnEnable()

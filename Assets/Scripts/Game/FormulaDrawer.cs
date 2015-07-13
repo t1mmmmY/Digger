@@ -14,6 +14,9 @@ public class FormulaDrawer : MonoBehaviour
 	public Text opponentScore;
 	public Text timer;
 
+    [SerializeField] Animator gameAnimator;
+    int setScoreAnimationHash = Animator.StringToHash("SetScore");
+
 	public Color colorRightAnswer = Color.green;
 	public Color colorWrongAnswer = Color.red;
 	public int disableTime = 5;
@@ -258,6 +261,8 @@ public class FormulaDrawer : MonoBehaviour
 //		Debug.Log("OnDig");
 //		level++;
 		levelText.text = GameManager.Instance.GetLevel().ToString();
+        gameAnimator.SetTrigger(setScoreAnimationHash);
+
 		GenerateQuestion();
 	}
 
