@@ -13,6 +13,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Animator tavernAnimator;
     [SerializeField] Transform tavernStartPosition;
 
+    [SerializeField] int randomCharacterCost = 100;
+
     GameObject currentCharacterGameObject;
 
 	public static MainMenu Instance;
@@ -140,6 +142,12 @@ public class MainMenu : MonoBehaviour
             return;
 		}
 
+        if (BankController.coins < randomCharacterCost)
+        {
+            NotEnoughMoney();
+            return;
+        }
+
 		int randomNumber = Random.Range(0, canBuy.Count);
 		int randomCharacterNumber = canBuy[randomNumber];
 
@@ -170,6 +178,12 @@ public class MainMenu : MonoBehaviour
     {
         Debug.LogWarning("Nothing to buy!");
         mainMenuAnimator.SetTrigger("NothingToBuy");
+    }
+
+    void NotEnoughMoney()
+    {
+        Debug.LogWarning("Not enough money!");
+        mainMenuAnimator.SetTrigger("NotEnoughMoney");
     }
 
 }
