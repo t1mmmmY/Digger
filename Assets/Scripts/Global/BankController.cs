@@ -40,4 +40,22 @@ public static class BankController
 			OnChangeCoins(_coins);
 		}
 	}
+
+    public static void RemoveCoins(int count)
+    {
+        if (count < 0)
+        {
+            Debug.LogWarning("Coins should not be less than 0");
+            return;
+        }
+
+        _coins -= count;
+        PlayerPrefs.SetInt(_coinsKey, _coins);
+
+        if (OnChangeCoins != null)
+        {
+            OnChangeCoins(_coins);
+        }
+    }
+
 }

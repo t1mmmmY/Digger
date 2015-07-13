@@ -163,6 +163,8 @@ public class MainMenu : MonoBehaviour
         currentCharacterGameObject.transform.position = Vector3.zero;
         tavernAnimator.SetTrigger("ShowNewUser");
 
+        BankController.RemoveCoins(randomCharacterCost);
+
         TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
 
