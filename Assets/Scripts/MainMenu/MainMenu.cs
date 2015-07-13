@@ -10,6 +10,11 @@ public class MainMenu : MonoBehaviour
 	[SerializeField] Animator mainMenuAnimator;
     [SerializeField] Transform characterStartPosition;
 
+    [SerializeField] Animator tavernAnimator;
+    [SerializeField] Transform tavernStartPosition;
+
+    GameObject currentCharacterGameObject;
+
 	public static MainMenu Instance;
 
 
@@ -35,10 +40,11 @@ public class MainMenu : MonoBehaviour
         Object obj = Resources.Load(string.Format("{0}{1}", CONST.PLAYABLE_PLAYERS_PATH, CONST.PLAYER_NAMES[characterNumber]));
         if (obj != null)
         {
-            GameObject characterGO = GameObject.Instantiate<GameObject>((GameObject)obj);
-            characterGO.transform.parent = characterStartPosition;
-            characterGO.transform.localPosition = Vector3.zero;
+            currentCharacterGameObject = GameObject.Instantiate<GameObject>((GameObject)obj);
+            currentCharacterGameObject.transform.parent = characterStartPosition;
+            currentCharacterGameObject.transform.localPosition = Vector3.zero;
 
+            currentCharacterGameObject.GetComponent<Rigidbody>().useGravity = false;
             //follower.SetTarget(characterGO.transform);
         }
         else
@@ -112,6 +118,12 @@ public class MainMenu : MonoBehaviour
 	
 	public void BuyRandomCharacter()
 	{
+        if (PlayerStatsController.Instance == null)
+        {
+            NothingToBuy();
+            return;
+        }
+
 		List<int> canBuy = new List<int>();
 		for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
 		{
@@ -124,9 +136,8 @@ public class MainMenu : MonoBehaviour
 
 		if (canBuy.Count == 0)
 		{
-			Debug.LogWarning("Nothing to buy!");
-			mainMenuAnimator.SetTrigger("BuyRandomCharacter");
-			return;
+            NothingToBuy();
+            return;
 		}
 
 		int randomNumber = Random.Range(0, canBuy.Count);
@@ -136,6 +147,29 @@ public class MainMenu : MonoBehaviour
 		{
 			GeneralGameController.Instance.SelectCharacter(randomCharacterNumber);
 		}
+
+
+        Destroy(currentCharacterGameObject);
+        LoadCharacter();
+        currentCharacterGameObject.transform.parent = tavernStartPosition;
+        currentCharacterGameObject.transform.position = Vector3.zero;
+        tavernAnimator.SetTrigger("ShowNewUser");
+
+        TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
+
+    void OnEndShowAnimation()
+    {
+        TavernAnimationScript.onEndAnimation -= OnEndShowAnimation;
+        currentCharacterGameObject.transform.parent = characterStartPosition;
+        currentCharacterGameObject.transform.position = Vector3.zero;
+        currentCharacterGameObject.transform.localRotation = Quaternion.identity;
+    }
+
+    void NothingToBuy()
+    {
+        Debug.LogWarning("Nothing to buy!");
+        mainMenuAnimator.SetTrigger("NothingToBuy");
+    }
 
 }

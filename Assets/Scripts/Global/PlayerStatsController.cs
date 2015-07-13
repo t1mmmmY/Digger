@@ -14,7 +14,7 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	void Start()
 	{
-//		SetDefault();
+        //SetDefault();
 	}
 
 	void OnEnable()
@@ -79,6 +79,8 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 		}
 
 		PlayerPrefs.SetInt(CONST.PLAYER_KEYS[0], (int)PlayerStatus.Bought);
+
+        SetCurrentPlayer(0);
 	}
 
 }
