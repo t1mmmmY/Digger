@@ -29,6 +29,11 @@ public class MainMenu : MonoBehaviour
 	{
 		SetActiveAllButtons(true);
         LoadCharacter();
+
+        if (!HaveAvailibleCharacters())
+        {
+            NothingToBuy();
+        }
 	}
 
     private void LoadCharacter()
@@ -163,10 +168,37 @@ public class MainMenu : MonoBehaviour
         currentCharacterGameObject.transform.position = Vector3.zero;
         tavernAnimator.SetTrigger("ShowNewUser");
 
+        mainMenuAnimator.SetTrigger("BuyRandomCharacter");
+
         BankController.RemoveCoins(randomCharacterCost);
 
         TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
+
+    bool HaveAvailibleCharacters()
+    {
+        if (PlayerStatsController.Instance == null)
+        {
+            return false;
+        }
+
+        List<int> canBuy = new List<int>();
+        for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
+        {
+            PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
+            if (status == PlayerStatus.NotBought)
+            {
+                canBuy.Add(i);
+            }
+        }
+
+        if (canBuy.Count == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     void OnEndShowAnimation()
     {
