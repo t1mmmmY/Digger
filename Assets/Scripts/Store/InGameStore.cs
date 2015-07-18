@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Soomla.Store;
+using Soomla;
 
 public class InGameStore : MonoBehaviour 
 {
@@ -25,10 +26,22 @@ public class InGameStore : MonoBehaviour
         StoreEvents.OnMarketPurchaseStarted -= OnMarketPurchaseStarted;
         StoreEvents.OnMarketPurchase -= OnMarketPurchase;
         StoreEvents.OnMarketPurchaseCancelled -= OnMarketPurchaseCancelled;
+
+		SoomlaStore.StopIabServiceInBg();
     }
+
+	void OnGUI()
+	{
+		if (GUILayout.Button("BuySomething"))
+		{
+			SoomlaStore.BuyMarketItem(AndroidStore.CHARACTER_ITEM_ID, "Nice work!");
+			//StoreInventory.BuyItem(AndroidStore.CHARACTER_PACK.ItemId);
+		}
+	}
 
     public void OnSoomlaStoreInitialized()
     {
+		SoomlaStore.StartIabServiceInBg();
         Debug.Log("Store initialized");
         // ... your game specific implementation here ...
     }
