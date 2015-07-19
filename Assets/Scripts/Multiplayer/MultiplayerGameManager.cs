@@ -167,20 +167,29 @@ public class MultiplayerGameManager : GameManager
 		if (level > opponentLevel) //Win
 		{
 			MultiplayerController.Instance.ChangeRang(1);
-			winEvent.gameObject.SetActive(true);
-			winEvent.Play();
+			if (winEvent != null)
+			{
+				winEvent.gameObject.SetActive(true);
+				winEvent.Play();
+			}
 		}
 		else if (level < opponentLevel) //Loose
 		{
 			MultiplayerController.Instance.ChangeRang(-1);
-			looseEvent.gameObject.SetActive(true);
-			looseEvent.Play();
+			if (looseEvent != null)
+			{
+				looseEvent.gameObject.SetActive(true);
+				looseEvent.Play();
+			}
 		}
 		else //Pair
 		{
 			MultiplayerController.Instance.ChangeRang(0);
-			pairEvent.gameObject.SetActive(true);
-			pairEvent.Play();
+			if (pairEvent != null)
+			{
+				pairEvent.gameObject.SetActive(true);
+				pairEvent.Play();
+			}
 		}
 
 //		StartCoroutine("InvokeToLobby", 2.0f);

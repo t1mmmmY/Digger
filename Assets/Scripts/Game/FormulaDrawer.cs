@@ -99,17 +99,16 @@ public class FormulaDrawer : MonoBehaviour
 
 	void Update()
 	{
-		if (gameOver)
-		{
-			if (Input.GetMouseButtonDown(0))
-			{
-				if (OnFinishClick != null)
-				{
-					OnFinishClick();
-				}
-			}
-		}
-
+//		if (gameOver)
+//		{
+//			if (Input.GetMouseButtonDown(0))
+//			{
+//				if (OnFinishClick != null)
+//				{
+//					OnFinishClick();
+//				}
+//			}
+//		}
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
 			PointerEventData pointerEventData = new PointerEventData(EventSystem.current);

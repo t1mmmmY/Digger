@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public abstract class GameManager : BaseSingleton<GameManager> 
 {
@@ -7,9 +8,11 @@ public abstract class GameManager : BaseSingleton<GameManager>
 	[SerializeField] protected Camera camera;
 	[SerializeField] Transform characterStartPosition;
 	[SerializeField] Follower follower;
+	[SerializeField] EndGamePanel endGamePanel;
 
 	protected float forceShake = 0;
 	protected int level = 0;
+	protected int startCoinsCount = 0;
 
 	public int GetLevel()
 	{
@@ -35,17 +38,20 @@ public abstract class GameManager : BaseSingleton<GameManager>
 	{
 		FormulaDrawer.OnAnswer += OnAnswer;
 		FormulaDrawer.OnFinishClick += OnFinishClick;
+		BankController.OnChangeCoins += OnChangeCoins;
 	}
 
 	protected virtual void OnDisable()
 	{
 		FormulaDrawer.OnAnswer -= OnAnswer;
 		FormulaDrawer.OnFinishClick -= OnFinishClick;
+		BankController.OnChangeCoins -= OnChangeCoins;
 //		StopGame();
 	}
 
 	public virtual void StartGame()
 	{
+		startCoinsCount = BankController.coins;
 //		StartCoroutine("GameLoop");
 	}
 
@@ -67,8 +73,17 @@ public abstract class GameManager : BaseSingleton<GameManager>
 	{
 	}
 
+	protected virtual void OnChangeCoins(int coinsCount)
+	{
+
+	}
+
 	public virtual void GameOver()
 	{
+		bool isBestScore = level > GetBestScore();
+		int coinsCount = BankController.coins - startCoinsCount;
+
+		endGamePanel.ShowEndGamePanel(isBestScore, coinsCount, level);
 	}
 
 	public static int GetBestScore()

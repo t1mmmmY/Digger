@@ -57,6 +57,8 @@ public class SingleplayerGameManager : GameManager
 	
 	public override void GameOver ()
 	{
+		base.GameOver();
+
 		if (OnGameOver != null)
 		{
 			OnGameOver();
@@ -71,7 +73,6 @@ public class SingleplayerGameManager : GameManager
 
 //		StartCoroutine("InvokeRestart", 1.0f);
 
-		base.GameOver ();
 	}
 	
 	public override void RestartGame ()
