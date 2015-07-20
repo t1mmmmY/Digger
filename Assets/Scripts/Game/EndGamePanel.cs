@@ -15,6 +15,10 @@ public class EndGamePanel : MonoBehaviour
 
 	int showPanelAnimationHash = Animator.StringToHash("ShowPanel");
 
+    void Start()
+    {
+    }
+
 	public void ShowEndGamePanel(bool isRecord, int coinsCount, int level)
 	{
 		if (isRecord)
