@@ -14,6 +14,8 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Transform tavernStartPosition;
 
     [SerializeField] int randomCharacterCost = 100;
+    string coinsText = " coins";
+    [SerializeField] Text costLabel;
 
     GameObject currentCharacterGameObject;
 
@@ -29,6 +31,8 @@ public class MainMenu : MonoBehaviour
 	{
 		SetActiveAllButtons(true);
         LoadCharacter();
+
+        costLabel.text = randomCharacterCost.ToString() + coinsText;
 
         if (!HaveAvailibleCharacters())
         {

@@ -21,18 +21,18 @@ public class BonusController : BaseSingleton<BonusController>
     public bool IsBonusReady()
     {
         DateTime currentTime = DateTime.Now;
-        Debug.Log(currentTime.ToString());
+        //Debug.Log(currentTime.ToString());
 
         if (!PlayerPrefs.HasKey(timeKey))
         {
             PlayerPrefs.SetString(timeKey, currentTime.ToString());
         }
         string lastBonusTimeString = PlayerPrefs.GetString(timeKey);
-        Debug.Log(lastBonusTimeString);
+        //Debug.Log(lastBonusTimeString);
 
         DateTime lastBonusTime = Convert.ToDateTime(lastBonusTimeString);
 
-        double deltaSeconds = (currentTime - lastBonusTime).TotalSeconds;
+        double deltaSeconds = (currentTime - lastBonusTime).TotalMinutes;
         Debug.Log(deltaSeconds);
 
         if (deltaSeconds > bonusFrequency)

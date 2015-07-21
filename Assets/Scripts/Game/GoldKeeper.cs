@@ -16,27 +16,46 @@ public class MineralVariables
 public class GoldKeeper : MonoBehaviour 
 {
 	public float goldDensity = 0.5f;
+    public float goldDensityBonus = 0.5f;
 	
 	[SerializeField] AnimationCurve goldPerLevel;
+    [SerializeField] AnimationCurve goldPerLevelBonus;
 	[SerializeField] MineralVariables[] mineralPrefabs;
 	[SerializeField] InfiniteMap infiniteMap;
+    [SerializeField] int minBonusAmount = 30;
+    [SerializeField] int maxBonusAmount = 80;
+    [SerializeField] int bonusAmount = 50;
 
 	List<Mineral> allMinerals;
+    bool isBonus = false;
+    int startCoinsCount = 0;
+    int coinsCount = 0;
 
 	void Awake()
 	{
 		InfiniteMap.OnInit += OnInitInfiniteMap;
 		InfiniteMap.OnAddLine += OnAddLine;
+        BankController.OnChangeCoins += OnChangeCoins;
 	}
 
 	void OnDestroy()
 	{
 		InfiniteMap.OnInit -= OnInitInfiniteMap;
 		InfiniteMap.OnAddLine -= OnAddLine;
+        BankController.OnChangeCoins -= OnChangeCoins;
 	}
 
 	void OnInitInfiniteMap()
 	{
+        isBonus = BonusController.Instance.IsBonusReady();
+        if (isBonus)
+        {
+            startCoinsCount = BankController.coins;
+            bonusAmount = Random.Range(minBonusAmount, maxBonusAmount);
+            Debug.Log("Bonus time!");
+            BonusController.Instance.GrabBonus();
+        }
+
 		ClearMapFromMinerals();
 		AddMinerals(infiniteMap.GetAllTiles(), infiniteMap.GetCentralColumn());
 	}
@@ -46,10 +65,32 @@ public class GoldKeeper : MonoBehaviour
 		AddMinerals(infiniteMap.GetLastLine(), infiniteMap.GetLastCentralColumn());
 	}
 
+    void OnChangeCoins(int newCoinsCount)
+    {
+        coinsCount = newCoinsCount - startCoinsCount;
+        if (isBonus && coinsCount > bonusAmount)
+        {
+            isBonus = false;
+            
+            Debug.Log("GrabBonus!");
+        }
+    }
+
 	void AddMinerals(List<SimpleTile> allTiles, List<SimpleTile> centralTiles)
 	{
 		float randomShift = Random.Range(0.0f, 100.0f);
-		float goldDensityBarier = 1.0f - goldDensity;
+
+        float density = 0;
+        if (isBonus)
+        {
+            density = goldDensityBonus;
+        }
+        else
+        {
+            density = goldDensity;
+        }
+
+        float goldDensityBarier = 1.0f - density;
 
 		foreach (SimpleTile tile in allTiles)
 		{
@@ -59,22 +100,20 @@ public class GoldKeeper : MonoBehaviour
 				if (randomValue > goldDensityBarier)
 				{
 					float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-					perlinValue *= goldPerLevel.Evaluate(-tile.transform.localPosition.y);
+                    if (isBonus)
+                    {
+                        perlinValue *= goldPerLevelBonus.Evaluate(-tile.transform.localPosition.y);
+                    }
+                    else
+                    {
+                        perlinValue *= goldPerLevel.Evaluate(-tile.transform.localPosition.y);
+                    }
+					
 					CreateMineral(tile, perlinValue);
 				}
 			}
 		}
 
-//		foreach (SimpleTile tile in centralTiles)
-//		{
-//			float randomValue = Random.Range(0.0f, 1.0f);
-//			if (randomValue > goldDensityBarier)
-//			{
-//				float perlinValue = Mathf.PerlinNoise(tile.transform.localPosition.x + randomShift, tile.transform.localPosition.y + randomShift);
-//
-//				CreateMineral(tile, perlinValue);
-//			}
-//		}
 	}
 
 	void CreateMineral(SimpleTile tile, float value)
