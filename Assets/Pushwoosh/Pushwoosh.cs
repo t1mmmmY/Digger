@@ -8,7 +8,7 @@ public class Pushwoosh : SingletonBase<Pushwoosh>
 {
     public const string APP_CODE = "2313D-076DE";
 
-    public const string GCM_PROJECT_NUMBER = "com.OctoGames.Digger";
+    public const string GCM_PROJECT_NUMBER = "373900887193";
 
 
 	public delegate void RegistrationSuccessHandler(string payload);
