@@ -179,6 +179,11 @@ public class MainMenu : MonoBehaviour
         TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
 
+    public void ShowAdvertisment()
+    {
+        AdvertisingController.Instance.ShowAdvertisement();
+    }
+
     bool HaveAvailibleCharacters()
     {
         if (PlayerStatsController.Instance == null)
