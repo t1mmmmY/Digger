@@ -6,6 +6,7 @@ public class AdvertisingController : BaseSingleton<AdvertisingController>
 {
     [SerializeField] int adsReward = 50;
     string GAME_ID = "56600";
+    string REWARD_VIDEO_ID = "rewardedVideoZone";
 
     void Start()
     {
@@ -16,7 +17,7 @@ public class AdvertisingController : BaseSingleton<AdvertisingController>
     {
         if (Advertisement.IsReady())
         {
-            Advertisement.Show(null, new ShowOptions
+            Advertisement.Show(REWARD_VIDEO_ID, new ShowOptions
             {
                 resultCallback = result =>
                 {
