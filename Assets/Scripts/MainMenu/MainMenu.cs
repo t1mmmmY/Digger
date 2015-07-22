@@ -17,6 +17,7 @@ public class MainMenu : MonoBehaviour
     string coinsText = " coins";
     [SerializeField] Text costLabel;
     [SerializeField] GameObject treasureChest;
+    [SerializeField] Text bestScoreLabel;
 
     GameObject currentCharacterGameObject;
 
@@ -41,6 +42,7 @@ public class MainMenu : MonoBehaviour
         }
 
         treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
+        bestScoreLabel.text = PlayerPrefs.GetInt("BestLevel", 0).ToString();
 	}
 
     private void LoadCharacter()
