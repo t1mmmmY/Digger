@@ -16,6 +16,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] int randomCharacterCost = 100;
     string coinsText = " coins";
     [SerializeField] Text costLabel;
+    [SerializeField] GameObject treasureChest;
 
     GameObject currentCharacterGameObject;
 
@@ -38,6 +39,8 @@ public class MainMenu : MonoBehaviour
         {
             NothingToBuy();
         }
+
+        treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
 	}
 
     private void LoadCharacter()
@@ -181,7 +184,14 @@ public class MainMenu : MonoBehaviour
 
     public void ShowAdvertisment()
     {
+        AdvertisingController.onShowAdvertising += OnShowAdvertising;
         AdvertisingController.Instance.ShowAdvertisement();
+    }
+
+    void OnShowAdvertising(int reward)
+    {
+        AdvertisingController.onShowAdvertising -= OnShowAdvertising;
+        treasureChest.SetActive(false);
     }
 
     bool HaveAvailibleCharacters()
