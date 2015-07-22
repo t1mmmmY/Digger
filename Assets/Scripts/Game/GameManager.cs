@@ -80,6 +80,7 @@ public abstract class GameManager : BaseSingleton<GameManager>
 
 	public virtual void GameOver()
 	{
+        Debug.LogWarning("Game over");
 		bool isBestScore = level > GetBestScore();
 		int coinsCount = BankController.coins - startCoinsCount;
 
@@ -108,6 +109,8 @@ public abstract class GameManager : BaseSingleton<GameManager>
 		else
 		{
 			WrongAnswer();
+            ShakeCamera(timeForOneTurn);
+            StopCoroutine("GameLoop");
 //			GameOver();
 		}
 	}
