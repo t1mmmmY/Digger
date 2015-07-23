@@ -62,11 +62,21 @@ public class AdvertisingController : BaseSingleton<AdvertisingController>
 
     public bool NeedToShowChestInMainMenu()
     {
+        if (!Advertisement.IsReady())
+        {
+            return false;
+        }
+
         return chestReady;
     }
 
     public bool NeedToShowChestInGame()
     {
+        if (!Advertisement.IsReady())
+        {
+            return false;
+        }
+
         if (countGames > showAdsFrequency)
         {
             chestReady = true;

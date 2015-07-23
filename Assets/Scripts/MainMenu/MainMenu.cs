@@ -20,6 +20,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Text bestScoreLabel;
 
     GameObject currentCharacterGameObject;
+    bool isMusicPlaying = true;
 
 	public static MainMenu Instance;
 
@@ -31,6 +32,7 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
+        isMusicPlaying = GeneralGameController.Instance.isMusicPlaying;
 		SetActiveAllButtons(true);
         LoadCharacter();
 
@@ -241,4 +243,9 @@ public class MainMenu : MonoBehaviour
         mainMenuAnimator.SetTrigger("NotEnoughMoney");
     }
 
+    public void MuteAudio()
+    {
+        isMusicPlaying = !isMusicPlaying;
+        GeneralGameController.Instance.MuteAudio(isMusicPlaying);
+    }
 }
