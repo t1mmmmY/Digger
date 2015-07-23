@@ -18,6 +18,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Text costLabel;
     [SerializeField] GameObject treasureChest;
     [SerializeField] Text bestScoreLabel;
+    [SerializeField] Grammophone grammophone;
 
     GameObject currentCharacterGameObject;
     bool isMusicPlaying = true;
@@ -247,5 +248,6 @@ public class MainMenu : MonoBehaviour
     {
         isMusicPlaying = !isMusicPlaying;
         GeneralGameController.Instance.MuteAudio(isMusicPlaying);
+        grammophone.MuteAudio(isMusicPlaying);
     }
 }
