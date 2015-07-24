@@ -122,7 +122,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 			onLoadLobby();
 		}
 
-		MultiplayerController.Instance.SignIn();
+		MultiplayerController.Instance.TrySilentSignIn();
 	}
 
 
