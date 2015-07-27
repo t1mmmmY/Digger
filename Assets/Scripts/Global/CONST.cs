@@ -23,21 +23,24 @@ public static class CONST
 		"DrunkenDigger",
 		"WalterWhite",
 		"Batman",
-		"Charlie"
+		"Charlie",
+        "Finn"
 	};
 
 	public static readonly string[] DESCRIPTOIN_NAMES = { 
 		"Drunken Digger",
 		"Walter White",
 		"BadMan",
-		"Charlie"
+		"Charlie",
+        "Finn"
 	};
 
 	public static readonly string[] PLAYER_KEYS = {
 		"DrunkenDigger",
 		"WalterWhite",
 		"Batman",
-		"Charlie"
+		"Charlie",
+        "Finn"
 	};
 
 
