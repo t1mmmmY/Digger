@@ -60,6 +60,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 	{
 		ResourceRequest request;
 		int number = 0;
+        currentCharacterNumber = PlayerStatsController.Instance.GetCurrentPlayerNumber();
 
 		foreach (string name in CONST.PLAYER_NAMES)
 		{
@@ -80,6 +81,12 @@ public class TavernManager : BaseSingleton<TavernManager>
 				}
 			}
 
+            if (number == currentCharacterNumber)
+            {
+                scrollArea.MoveToPosition(currentCharacterNumber);
+                ShowDescription(currentCharacterNumber);
+            }
+
 			number++;
 
 
@@ -89,6 +96,9 @@ public class TavernManager : BaseSingleton<TavernManager>
 		AddWall(false);
 
 		yield return null;
+
+        
+        
 
 		Debug.Log("Done loading characters");
 	}
@@ -269,6 +279,7 @@ public class TavernManager : BaseSingleton<TavernManager>
             if (scrollArea.MoveLeft())
             {
                 currentCharacterNumber--;
+                ShowDescription(currentCharacterNumber);
                 //Debug.Log("Left");
             }
         }
@@ -277,6 +288,7 @@ public class TavernManager : BaseSingleton<TavernManager>
             if (scrollArea.MoveRight())
             {
                 currentCharacterNumber++;
+                ShowDescription(currentCharacterNumber);
                 //Debug.Log("Right");
             }
         }

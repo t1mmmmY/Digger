@@ -11,6 +11,8 @@ public class ScrollArea : MonoBehaviour
 	[SerializeField] float scale = 10;
 	[SerializeField] float minShift = 1;
 	[SerializeField] int currentPosition = 0;
+    [SerializeField] float momentum = 0.5f;
+    [SerializeField] float momentumStrong = 0.01f;
 	int oldPositionNumber = 0;
 
 	[Range(0, 500)]
@@ -93,8 +95,14 @@ public class ScrollArea : MonoBehaviour
 				Scroll();
 				break;
 			case ScrollState.End:
-
-				EndScroll();
+                if (momentum > 0)
+                {
+                    Momentum();
+                }
+                else
+                {
+                    EndScroll();
+                }
 				break;
 			}
 
@@ -138,6 +146,33 @@ public class ScrollArea : MonoBehaviour
 			cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
 		}
 	}
+
+    void Momentum()
+    {
+        StartCoroutine("MomentumCoroutine");
+    }
+
+    IEnumerator MomentumCoroutine()
+    {
+        Vector3 cameraVelocity = camera.velocity;
+        Vector3 distance = cameraVelocity;
+        float elapsedTime = 0;
+        do
+        {
+            distance = Vector3.Lerp(cameraVelocity, Vector3.zero, elapsedTime) * momentumStrong;
+            cameraTransform.Translate(distance);
+            if (!scrollArea.Contains(cameraTransform.position))
+            {
+                cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
+            }
+            yield return null;
+
+            elapsedTime += Time.deltaTime / momentum;
+
+        } while (elapsedTime < 1.0f && distance.magnitude > momentumStrong);
+
+        EndScroll();
+    }
 
 	void EndScroll()
 	{
