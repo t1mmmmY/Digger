@@ -36,10 +36,6 @@ public class ScrollArea : MonoBehaviour
 	public static System.Action<int> onChangePosition;
 	public static System.Action onEndMoving;
 
-//	void Awake()
-//	{
-//		cameraPositions = new List<Bounds>();
-//	}
 
 	void Start()
 	{
@@ -147,13 +143,10 @@ public class ScrollArea : MonoBehaviour
 	{
 		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
 
-//		if (oldPositionNumber != currentPosition)
-//		{
 		if (onChangePosition != null)
 		{
 			onChangePosition(currentPosition);
 		}
-//		}
 		beginScroll = false;
 	}
 
@@ -164,7 +157,6 @@ public class ScrollArea : MonoBehaviour
 			return 0;
 		}
 
-//		Bounds cameraBounds = new Bounds(cameraTransform.localPosition, new Vector3(720, 1280, 1000));
 		Bounds cameraBounds = new Bounds(cameraTransform.position, new Vector3(1, 1, 1000));
 
 		float minDistance = float.MaxValue;
@@ -181,6 +173,34 @@ public class ScrollArea : MonoBehaviour
 		return number;
 	}
 
+    public bool MoveLeft()
+    {
+        if (currentPosition - 1 < 0)
+        {
+            return false;
+        }
+        else
+        {
+            MoveToPosition(currentPosition - 1);
+
+            return true;
+        }
+    }
+
+    public bool MoveRight()
+    {
+        if (currentPosition + 1 >= cameraPositions.Count)
+        {
+            return false;
+        }
+        else
+        {
+            MoveToPosition(currentPosition + 1);
+
+            return true;
+        }
+    }
+
 	public void MoveToPosition(int positionNumber)
 	{
 		if (positionNumber >= cameraPositions.Count)
@@ -193,8 +213,6 @@ public class ScrollArea : MonoBehaviour
 
 
 		Hashtable hash = new Hashtable();
-//		hash.Add("position", cameraPositions[positionNumber].center);
-//		hash.Add("isLocal", true);
 		hash.Add("position", cameraPositions[positionNumber].center);
 		hash.Add("isLocal", false);
 		hash.Add("time", 0.6f);
@@ -214,12 +232,7 @@ public class ScrollArea : MonoBehaviour
 
 	void OnFinishMove()
 	{
-		state = ScrollState.Nothing;
-
-//		if (onChangePosition != null)
-//		{
-//			onChangePosition(currentPosition);
-//		}
+        state = ScrollState.Nothing;
 	}
 
 	void OnDrawGizmos()

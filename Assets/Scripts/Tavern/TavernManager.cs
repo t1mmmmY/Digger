@@ -22,6 +22,11 @@ public class TavernManager : BaseSingleton<TavernManager>
 
     int currentCharacterNumber = 0;
 
+    public int currentCharacter
+    {
+        get { return currentCharacterNumber; }
+    }
+
 	protected override void Awake()
 	{
 		walls = new List<WallPart>();
@@ -218,43 +223,11 @@ public class TavernManager : BaseSingleton<TavernManager>
     {
 		SelectCharacter(currentCharacterNumber);
 
-//        Character[] allCharacters = GameObject.FindObjectsOfType<Character>();
-//        foreach(Character character in allCharacters)
-//        {
-//            if (character.number == currentCharacterNumber)
-//            {
-//
-//                SelectCharacter(character);
-//            }
-//        }
     }
 
 	public void SelectCharacter(Character character)
 	{
 		SelectCharacter(character.number);
-//		Debug.Log("Select " + character.number);
-//        PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(character.number);
-//        switch (playerStatus)
-//        {
-//            case PlayerStatus.Bought:
-//                PlaySelectAnimation(character);
-//
-//                if (GeneralGameController.Instance != null)
-//                {
-//                    GeneralGameController.Instance.SelectCharacter(character);
-//                }
-//                break;
-//            case PlayerStatus.NotBought:
-//
-//                //Temp
-//                PlaySelectAnimation(character);
-//
-//                if (GeneralGameController.Instance != null)
-//                {
-//                    GeneralGameController.Instance.SelectCharacter(character);
-//                }
-//                break;
-//        }
 	}
 
 	public void SelectCharacter(int characterNumber)
@@ -288,6 +261,26 @@ public class TavernManager : BaseSingleton<TavernManager>
 	{
 		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
+
+    public void MoveCamera(int direction)
+    {
+        if (direction < 0)
+        {
+            if (scrollArea.MoveLeft())
+            {
+                currentCharacterNumber--;
+                //Debug.Log("Left");
+            }
+        }
+        else if (direction > 0)
+        {
+            if (scrollArea.MoveRight())
+            {
+                currentCharacterNumber++;
+                //Debug.Log("Right");
+            }
+        }
+    }
 
 	void PlaySelectAnimation(int characterNumber)
 	{
