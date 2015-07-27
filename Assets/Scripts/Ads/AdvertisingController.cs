@@ -17,6 +17,7 @@ public class AdvertisingController : BaseSingleton<AdvertisingController>
 
     void Start()
     {
+        countGames = showAdsFrequency - 1;
         Advertisement.Initialize(GAME_ID);
     }
 
