@@ -15,6 +15,10 @@ public class EndGamePanel : MonoBehaviour
 	[SerializeField] Text levelText;
     [SerializeField] Button[] adsButton;
 
+    [SerializeField] Button[] buyRandomCharacterButton;
+    [SerializeField] Text buyRandomCharacterText;
+    [SerializeField] Text buyRandomCharacterCost;
+
 	int showPanelAnimationHash = Animator.StringToHash("ShowPanel");
     int hideChestHash = Animator.StringToHash("HideChest");
 
@@ -26,6 +30,11 @@ public class EndGamePanel : MonoBehaviour
     {
         AdvertisingController.onShowAdvertising += OnShowAdvertising;
         AdvertisingController.Instance.ShowAdvertisement();
+    }
+
+    public void BuyRandomCharacter()
+    {
+
     }
 
     void OnShowAdvertising(int reward)
@@ -68,82 +77,19 @@ public class EndGamePanel : MonoBehaviour
 		if (isRecord)
 		{
             //Hide chest
-            if (animate)
-            { 
-                SetActiveChest(false);
-                SetActiveAdsButtons(false);
-                SetActiveTavernKeeper(true);
-            }
-            else
-            {
-                SetActiveAdsButtons(false);
-                SetActiveChest(true);
-                SetActiveTavernKeeper(true);
-            }
-
-			cheaterText.enabled = false;
-			for (int i = 0; i < titleTexts.Length - 1; i++)
-			{
-				titleTexts[i].enabled = false;
-			}
-			titleTexts[titleTexts.Length-1].enabled = true;
-
+            ShowRecord(animate);
 		}
 		else
 		{
+            
+
             if (AdvertisingController.Instance.NeedToShowChestInGame())
             {
-                if (animate)
-                {
-                    SetActiveAdsButtons(true);
-                    SetActiveChest(true);
-                    SetActiveTavernKeeper(false);
-                }
-                else
-                {
-                    SetActiveAdsButtons(false);
-                    SetActiveChest(true);
-                    SetActiveTavernKeeper(true);
-                }
-
-                cheaterText.enabled = false;
-                for (int i = 0; i < titleTexts.Length - 1; i++)
-                {
-                    titleTexts[i].enabled = false;
-                }
-                titleTexts[titleTexts.Length - 1].enabled = false;
-                AdvertisingController.Instance.ProposeAdvertisement();
+                ShowAdvertising(animate);
             }
             else
             {
-                if (animate)
-                {
-                    SetActiveAdsButtons(false);
-                    SetActiveChest(false);
-                    SetActiveTavernKeeper(true);
-                }
-                else
-                {
-                    SetActiveAdsButtons(false);
-                    SetActiveChest(true);
-                    SetActiveTavernKeeper(true);
-                }
-
-                titleTexts[titleTexts.Length - 1].enabled = false;
-                bool findTitle = false;
-                for (int i = 0; i < titleTexts.Length - 1; i++)
-                {
-                    if (level >= scoreLevels[i] && level < scoreLevels[i + 1])
-                    {
-                        titleTexts[i].enabled = true;
-                        findTitle = true;
-                    }
-                    else
-                    {
-                        titleTexts[i].enabled = false;
-                    }
-                }
-                cheaterText.enabled = !findTitle;
+                ShowSomeLabel(level, animate);
             }
 		}
 
@@ -156,6 +102,85 @@ public class EndGamePanel : MonoBehaviour
             animator.SetTrigger(showPanelAnimationHash);
         }
 	}
+
+    void ShowRecord(bool animate = true)
+    {
+        if (animate)
+        {
+            SetActiveChest(false);
+            SetActiveAdsButtons(false);
+            SetActiveTavernKeeper(true);
+        }
+        else
+        {
+            SetActiveAdsButtons(false);
+            SetActiveChest(true);
+            SetActiveTavernKeeper(true);
+        }
+
+        cheaterText.enabled = false;
+        for (int i = 0; i < titleTexts.Length - 1; i++)
+        {
+            titleTexts[i].enabled = false;
+        }
+        titleTexts[titleTexts.Length - 1].enabled = true;
+    }
+
+    void ShowAdvertising(bool animate = true)
+    {
+        if (animate)
+        {
+            SetActiveAdsButtons(true);
+            SetActiveChest(true);
+            SetActiveTavernKeeper(false);
+        }
+        else
+        {
+            SetActiveAdsButtons(false);
+            SetActiveChest(true);
+            SetActiveTavernKeeper(true);
+        }
+
+        cheaterText.enabled = false;
+        for (int i = 0; i < titleTexts.Length - 1; i++)
+        {
+            titleTexts[i].enabled = false;
+        }
+        titleTexts[titleTexts.Length - 1].enabled = false;
+        AdvertisingController.Instance.ProposeAdvertisement();
+    }
+
+    void ShowSomeLabel(int level, bool animate = true)
+    {
+        if (animate)
+        {
+            SetActiveAdsButtons(false);
+            SetActiveChest(false);
+            SetActiveTavernKeeper(true);
+        }
+        else
+        {
+            SetActiveAdsButtons(false);
+            SetActiveChest(true);
+            SetActiveTavernKeeper(true);
+        }
+
+        titleTexts[titleTexts.Length - 1].enabled = false;
+        bool findTitle = false;
+        for (int i = 0; i < titleTexts.Length - 1; i++)
+        {
+            if (level >= scoreLevels[i] && level < scoreLevels[i + 1])
+            {
+                titleTexts[i].enabled = true;
+                findTitle = true;
+            }
+            else
+            {
+                titleTexts[i].enabled = false;
+            }
+        }
+        cheaterText.enabled = !findTitle;
+    }
 
     void SetActiveChest(bool isActive)
     {
