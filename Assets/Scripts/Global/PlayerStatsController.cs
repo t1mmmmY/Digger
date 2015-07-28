@@ -81,6 +81,7 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 		PlayerPrefs.SetInt(CONST.PLAYER_KEYS[0], (int)PlayerStatus.Bought);
 
         SetCurrentPlayer(0);
+        BankController.RemoveCoins(BankController.coins);
 	}
 
 }
