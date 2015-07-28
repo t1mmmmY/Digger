@@ -13,6 +13,8 @@ public enum Scene
 
 public static class CONST 
 {
+    public static readonly int RANDOM_CHARACTER_COST = 250;
+
 	public static readonly string MUSIC_PATH = "Music/Sweet_MusicLoop";
 	public static readonly string TAVERN_PLAYERS_PATH = "Tavern/";
 	public static readonly string PLAYABLE_PLAYERS_PATH = "Playable/";

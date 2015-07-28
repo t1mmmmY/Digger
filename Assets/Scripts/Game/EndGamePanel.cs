@@ -15,7 +15,7 @@ public class EndGamePanel : MonoBehaviour
 	[SerializeField] Text levelText;
     [SerializeField] Button[] adsButton;
 
-    [SerializeField] Button[] buyRandomCharacterButton;
+    [SerializeField] Button[] buyRandomCharacterButtons;
     [SerializeField] Text buyRandomCharacterText;
     [SerializeField] Text buyRandomCharacterCost;
 
@@ -34,7 +34,10 @@ public class EndGamePanel : MonoBehaviour
 
     public void BuyRandomCharacter()
     {
-
+        ShopInGame.Instance.BuyRandomCharacter();
+        BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
+        SingleplayerGameManager.Instance.RestartGame();
+        //Debug.Log("Buy");
     }
 
     void OnShowAdvertising(int reward)
@@ -76,20 +79,28 @@ public class EndGamePanel : MonoBehaviour
 	{
 		if (isRecord)
 		{
-            //Hide chest
+            //It is a new record
             ShowRecord(animate);
 		}
 		else
 		{
-            
-
-            if (AdvertisingController.Instance.NeedToShowChestInGame())
+            if (ShopInGame.Instance.NeedToShowProposalInGame(BankController.coins - coinsCount))
             {
-                ShowAdvertising(animate);
+                //Show proposal to buy a new character
+                ShowProposalToBuyNewCharacter(animate);
             }
             else
             {
-                ShowSomeLabel(level, animate);
+                if (AdvertisingController.Instance.NeedToShowChestInGame())
+                {
+                    //Show advertising
+                    ShowAdvertising(animate);
+                }
+                else
+                {
+                    //Show some label with status
+                    ShowSomeLabel(level, animate);
+                }
             }
 		}
 
@@ -124,6 +135,36 @@ public class EndGamePanel : MonoBehaviour
             titleTexts[i].enabled = false;
         }
         titleTexts[titleTexts.Length - 1].enabled = true;
+    }
+
+    void ShowProposalToBuyNewCharacter(bool animate = true)
+    {
+        if (animate)
+        {
+            SetActiveChest(false);
+            SetActiveAdsButtons(false);
+            SetActiveTavernKeeper(true);
+        }
+        else
+        {
+            SetActiveAdsButtons(false);
+            SetActiveChest(true);
+            SetActiveTavernKeeper(true);
+        }
+
+        cheaterText.enabled = false;
+        for (int i = 0; i < titleTexts.Length; i++)
+        {
+            titleTexts[i].enabled = false;
+        }
+
+        foreach (Button button in buyRandomCharacterButtons)
+        {
+            button.gameObject.SetActive(true);
+        }
+        buyRandomCharacterText.enabled = true;
+        buyRandomCharacterCost.enabled = true;
+        buyRandomCharacterCost.text = CONST.RANDOM_CHARACTER_COST + " coins";
     }
 
     void ShowAdvertising(bool animate = true)

@@ -13,7 +13,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Animator tavernAnimator;
     [SerializeField] Transform tavernStartPosition;
 
-    [SerializeField] int randomCharacterCost = 100;
+    
     string coinsText = " coins";
     [SerializeField] Text costLabel;
     [SerializeField] GameObject treasureChest;
@@ -37,7 +37,7 @@ public class MainMenu : MonoBehaviour
 		SetActiveAllButtons(true);
         LoadCharacter();
 
-        costLabel.text = randomCharacterCost.ToString() + coinsText;
+        costLabel.text = CONST.RANDOM_CHARACTER_COST.ToString() + coinsText;
 
         if (!HaveAvailibleCharacters())
         {
@@ -159,7 +159,7 @@ public class MainMenu : MonoBehaviour
             return;
 		}
 
-        if (BankController.coins < randomCharacterCost)
+        if (BankController.coins < CONST.RANDOM_CHARACTER_COST)
         {
             NotEnoughMoney();
             return;
@@ -182,7 +182,7 @@ public class MainMenu : MonoBehaviour
 
         mainMenuAnimator.SetTrigger("BuyRandomCharacter");
 
-        BankController.RemoveCoins(randomCharacterCost);
+        BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
 
         TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
