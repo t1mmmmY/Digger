@@ -13,6 +13,8 @@ public enum Scene
 
 public static class CONST 
 {
+    public static readonly int RANDOM_CHARACTER_COST = 250;
+
 	public static readonly string MUSIC_PATH = "Music/Sweet_MusicLoop";
 	public static readonly string TAVERN_PLAYERS_PATH = "Tavern/";
 	public static readonly string PLAYABLE_PLAYERS_PATH = "Playable/";
@@ -23,24 +25,24 @@ public static class CONST
 		"DrunkenDigger",
 		"WalterWhite",
 		"Batman",
-		"DrunkenDigger_copy",
-		"WalterWhite_copy"
+		"Charlie",
+        "Finn"
 	};
 
 	public static readonly string[] DESCRIPTOIN_NAMES = { 
 		"Drunken Digger",
 		"Walter White",
 		"BadMan",
-		"Drunken Digger again",
-		"Walter White again"
+		"Charlie",
+        "Finn"
 	};
 
 	public static readonly string[] PLAYER_KEYS = {
 		"DrunkenDigger",
 		"WalterWhite",
 		"Batman",
-		"DrunkenDigger_copy",
-		"WalterWhite_copy"
+		"Charlie",
+        "Finn"
 	};
 
 

@@ -10,6 +10,8 @@ public class TavernCharacter : MonoBehaviour
 
 	void OnMouseDown()
 	{
+        
+
 		oldPosition = Input.mousePosition;
 	}
 
@@ -17,7 +19,10 @@ public class TavernCharacter : MonoBehaviour
 	{
 		if (Vector3.Distance(oldPosition, Input.mousePosition) <= maxDistance)
 		{
-			TavernManager.Instance.SelectCharacter(character);
+            if (TavernManager.Instance.currentCharacter == character.number)
+            {
+                TavernManager.Instance.SelectCharacter(character);
+            }
 		}
 	}
 }

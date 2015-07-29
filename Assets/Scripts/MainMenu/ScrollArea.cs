@@ -11,6 +11,8 @@ public class ScrollArea : MonoBehaviour
 	[SerializeField] float scale = 10;
 	[SerializeField] float minShift = 1;
 	[SerializeField] int currentPosition = 0;
+    [SerializeField] float momentum = 0.5f;
+    [SerializeField] float momentumStrong = 0.01f;
 	int oldPositionNumber = 0;
 
 	[Range(0, 500)]
@@ -36,10 +38,6 @@ public class ScrollArea : MonoBehaviour
 	public static System.Action<int> onChangePosition;
 	public static System.Action onEndMoving;
 
-//	void Awake()
-//	{
-//		cameraPositions = new List<Bounds>();
-//	}
 
 	void Start()
 	{
@@ -97,8 +95,14 @@ public class ScrollArea : MonoBehaviour
 				Scroll();
 				break;
 			case ScrollState.End:
-
-				EndScroll();
+                if (momentum > 0)
+                {
+                    Momentum();
+                }
+                else
+                {
+                    EndScroll();
+                }
 				break;
 			}
 
@@ -143,17 +147,41 @@ public class ScrollArea : MonoBehaviour
 		}
 	}
 
+    void Momentum()
+    {
+        StartCoroutine("MomentumCoroutine");
+    }
+
+    IEnumerator MomentumCoroutine()
+    {
+        Vector3 cameraVelocity = camera.velocity;
+        Vector3 distance = cameraVelocity;
+        float elapsedTime = 0;
+        do
+        {
+            distance = Vector3.Lerp(cameraVelocity, Vector3.zero, elapsedTime) * momentumStrong;
+            cameraTransform.Translate(distance);
+            if (!scrollArea.Contains(cameraTransform.position))
+            {
+                cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
+            }
+            yield return null;
+
+            elapsedTime += Time.deltaTime / momentum;
+
+        } while (elapsedTime < 1.0f && distance.magnitude > momentumStrong);
+
+        EndScroll();
+    }
+
 	void EndScroll()
 	{
 		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
 
-//		if (oldPositionNumber != currentPosition)
-//		{
 		if (onChangePosition != null)
 		{
 			onChangePosition(currentPosition);
 		}
-//		}
 		beginScroll = false;
 	}
 
@@ -164,7 +192,6 @@ public class ScrollArea : MonoBehaviour
 			return 0;
 		}
 
-//		Bounds cameraBounds = new Bounds(cameraTransform.localPosition, new Vector3(720, 1280, 1000));
 		Bounds cameraBounds = new Bounds(cameraTransform.position, new Vector3(1, 1, 1000));
 
 		float minDistance = float.MaxValue;
@@ -181,6 +208,34 @@ public class ScrollArea : MonoBehaviour
 		return number;
 	}
 
+    public bool MoveLeft()
+    {
+        if (currentPosition - 1 < 0)
+        {
+            return false;
+        }
+        else
+        {
+            MoveToPosition(currentPosition - 1);
+
+            return true;
+        }
+    }
+
+    public bool MoveRight()
+    {
+        if (currentPosition + 1 >= cameraPositions.Count)
+        {
+            return false;
+        }
+        else
+        {
+            MoveToPosition(currentPosition + 1);
+
+            return true;
+        }
+    }
+
 	public void MoveToPosition(int positionNumber)
 	{
 		if (positionNumber >= cameraPositions.Count)
@@ -193,8 +248,6 @@ public class ScrollArea : MonoBehaviour
 
 
 		Hashtable hash = new Hashtable();
-//		hash.Add("position", cameraPositions[positionNumber].center);
-//		hash.Add("isLocal", true);
 		hash.Add("position", cameraPositions[positionNumber].center);
 		hash.Add("isLocal", false);
 		hash.Add("time", 0.6f);
@@ -214,12 +267,7 @@ public class ScrollArea : MonoBehaviour
 
 	void OnFinishMove()
 	{
-		state = ScrollState.Nothing;
-
-//		if (onChangePosition != null)
-//		{
-//			onChangePosition(currentPosition);
-//		}
+        state = ScrollState.Nothing;
 	}
 
 	void OnDrawGizmos()

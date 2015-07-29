@@ -50,7 +50,6 @@ public struct Formula
 		}
 
 		
-//		return string.Format("{0} {1} {2} = ", x, signChar, y, result);
 		return string.Format("{0} {1} {2} = {3}", x, signChar, y, result);
 	}
 }
@@ -59,9 +58,10 @@ public static class Mathematician
 {
 	static float angle = 0.35f;
 	static float offset = 5.0f;
-	static float stretch = 0.5f;
+	static float stretch = 0.7f;
 
-	static float[] difficultLevels = {7, 11, 13};
+    //static float[] difficultLevels = {7, 11, 13};
+    static float[] difficultLevels = { 12, 16, 19 };
 	public static Sign[] signs = {Sign.Plus, Sign.Minus, Sign.Multiply, Sign.Divided};
 
 	public static string GetSignString(Sign sign)
@@ -144,10 +144,12 @@ public static class Mathematician
 
 	static int GetValue(float difficult)
 	{
+        Debug.Log(string.Format("difficult = {0}; min {1}, max {2}", difficult, (-(int)difficult + (int)offset), ((int)difficult + (int)offset)));
 		int value = 0;
 		do
 		{
-			value = Random.Range(-(int)difficult + (int)offset, (int)difficult);
+            value = Random.Range(-(int)difficult + (int)offset, (int)difficult + (int)offset);
+            //value = Random.Range(-(int)difficult + (int)offset, (int)difficult);
 		} while (value == 0);
 
 		return value;

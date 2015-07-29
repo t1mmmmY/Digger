@@ -13,11 +13,15 @@ public class MainMenu : MonoBehaviour
     [SerializeField] Animator tavernAnimator;
     [SerializeField] Transform tavernStartPosition;
 
-    [SerializeField] int randomCharacterCost = 100;
+    
     string coinsText = " coins";
     [SerializeField] Text costLabel;
+    [SerializeField] GameObject treasureChest;
+    [SerializeField] Text bestScoreLabel;
+    [SerializeField] Grammophone grammophone;
 
     GameObject currentCharacterGameObject;
+    bool isMusicPlaying = true;
 
 	public static MainMenu Instance;
 
@@ -29,15 +33,19 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
+        isMusicPlaying = GeneralGameController.Instance.isMusicPlaying;
 		SetActiveAllButtons(true);
         LoadCharacter();
 
-        costLabel.text = randomCharacterCost.ToString() + coinsText;
+        costLabel.text = CONST.RANDOM_CHARACTER_COST.ToString() + coinsText;
 
         if (!HaveAvailibleCharacters())
         {
             NothingToBuy();
         }
+
+        treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
+        bestScoreLabel.text = PlayerPrefs.GetInt("BestLevel", 0).ToString();
 	}
 
     private void LoadCharacter()
@@ -151,7 +159,7 @@ public class MainMenu : MonoBehaviour
             return;
 		}
 
-        if (BankController.coins < randomCharacterCost)
+        if (BankController.coins < CONST.RANDOM_CHARACTER_COST)
         {
             NotEnoughMoney();
             return;
@@ -174,14 +182,21 @@ public class MainMenu : MonoBehaviour
 
         mainMenuAnimator.SetTrigger("BuyRandomCharacter");
 
-        BankController.RemoveCoins(randomCharacterCost);
+        BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
 
         TavernAnimationScript.onEndAnimation += OnEndShowAnimation;
 	}
 
     public void ShowAdvertisment()
     {
+        AdvertisingController.onShowAdvertising += OnShowAdvertising;
         AdvertisingController.Instance.ShowAdvertisement();
+    }
+
+    void OnShowAdvertising(int reward)
+    {
+        AdvertisingController.onShowAdvertising -= OnShowAdvertising;
+        treasureChest.SetActive(false);
     }
 
     bool HaveAvailibleCharacters()
@@ -229,4 +244,10 @@ public class MainMenu : MonoBehaviour
         mainMenuAnimator.SetTrigger("NotEnoughMoney");
     }
 
+    public void MuteAudio()
+    {
+        isMusicPlaying = !isMusicPlaying;
+        GeneralGameController.Instance.MuteAudio(isMusicPlaying);
+        grammophone.MuteAudio(isMusicPlaying);
+    }
 }
