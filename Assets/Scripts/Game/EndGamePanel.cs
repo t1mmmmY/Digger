@@ -19,6 +19,14 @@ public class EndGamePanel : MonoBehaviour
     [SerializeField] Text buyRandomCharacterText;
     [SerializeField] Text buyRandomCharacterCost;
 
+	[SerializeField] Button[] buyCharacterButtons;
+	[SerializeField] GameObject buyCharacterContainer;
+	[SerializeField] Transform buyCharacterAnchor;
+	[SerializeField] Text buyCharacterText;
+	[SerializeField] Text buyCharacterCost;
+	int buyCharacterNumber = 0;
+
+
 	int showPanelAnimationHash = Animator.StringToHash("ShowPanel");
     int hideChestHash = Animator.StringToHash("HideChest");
 
@@ -39,6 +47,14 @@ public class EndGamePanel : MonoBehaviour
         SingleplayerGameManager.Instance.RestartGame();
         //Debug.Log("Buy");
     }
+
+	public void BuyCharacter()
+	{
+		ShopInGame.Instance.BuyCharacter(buyCharacterNumber);
+		//BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
+		SingleplayerGameManager.Instance.RestartGame();
+		//Debug.Log("Buy");
+	}
 
     void OnShowAdvertising(int reward)
     {
@@ -84,23 +100,32 @@ public class EndGamePanel : MonoBehaviour
 		}
 		else
 		{
-            if (ShopInGame.Instance.NeedToShowProposalInGame(BankController.coins - coinsCount))
+            if (ShopInGame.Instance.NeedToShowProposalInGame(BankController.coins - coinsCount, false))
             {
-                //Show proposal to buy a new character
-                ShowProposalToBuyNewCharacter(animate);
+                //Show proposal to buy a random character
+                ShowProposalToBuyRandomCharacter(animate);
             }
             else
             {
-                if (AdvertisingController.Instance.NeedToShowChestInGame())
-                {
-                    //Show advertising
-                    ShowAdvertising(animate);
-                }
-                else
-                {
-                    //Show some label with status
-                    ShowSomeLabel(level, animate);
-                }
+				if (ShopInGame.Instance.NeedToShowProposalInGame(BankController.coins - coinsCount, true))
+				{
+					//Show proposal to buy a character for real money
+					buyCharacterNumber = ShopInGame.Instance.GetRandomCharacterNumber();
+					ShowProposalToBuyCharacterForRealMoney(buyCharacterNumber, animate);
+				}
+				else
+				{
+	                if (AdvertisingController.Instance.NeedToShowChestInGame())
+	                {
+	                    //Show advertising
+	                    ShowAdvertising(animate);
+	                }
+	                else
+	                {
+	                    //Show some label with status
+	                    ShowSomeLabel(level, animate);
+	                }
+				}
             }
 		}
 
@@ -137,7 +162,7 @@ public class EndGamePanel : MonoBehaviour
         titleTexts[titleTexts.Length - 1].enabled = true;
     }
 
-    void ShowProposalToBuyNewCharacter(bool animate = true)
+    void ShowProposalToBuyRandomCharacter(bool animate = true)
     {
         if (animate)
         {
@@ -166,6 +191,61 @@ public class EndGamePanel : MonoBehaviour
         buyRandomCharacterCost.enabled = true;
         buyRandomCharacterCost.text = CONST.RANDOM_CHARACTER_COST + " coins";
     }
+
+	void ShowProposalToBuyCharacterForRealMoney(int characterNumber, bool animate = true)
+	{
+		if (animate)
+		{
+			SetActiveChest(false);
+			SetActiveAdsButtons(false);
+			SetActiveTavernKeeper(true);
+		}
+		else
+		{
+			SetActiveAdsButtons(false);
+			SetActiveChest(true);
+			SetActiveTavernKeeper(true);
+		}
+		
+		cheaterText.enabled = false;
+		for (int i = 0; i < titleTexts.Length; i++)
+		{
+			titleTexts[i].enabled = false;
+		}
+		
+		foreach (Button button in buyCharacterButtons)
+		{
+			button.gameObject.SetActive(true);
+		}
+		buyCharacterText.enabled = true;
+		buyCharacterCost.enabled = true;
+		buyCharacterCost.text = "USD " + CONST.BUY_CHARACTER_COST;
+
+		buyCharacterContainer.SetActive(true);
+
+		Object obj = Resources.Load(string.Format("{0}{1}{2}", CONST.TAVERN_PLAYERS_PATH, CONST.PLAYER_NAMES[characterNumber], CONST.TAVERN_PREFIX));
+		if (obj != null)
+		{
+			GameObject characterGO = GameObject.Instantiate<GameObject>((GameObject)obj);
+
+			characterGO.transform.parent = buyCharacterAnchor;
+			characterGO.transform.localPosition = Vector3.zero;
+
+
+			characterGO.layer = 10;
+			foreach (Transform child in characterGO.GetComponentsInChildren<Transform>(true))
+			{
+				child.gameObject.layer = 10;
+			}
+			characterGO.transform.localScale = new Vector3(2, 2, 1);
+			//characterGO.GetComponent<Animator>().SetTrigger("Idle");
+		}
+		else
+		{
+			Debug.LogError("Cannot load character!");
+		}
+
+	}
 
     void ShowAdvertising(bool animate = true)
     {

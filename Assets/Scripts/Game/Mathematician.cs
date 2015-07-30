@@ -144,7 +144,7 @@ public static class Mathematician
 
 	static int GetValue(float difficult)
 	{
-        Debug.Log(string.Format("difficult = {0}; min {1}, max {2}", difficult, (-(int)difficult + (int)offset), ((int)difficult + (int)offset)));
+//        Debug.Log(string.Format("difficult = {0}; min {1}, max {2}", difficult, (-(int)difficult + (int)offset), ((int)difficult + (int)offset)));
 		int value = 0;
 		do
 		{

@@ -5,12 +5,15 @@ using System.Collections.Generic;
 public class ShopInGame : BaseSingleton<ShopInGame> 
 {
     [Range(0.0f, 1.0f)]
-    [SerializeField] float frequency = 0.5f;
+    [SerializeField] float randonCharacterFrequency = 0.5f;
 
-    public bool NeedToShowProposalInGame(int oldCoinsCount)
+	[Range(0.0f, 1.0f)]
+	[SerializeField] float buyCharacterFrequency = 0.2f;
+
+    public bool NeedToShowProposalInGame(int oldCoinsCount, bool forRealMoney)
     {
         //Not enough coins
-        if (BankController.coins < CONST.RANDOM_CHARACTER_COST)
+        if (!forRealMoney && BankController.coins < CONST.RANDOM_CHARACTER_COST)
         {
             return false;
         }
@@ -32,14 +35,14 @@ public class ShopInGame : BaseSingleton<ShopInGame>
             return false;
         }
 
-        if (oldCoinsCount < CONST.RANDOM_CHARACTER_COST && BankController.coins >= CONST.RANDOM_CHARACTER_COST)
+        if (!forRealMoney && oldCoinsCount < CONST.RANDOM_CHARACTER_COST && BankController.coins >= CONST.RANDOM_CHARACTER_COST)
         {
             return true;
         }
 
         //check if need to show
         float randomNumber = Random.Range(0.0f, 1.0f);
-        if (randomNumber < frequency)
+		if ((!forRealMoney && randomNumber < randonCharacterFrequency) || (forRealMoney && randomNumber < buyCharacterFrequency))
         {
             return true;
         }
@@ -76,4 +79,39 @@ public class ShopInGame : BaseSingleton<ShopInGame>
 
         return true;
     }
+
+	public int GetRandomCharacterNumber()
+	{
+		List<int> canBuy = new List<int>();
+		for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
+		{
+			PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
+			if (status == PlayerStatus.NotBought)
+			{
+				canBuy.Add(i);
+			}
+		}
+		
+		//nothing to buy
+		if (canBuy.Count == 0)
+		{
+			return 0;
+		}
+		
+		int randomNumber = Random.Range(0, canBuy.Count);
+		int randomCharacterNumber = canBuy[randomNumber];
+
+		return randomCharacterNumber;
+	}
+
+	public bool BuyCharacter(int characterNumber)
+	{
+		
+		if (GeneralGameController.Instance != null)
+		{
+			GeneralGameController.Instance.SelectCharacter(characterNumber);
+		}
+		
+		return true;
+	}
 }

@@ -33,8 +33,13 @@ public class CharacterAnimationController : MonoBehaviour
         m_Anim = GetComponent<Animator>();
         m_Rigidbody = GetComponent<Rigidbody>();
 
-		m_Anim.SetTrigger(idleHash);
+//		Debug.LogWarning("IDLE");
     }
+
+	void Start()
+	{
+		m_Anim.SetTrigger(idleHash);
+	}
 
 	private void OnEnable()
 	{
