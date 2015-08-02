@@ -115,7 +115,7 @@ public class EndGamePanel : MonoBehaviour
 				}
 				else
 				{
-	                if (AdvertisingController.Instance.NeedToShowChestInGame())
+					if (AdvertisingController.Instance != null && AdvertisingController.Instance.NeedToShowChestInGame())
 	                {
 	                    //Show advertising
 	                    ShowAdvertising(animate);

@@ -47,7 +47,10 @@ public class GoldKeeper : MonoBehaviour
 
 	void OnInitInfiniteMap()
 	{
-        isBonus = BonusController.Instance.IsBonusReady();
+		if (BonusController.Instance != null)
+		{
+        	isBonus = BonusController.Instance.IsBonusReady();
+		}
         if (isBonus)
         {
             startCoinsCount = BankController.coins;

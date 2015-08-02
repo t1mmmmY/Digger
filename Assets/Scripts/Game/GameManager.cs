@@ -98,6 +98,10 @@ public abstract class GameManager : BaseSingleton<GameManager>
 		LevelLoader.Instance.LoadLevel(Scene.SinglePlayer);
 	}
 
+	public virtual void ShareGame()
+	{
+	}
+
 	protected virtual void OnAnswer(bool isRight)
 	{
 		if (isRight)

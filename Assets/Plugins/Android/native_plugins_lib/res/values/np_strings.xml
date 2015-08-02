@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">Native Plugins</string>
+    <string name="Loading">Loading, please wait.</string>
+
+    <string name="np_toolbar_back">Back</string>
+    <string name="np_toolbar_forward">Forward</string>
+    <string name="np_toolbar_reload">Reload</string>
+    <string name="np_toolbar_done">Done</string>
+
+</resources>

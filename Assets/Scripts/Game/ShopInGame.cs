@@ -22,11 +22,14 @@ public class ShopInGame : BaseSingleton<ShopInGame>
         List<int> canBuy = new List<int>();
         for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
         {
-            PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
-            if (status == PlayerStatus.NotBought)
-            {
-                canBuy.Add(i);
-            }
+			if (PlayerStatsController.Instance != null)
+			{
+	            PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
+	            if (status == PlayerStatus.NotBought)
+	            {
+	                canBuy.Add(i);
+	            }
+			}
         }
 
         //nothing to buy

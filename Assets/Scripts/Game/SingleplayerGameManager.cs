@@ -3,6 +3,7 @@ using System.Collections;
 
 public class SingleplayerGameManager : GameManager 
 {
+	bool canShare = true;
 
 	public static System.Action OnStartSinglePlayerGame;
 
@@ -79,6 +80,24 @@ public class SingleplayerGameManager : GameManager
 	{
 		base.RestartGame ();
 	}
+
+	public override void ShareGame()
+	{
+//		if (canShare)
+		{
+			canShare = false;
+			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
+	//		VoxelBusters.NativePlugins.Sharing sharing = new VoxelBusters.NativePlugins.Sharing();
+	//		sharing.ShareScreenShotOnSocialNetwork();
+
+			base.ShareGame();
+		}
+	}
+
+//	void OnFinishSharing(VoxelBusters.NativePlugins.Sharing.SharingCompletion _result)
+//	{
+//		canShare = true;
+//	}
 	
 	protected override void OnAnswer (bool isRight)
 	{
