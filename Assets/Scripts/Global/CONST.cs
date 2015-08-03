@@ -27,7 +27,8 @@ public static class CONST
 		"WalterWhite",
 		"Batman",
 		"Charlie",
-        "Finn"
+        "Finn",
+		"Leprechaun"
 	};
 
 	public static readonly string[] DESCRIPTOIN_NAMES = { 
@@ -35,7 +36,8 @@ public static class CONST
 		"Walter White",
 		"BadMan",
 		"Charlie",
-        "Finn"
+        "Finn",
+		"Leprechaun"
 	};
 
 	public static readonly string[] PLAYER_KEYS = {
@@ -43,7 +45,8 @@ public static class CONST
 		"WalterWhite",
 		"Batman",
 		"Charlie",
-        "Finn"
+        "Finn",
+		"Leprechaun"
 	};
 
 
