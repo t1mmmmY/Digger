@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 041373e0db8d1a748866f9db1d91971d
-timeCreated: 1438599663
+guid: 40dfe21594b038e419231cf52fa8cbf0
+timeCreated: 1438777683
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName: {}
@@ -49,7 +49,7 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites: []
-  spritePackingTag: Leprechaun
+  spritePackingTag: All
   userData: 
   assetBundleName: 
   assetBundleVariant: 

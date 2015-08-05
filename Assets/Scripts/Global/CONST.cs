@@ -27,7 +27,8 @@ public static class CONST
 		"WalterWhite",
 		"Batman",
 		"Charlie",
-        "Finn",
+		"Finn",
+		"Grandpa",
 		"Leprechaun"
 	};
 
@@ -36,7 +37,8 @@ public static class CONST
 		"Walter White",
 		"BadMan",
 		"Charlie",
-        "Finn",
+		"Finn",
+		"Grandpa",
 		"Leprechaun"
 	};
 
@@ -46,6 +48,7 @@ public static class CONST
 		"Batman",
 		"Charlie",
         "Finn",
+		"Grandpa",
 		"Leprechaun"
 	};
 
@@ -55,11 +58,12 @@ public static class CONST
 		0.99f,
 		0.99f,
 		0.99f,
+		0.99f,
 		1.99f
 	};
 
 	public static readonly int[] SPECIAL_CHARACTER_NUMBERS = {
-		5
+		6
 	};
 
 	public static bool IsSpecialCharacter(int number)

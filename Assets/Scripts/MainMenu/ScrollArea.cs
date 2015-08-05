@@ -16,8 +16,8 @@ public class ScrollArea : MonoBehaviour
 	[SerializeField] float minMomentumVelocity = 0.05f;
 	int oldPositionNumber = 0;
 
-	[Range(0, 500)]
-	[SerializeField] float maxShift = 100;
+//	[Range(0, 500)]
+//	[SerializeField] float maxShift = 100;
 
 	Vector2 oldPosition;
 	Vector2 deltaPosition;
