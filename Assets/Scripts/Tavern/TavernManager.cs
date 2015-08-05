@@ -61,7 +61,14 @@ public class TavernManager : BaseSingleton<TavernManager>
 	{
 		ResourceRequest request;
 		int number = 0;
-        currentCharacterNumber = PlayerStatsController.Instance.GetCurrentPlayerNumber();
+		if (PlayerStatsController.Instance != null)
+		{
+        	currentCharacterNumber = PlayerStatsController.Instance.GetCurrentPlayerNumber();
+		}
+		else
+		{
+			currentCharacterNumber = 0;
+		}
 
 		foreach (string name in CONST.PLAYER_NAMES)
 		{
@@ -209,17 +216,20 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void ShowDescription(int positionNumber)
 	{
-		switch (PlayerStatsController.Instance.GetStatus(positionNumber))
+		if (PlayerStatsController.Instance != null)
 		{
-		case PlayerStatus.NotBought:
-			buyCharacterButton.gameObject.SetActive(true);
-			BuyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
-			playCharacterButton.gameObject.SetActive(false);
-			break;
-		case PlayerStatus.Bought:
-			buyCharacterButton.gameObject.SetActive(false);
-			playCharacterButton.gameObject.SetActive(true);
-			break;
+			switch (PlayerStatsController.Instance.GetStatus(positionNumber))
+			{
+			case PlayerStatus.NotBought:
+				buyCharacterButton.gameObject.SetActive(true);
+				BuyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+				playCharacterButton.gameObject.SetActive(false);
+				break;
+			case PlayerStatus.Bought:
+				buyCharacterButton.gameObject.SetActive(false);
+				playCharacterButton.gameObject.SetActive(true);
+				break;
+			}
 		}
 
 		characterNameLabel.text = CONST.DESCRIPTOIN_NAMES[positionNumber];
