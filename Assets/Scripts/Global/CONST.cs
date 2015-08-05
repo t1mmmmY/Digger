@@ -49,6 +49,30 @@ public static class CONST
 		"Leprechaun"
 	};
 
+	public static readonly float[] CHARACTER_COSTS = {
+		0.99f,
+		0.99f,
+		0.99f,
+		0.99f,
+		0.99f,
+		1.99f
+	};
+
+	public static readonly int[] SPECIAL_CHARACTER_NUMBERS = {
+		5
+	};
+
+	public static bool IsSpecialCharacter(int number)
+	{
+		foreach (int val in SPECIAL_CHARACTER_NUMBERS)
+		{
+			if (val == number)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static bool InGame()
 	{

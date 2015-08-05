@@ -19,10 +19,13 @@ public class TavernCharacter : MonoBehaviour
 	{
 		if (Vector3.Distance(oldPosition, Input.mousePosition) <= maxDistance)
 		{
-            if (TavernManager.Instance.currentCharacter == character.number)
-            {
-                TavernManager.Instance.SelectCharacter(character);
-            }
+			if (TavernManager.Instance != null)
+			{
+	            if (TavernManager.Instance.currentCharacter == character.number)
+	            {
+	                TavernManager.Instance.SelectCharacter(character);
+	            }
+			}
 		}
 	}
 }

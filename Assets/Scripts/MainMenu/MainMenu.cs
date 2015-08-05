@@ -147,7 +147,7 @@ public class MainMenu : MonoBehaviour
 		for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
 		{
 			PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
-			if (status == PlayerStatus.NotBought)
+			if (status == PlayerStatus.NotBought && !CONST.IsSpecialCharacter(i))
 			{
 				canBuy.Add(i);
 			}

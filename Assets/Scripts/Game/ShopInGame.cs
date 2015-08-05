@@ -25,7 +25,7 @@ public class ShopInGame : BaseSingleton<ShopInGame>
 			if (PlayerStatsController.Instance != null)
 			{
 	            PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
-	            if (status == PlayerStatus.NotBought)
+				if (status == PlayerStatus.NotBought && (forRealMoney || !CONST.IsSpecialCharacter(i)))
 	            {
 	                canBuy.Add(i);
 	            }
@@ -60,7 +60,7 @@ public class ShopInGame : BaseSingleton<ShopInGame>
         for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
         {
             PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
-            if (status == PlayerStatus.NotBought)
+			if (status == PlayerStatus.NotBought && !CONST.IsSpecialCharacter(i))
             {
                 canBuy.Add(i);
             }
@@ -83,13 +83,13 @@ public class ShopInGame : BaseSingleton<ShopInGame>
         return true;
     }
 
-	public int GetRandomCharacterNumber()
+	public int GetRandomCharacterNumber(bool forRealMoney)
 	{
 		List<int> canBuy = new List<int>();
 		for (int i = 0; i < CONST.PLAYER_KEYS.Length; i++)
 		{
 			PlayerStatus status = PlayerStatsController.Instance.GetStatus(i);
-			if (status == PlayerStatus.NotBought)
+			if (status == PlayerStatus.NotBought && (forRealMoney || !CONST.IsSpecialCharacter(i)))
 			{
 				canBuy.Add(i);
 			}

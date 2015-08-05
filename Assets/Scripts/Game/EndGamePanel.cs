@@ -110,7 +110,7 @@ public class EndGamePanel : MonoBehaviour
 				if (ShopInGame.Instance.NeedToShowProposalInGame(BankController.coins - coinsCount, true))
 				{
 					//Show proposal to buy a character for real money
-					buyCharacterNumber = ShopInGame.Instance.GetRandomCharacterNumber();
+					buyCharacterNumber = ShopInGame.Instance.GetRandomCharacterNumber(true);
 					ShowProposalToBuyCharacterForRealMoney(buyCharacterNumber, animate);
 				}
 				else
@@ -219,7 +219,7 @@ public class EndGamePanel : MonoBehaviour
 		}
 		buyCharacterText.enabled = true;
 		buyCharacterCost.enabled = true;
-		buyCharacterCost.text = "USD " + CONST.BUY_CHARACTER_COST;
+		buyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[characterNumber];
 
 		buyCharacterContainer.SetActive(true);
 

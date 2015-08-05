@@ -10,6 +10,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 	[SerializeField] WallPart tavernPartPrefab;
 	[SerializeField] Text characterNameLabel;
 	[SerializeField] Button buyCharacterButton;
+	[SerializeField] Text BuyCharacterCost;
 	[SerializeField] Button playCharacterButton;
 	[SerializeField] Animator canvasAnimator;
 
@@ -212,6 +213,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 		{
 		case PlayerStatus.NotBought:
 			buyCharacterButton.gameObject.SetActive(true);
+			BuyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
 			playCharacterButton.gameObject.SetActive(false);
 			break;
 		case PlayerStatus.Bought:
