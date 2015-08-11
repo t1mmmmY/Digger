@@ -9,9 +9,9 @@ public class PushNotificator : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Pushwoosh.Instance.OnRegisteredForPushNotifications += onRegisteredForPushNotifications;
-        Pushwoosh.Instance.OnFailedToRegisteredForPushNotifications += onFailedToRegisteredForPushNotifications;
-        Pushwoosh.Instance.OnPushNotificationsReceived += onPushNotificationsReceived;
+//        Pushwoosh.Instance.OnRegisteredForPushNotifications += onRegisteredForPushNotifications;
+//        Pushwoosh.Instance.OnFailedToRegisteredForPushNotifications += onFailedToRegisteredForPushNotifications;
+//        Pushwoosh.Instance.OnPushNotificationsReceived += onPushNotificationsReceived;
     }
 
     void onRegisteredForPushNotifications(string token)

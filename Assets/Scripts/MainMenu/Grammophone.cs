@@ -8,7 +8,14 @@ public class Grammophone : MonoBehaviour
 
     void Start()
     {
-        animator.SetBool(enableAnimationHash, GeneralGameController.Instance.isMusicPlaying);
+		if (GeneralGameController.Instance != null)
+		{
+        	animator.SetBool(enableAnimationHash, GeneralGameController.Instance.isMusicPlaying);
+		}
+		else
+		{
+			animator.SetBool(enableAnimationHash, true);
+		}
     }
 
     public void MuteAudio(bool isMusicPlaying)

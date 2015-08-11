@@ -7,7 +7,13 @@ public class AdvertisingController : BaseSingleton<AdvertisingController>
     [SerializeField] int adsReward = 50;
     [Range(1, 10)]
     [SerializeField] int showAdsFrequency = 3;
+
+#if UNITY_ANDROID
     string GAME_ID = "56600";
+#else
+	string GAME_ID = "60933";
+#endif
+
     string REWARD_VIDEO_ID = "rewardedVideoZone";
     int countGames = 0;
     bool chestReady = false;

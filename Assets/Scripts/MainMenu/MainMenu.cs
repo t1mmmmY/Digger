@@ -33,7 +33,10 @@ public class MainMenu : MonoBehaviour
 
 	void Start()
 	{
-        isMusicPlaying = GeneralGameController.Instance.isMusicPlaying;
+		if (GeneralGameController.Instance != null)
+		{
+        	isMusicPlaying = GeneralGameController.Instance.isMusicPlaying;
+		}
 		SetActiveAllButtons(true);
         LoadCharacter();
 
@@ -44,7 +47,10 @@ public class MainMenu : MonoBehaviour
             NothingToBuy();
         }
 
-        treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
+		if (AdvertisingController.Instance != null)
+		{
+        	treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
+		}
         bestScoreLabel.text = PlayerPrefs.GetInt("BestLevel", 0).ToString();
 	}
 

@@ -8,9 +8,14 @@ public class DailyBonusHintBubble : MonoBehaviour
 
     void OnEnable()
     {
-        if (BonusController.Instance.IsBonusReady())
-        {
-            bubbleAnimator.SetTrigger(showBubbleHash);
-        }
+		if (BonusController.Instance != null) 
+		{
+			if (BonusController.Instance.IsBonusReady ()) 
+			{
+				bubbleAnimator.SetTrigger (showBubbleHash);
+			}
+		}
+
     }
+
 }

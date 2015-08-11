@@ -21,6 +21,7 @@ public class ScrollArea : MonoBehaviour
 
 	Vector2 oldPosition;
 	Vector2 deltaPosition;
+	Vector2 speed = Vector2.zero;
 
 	bool beginScroll = false;
 	bool isFinishingMoving = false;
@@ -69,30 +70,44 @@ public class ScrollArea : MonoBehaviour
 
 	void Update()
 	{
-		if (state != ScrollState.Animate)
+		if (state != ScrollState.Animate && !isFinishingMoving)
 		{
+			bool endMoving = false;
+
 			if (Input.GetMouseButtonDown(0))
 			{
 				BeginScroll();
 				state = ScrollState.Begin;
 			}
-			if (Input.GetMouseButton(0))
+			if (Input.GetMouseButton(0) && state != ScrollState.Finishing && state != ScrollState.End)
 			{
 				if (state == ScrollState.Nothing)
 				{
 					BeginScroll();
 				}
-				Scroll(Input.mousePosition);
+				isFinishingMoving = Scroll(Input.mousePosition);
+//				Scroll(Input.mousePosition);
 				state = ScrollState.Scroll;
+
 			}
-			if (Input.GetMouseButtonUp(0) || (!Input.GetMouseButton(0) && (state == ScrollState.Scroll || state == ScrollState.Begin)))
+
+			if (Input.GetMouseButtonUp(0) && state != ScrollState.End)
 			{
+				isFinishingMoving = true;
+			}
+
+			if (isFinishingMoving)
+			//if (Input.GetMouseButtonUp(0) || (!Input.GetMouseButton(0) && (state == ScrollState.Scroll || state == ScrollState.Begin)))
+			{
+//				Debug.Log("Touch up");
 				if (momentumStrong > 0)
 				{
-					if (!isFinishingMoving)
-					{
+//					Debug.Log("Momentum");
+//					if (!isFinishingMoving)
+//					{
+//						Debug.Log("Momentum");
 						Momentum();
-					}
+//					}
 					state = ScrollState.Finishing;
 				}
 				else
@@ -101,6 +116,7 @@ public class ScrollArea : MonoBehaviour
 					state = ScrollState.End;
 				}
 			}
+
 			if (state == ScrollState.End)
 			{
 				EndScroll();
@@ -179,12 +195,15 @@ public class ScrollArea : MonoBehaviour
 	{
 		oldPosition = Input.mousePosition;
 		deltaPosition = Vector2.zero;
+//		Debug.Log("BeginScroll");
 
 		beginScroll = true;
 	}
 
-	void Scroll(Vector3 pointPosition)
+	bool Scroll(Vector3 pointPosition)
 	{
+		Vector2 oldDeltaPosition = Vector2.zero;
+		oldDeltaPosition = deltaPosition;
 		deltaPosition = oldPosition - (Vector2)pointPosition;
 
 		deltaPosition.x = (deltaPosition.x / Screen.width) * 100 * scale;
@@ -198,7 +217,11 @@ public class ScrollArea : MonoBehaviour
 			beginScroll = false;
 		}
 
-		oldPosition = pointPosition;
+//		Debug.Log("magnitude " + deltaPosition.magnitude);
+		if (oldDeltaPosition != Vector2.zero && deltaPosition.magnitude < minMomentumVelocity)
+		{
+			//return true;
+		}
 
 		Vector3 newPosition = cameraTransform.localPosition;
 		newPosition.x += deltaPosition.x;
@@ -206,41 +229,46 @@ public class ScrollArea : MonoBehaviour
 		cameraTransform.localPosition = newPosition;
 
 
+//		Debug.Log(speed.ToString());
+			
+		oldPosition = pointPosition;
+
 		if (!scrollArea.Contains(cameraTransform.position))
 		{
 			cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
 		}
+
+		
+		speed = camera.velocity;
+//		speed = new Vector2(Mathf.Abs(speed.x), Mathf.Abs(speed.y));
+
+		return false;
 	}
 
     void Momentum()
     {
-		isFinishingMoving = true;
+//		isFinishingMoving = true;
         StartCoroutine("MomentumCoroutine");
     }
 
     IEnumerator MomentumCoroutine()
     {
-        Vector3 cameraVelocity = camera.velocity;
 		Vector3 pointPosition = oldPosition;
-//		Vector3 newPosition = (Vector3)oldPosition + cameraVelocity * momentumStrong;
-//        Vector3 distance = cameraVelocity;
-       // float elapsedTime = 0;
         do
         {
-			pointPosition = (Vector3)oldPosition - camera.velocity * momentumStrong;
-			//pointPosition = Vector3.Lerp(oldPosition, newPosition, elapsedTime);
-//            distance = Vector3.Lerp(cameraVelocity, Vector3.zero, elapsedTime) * momentumStrong;
+//			Debug.Log(speed.ToString());
+			pointPosition = (Vector3)oldPosition - (Vector3)speed * momentumStrong;
+
 			Scroll(pointPosition);
-//            cameraTransform.Translate(distance);
+
+
             if (!scrollArea.Contains(cameraTransform.position))
             {
                 cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
             }
             yield return null;
-//
-           // elapsedTime += Time.deltaTime / momentum;
 
-		} while (/*elapsedTime < 1.0f && */Mathf.Abs(camera.velocity.magnitude) > minMomentumVelocity);
+		} while (Mathf.Abs(camera.velocity.magnitude) > minMomentumVelocity);
 
 		isFinishingMoving = false;
 		state = ScrollState.End;

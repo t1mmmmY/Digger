@@ -255,27 +255,30 @@ public class TavernManager : BaseSingleton<TavernManager>
 	public void SelectCharacter(int characterNumber)
 	{
 		//		Debug.Log("Select " + character.number);
-		PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
-		switch (playerStatus)
+		if (PlayerStatsController.Instance != null)
 		{
-		case PlayerStatus.Bought:
-			PlaySelectAnimation(characterNumber);
-			
-			if (GeneralGameController.Instance != null)
+			PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
+			switch (playerStatus)
 			{
-				GeneralGameController.Instance.SelectCharacter(characterNumber);
+			case PlayerStatus.Bought:
+				PlaySelectAnimation(characterNumber);
+				
+				if (GeneralGameController.Instance != null)
+				{
+					GeneralGameController.Instance.SelectCharacter(characterNumber);
+				}
+				break;
+			case PlayerStatus.NotBought:
+				
+				//Temp
+				PlaySelectAnimation(characterNumber);
+				
+				if (GeneralGameController.Instance != null)
+				{
+					GeneralGameController.Instance.SelectCharacter(characterNumber);
+				}
+				break;
 			}
-			break;
-		case PlayerStatus.NotBought:
-			
-			//Temp
-			PlaySelectAnimation(characterNumber);
-			
-			if (GeneralGameController.Instance != null)
-			{
-				GeneralGameController.Instance.SelectCharacter(characterNumber);
-			}
-			break;
 		}
 	}
     

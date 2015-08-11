@@ -86,9 +86,7 @@ public class SingleplayerGameManager : GameManager
 //		if (canShare)
 		{
 			canShare = false;
-			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
-	//		VoxelBusters.NativePlugins.Sharing sharing = new VoxelBusters.NativePlugins.Sharing();
-	//		sharing.ShareScreenShotOnSocialNetwork();
+//			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
 
 			base.ShareGame();
 		}
