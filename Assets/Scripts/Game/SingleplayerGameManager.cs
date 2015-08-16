@@ -83,10 +83,10 @@ public class SingleplayerGameManager : GameManager
 
 	public override void ShareGame()
 	{
-//		if (canShare)
+		if (canShare)
 		{
-			canShare = false;
-//			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
+//			canShare = false;
+			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
 
 			base.ShareGame();
 		}

@@ -33,7 +33,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 
 	void Start()
 	{
-		Application.targetFrameRate = 30;
+		//Application.targetFrameRate = 30;
 		BankController.Init();
 		currentCharacterNumber = PlayerStatsController.Instance.GetCurrentPlayerNumber();
 	}

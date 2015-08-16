@@ -14,17 +14,20 @@ public class ScrollArea : MonoBehaviour
 //    [SerializeField] float momentum = 0.5f;
     [SerializeField] float momentumStrong = 0.01f;
 	[SerializeField] float minMomentumVelocity = 0.05f;
+	[SerializeField] float minScrollVelocity = 0.0f;
 	int oldPositionNumber = 0;
 
 //	[Range(0, 500)]
 //	[SerializeField] float maxShift = 100;
 
 	Vector2 oldPosition;
+	Vector2 initPosition;
 	Vector2 deltaPosition;
 	Vector2 speed = Vector2.zero;
 
 	bool beginScroll = false;
 	bool isFinishingMoving = false;
+	bool tick = false;
 
 	enum ScrollState
 	{
@@ -70,9 +73,11 @@ public class ScrollArea : MonoBehaviour
 
 	void Update()
 	{
+
 		if (state != ScrollState.Animate && !isFinishingMoving)
 		{
 			bool endMoving = false;
+			tick = false;
 
 			if (Input.GetMouseButtonDown(0))
 			{
@@ -85,16 +90,42 @@ public class ScrollArea : MonoBehaviour
 				{
 					BeginScroll();
 				}
-				isFinishingMoving = Scroll(Input.mousePosition);
-//				Scroll(Input.mousePosition);
-				state = ScrollState.Scroll;
+				if ((Vector2)Input.mousePosition == oldPosition && state == ScrollState.Begin)
+				{
+
+				}
+				else
+				{
+//				isFinishingMoving = Scroll(Input.mousePosition);
+					Scroll(Input.mousePosition);
+					state = ScrollState.Scroll;
+				}
 
 			}
+			if (Input.touches.Length > 0 && state == ScrollState.Scroll)
+			{
+				tick = true;
+			}
 
-			if (Input.GetMouseButtonUp(0) && state != ScrollState.End)
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+			if ((state == ScrollState.Scroll || state == ScrollState.Begin) && Input.touches.Length == 0)
 			{
 				isFinishingMoving = true;
 			}
+#endif
+
+//			Debug.Log("Update " + state.ToString());
+			if (!tick && state == ScrollState.Scroll)
+			{
+//				Debug.Log("94");
+				isFinishingMoving = true;
+			}
+
+//			if (Input.GetMouseButtonUp(0) && state != ScrollState.End)
+//			{
+//				Debug.Log("94");
+//				isFinishingMoving = true;
+//			}
 
 			if (isFinishingMoving)
 			//if (Input.GetMouseButtonUp(0) || (!Input.GetMouseButton(0) && (state == ScrollState.Scroll || state == ScrollState.Begin)))
@@ -195,13 +226,49 @@ public class ScrollArea : MonoBehaviour
 	{
 		oldPosition = Input.mousePosition;
 		deltaPosition = Vector2.zero;
+		initPosition = oldPosition;
 //		Debug.Log("BeginScroll");
 
 		beginScroll = true;
+
+//		StartCoroutine("LookForMouseButtonUp");
 	}
+
+	IEnumerator LookForMouseButtonUp()
+	{
+		bool isUp = false;
+		do
+		{
+			if (Input.GetMouseButtonUp(0))
+			{
+				Debug.Log("Register Up");
+				isUp = true;
+				isFinishingMoving = true;
+			}
+			yield return null;
+		} while (!isUp);
+	}
+
+	Vector3 oldPointPosition = Vector3.zero;
 
 	bool Scroll(Vector3 pointPosition)
 	{
+
+		//Debug.Log(Vector3.Distance(pointPosition, oldPointPosition) + "; " + pointPosition.ToString());
+		//if (pointPosition == oldPointPosition)
+		if (Vector3.Distance(pointPosition, oldPointPosition) <= minScrollVelocity && (Vector2)pointPosition != initPosition)
+		{
+			Debug.Log(Vector3.Distance(pointPosition, oldPointPosition));
+			return false;
+		}
+		else
+		{
+
+			//speed = camera.velocity;
+		}
+
+		tick = true;
+
 		Vector2 oldDeltaPosition = Vector2.zero;
 		oldDeltaPosition = deltaPosition;
 		deltaPosition = oldPosition - (Vector2)pointPosition;
@@ -217,11 +284,16 @@ public class ScrollArea : MonoBehaviour
 			beginScroll = false;
 		}
 
+//		if (deltaPosition.magnitude < minMomentumVelocity)
+//		{
+//			tick = false;
+//		}
+
 //		Debug.Log("magnitude " + deltaPosition.magnitude);
-		if (oldDeltaPosition != Vector2.zero && deltaPosition.magnitude < minMomentumVelocity)
-		{
+//		if (oldDeltaPosition != Vector2.zero && deltaPosition.magnitude < minMomentumVelocity)
+//		{
 			//return true;
-		}
+//		}
 
 		Vector3 newPosition = cameraTransform.localPosition;
 		newPosition.x += deltaPosition.x;
@@ -238,8 +310,16 @@ public class ScrollArea : MonoBehaviour
 			cameraTransform.position = scrollArea.ClosestPoint(cameraTransform.position);
 		}
 
-		
-		speed = camera.velocity;
+//		if (Vector3.Distance(pointPosition, oldPointPosition) >= minMomentumVelocity)
+		if (camera.velocity.magnitude > minScrollVelocity)
+		{
+
+			speed = camera.velocity;
+			Debug.Log(speed);
+		}
+
+		oldPointPosition = pointPosition;
+
 //		speed = new Vector2(Mathf.Abs(speed.x), Mathf.Abs(speed.y));
 
 		return false;
@@ -253,12 +333,13 @@ public class ScrollArea : MonoBehaviour
 
     IEnumerator MomentumCoroutine()
     {
+		isFinishingMoving = false;
 		Vector3 pointPosition = oldPosition;
         do
         {
 //			Debug.Log(speed.ToString());
 			pointPosition = (Vector3)oldPosition - (Vector3)speed * momentumStrong;
-
+//			Debug.Log("ScrollMomentum");
 			Scroll(pointPosition);
 
 
@@ -268,14 +349,15 @@ public class ScrollArea : MonoBehaviour
             }
             yield return null;
 
-		} while (Mathf.Abs(camera.velocity.magnitude) > minMomentumVelocity);
+		} while (Mathf.Abs(camera.velocity.magnitude) > minMomentumVelocity/* || state == ScrollState.Finishing*/);
 
-		isFinishingMoving = false;
+//		isFinishingMoving = false;
 		state = ScrollState.End;
     }
 
 	void EndScroll()
 	{
+		isFinishingMoving = false;
 		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
 
 		if (onChangePosition != null)
@@ -283,6 +365,9 @@ public class ScrollArea : MonoBehaviour
 			onChangePosition(currentPosition);
 		}
 		beginScroll = false;
+
+//		BeginScroll();
+//		state = ScrollState.Begin;
 	}
 
 	int FindNearetPosition(Vector3 position)
@@ -350,7 +435,7 @@ public class ScrollArea : MonoBehaviour
 		Hashtable hash = new Hashtable();
 		hash.Add("position", cameraPositions[positionNumber].center);
 		hash.Add("isLocal", false);
-		hash.Add("time", 0.6f);
+		hash.Add("time", 1.0f);
 		hash.Add("oncomplete", "OnFinishMove");
 		hash.Add("oncompletetarget", this.gameObject);
 
