@@ -9,7 +9,7 @@ using VoxelBusters.AssetStoreProductUtility;
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
-	[CustomEditor(typeof(NPSettings))]
+
 	public class NPSettingsInspector : AssetStoreProductInspector
 	{
 		private enum eTabView
@@ -20,7 +20,8 @@ namespace VoxelBusters.NativePlugins
 			MEDIA_LIBRARY,
 			NOTIFICATION,
 			SOCIAL_NETWORK,
-			UTILITY
+			UTILITY,
+			GAME_SERVICES
 		}
 
 		#region Properties
@@ -139,6 +140,10 @@ namespace VoxelBusters.NativePlugins
 						
 					case eTabView.UTILITY:
 						ShowUtilitySettings();
+						break;
+
+					case eTabView.GAME_SERVICES:
+						ShowGameServiesSettings();
 						break;
 
 					default:

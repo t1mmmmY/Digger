@@ -14,57 +14,6 @@ namespace VoxelBusters.Utility
 {
 	public static class ReflectionExtensions 
 	{
-		#region Method Extensions
-
-		public static void InvokeMethod (this object _object, string _method, object _value = null)
-		{
-			if (_object == null)
-				throw new NullReferenceException("Target Object is null.");
-
-			Type			_objectType		= _object.GetType();
-			object[] 		_argValueList	= null;
-			Type[]			_argTypeList	= null;
-
-			if (_value != null)
-			{
-				_argValueList				= new object[] { _value };
-				_argTypeList				= new Type[] { _value.GetType() };
-			}
-
-			// Invoke method
-			InvokeMethod(_object, _objectType, _method, _argTypeList, _argValueList);
-		}
-
-		private static void InvokeMethod (object _object, Type _objectType, string _method, Type[] _argTypeList, object[] _argValueList)
-		{
-			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.OptionalParamBinding;
-			MethodInfo 		_methodInfo		= null;
-
-			// Find method info based on method name, parameter
-			if (_argValueList != null)
-				_methodInfo 				= _objectType.GetMethod(_method, _bindingAttr, null, _argTypeList, null);
-			else
-				_methodInfo					= _objectType.GetMethod(_method, _bindingAttr);
-
-			// Invoke the method
-			if (_methodInfo != null)
-			{
-				_methodInfo.Invoke(_object, _argValueList);
-			}
-			// Failed to find a matching method, so search for it in base class
-			else if (_objectType.BaseType != null)
-			{
-				InvokeMethod(_object, _objectType.BaseType, _method, _argTypeList, _argValueList);
-			}
-			// Object doesnt have this method
-			else
-			{
-				throw new MissingMethodException();
-			}
-		}
-
-		#endregion
-
 		public static T GetAttribute <T> (this System.Type _type, bool _inherit) where T : System.Attribute
 		{
 			object[] _attributes	= _type.GetCustomAttributes(_inherit);

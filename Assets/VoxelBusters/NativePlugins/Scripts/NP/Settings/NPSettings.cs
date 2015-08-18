@@ -20,7 +20,7 @@ namespace VoxelBusters.NativePlugins
 		#region Constants
 		
 		private const 	string 						kProductName					= "Native Plugins";
-		private const 	string 						kProductVersion					= "1.04.2";
+		private const 	string 						kProductVersion					= "1.04";
 		
 		#endregion
 
@@ -209,8 +209,6 @@ namespace VoxelBusters.NativePlugins
 		#region Methods
 
 #if UNITY_EDITOR
-
-		#if !NATIVE_PLUGINS_LITE_VERSION
 		private void OnTwitterConfigChanged ()
 		{
 			// Take action on configuration changes
@@ -240,7 +238,6 @@ namespace VoxelBusters.NativePlugins
 
 			#endif
 		}
-		#endif
 
 		private void OnApplicationConfigurationChanged ()
 		{

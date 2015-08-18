@@ -9,7 +9,7 @@ namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
-	//[CustomEditor(typeof(NPSettings))]
+	[CustomEditor(typeof(NPSettings))]
 	public class NPSettingsVerticalInspector : AssetStoreProductInspector
 	{
 		private enum eTabView

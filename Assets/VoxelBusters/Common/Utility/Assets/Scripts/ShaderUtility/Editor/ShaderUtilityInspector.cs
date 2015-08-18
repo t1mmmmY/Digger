@@ -9,8 +9,7 @@ namespace VoxelBusters.Utility
 	{
 		#region Properties
 
-		private				ShaderUtility			m_instance;
-		private				SerializedProperty		m_shaderListProperty;
+		private				ShaderUtility		m_instance;
 
 		#endregion
 
@@ -18,8 +17,7 @@ namespace VoxelBusters.Utility
 
 		public void OnEnable ()
 		{
-			m_instance				= (target as ShaderUtility);
-			m_shaderListProperty	= serializedObject.FindProperty("m_shaderList");
+			m_instance		= (target as ShaderUtility);
 		}
 
 		public override void OnInspectorGUI ()
@@ -28,7 +26,7 @@ namespace VoxelBusters.Utility
 				m_instance.ReloadShaderUtility();
 
 			// Draw default inspector
-			EditorGUILayout.PropertyField(m_shaderListProperty, true);
+			DrawDefaultInspector();
 		}
 
 		#endregion

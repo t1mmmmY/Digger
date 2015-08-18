@@ -56,7 +56,7 @@ namespace VoxelBusters.Utility
 		private void LoadLinkerFileData (string _path)
 		{
 			// Parse existing link xml file
-			if (!FileOperations.Exists(_path))
+			if (!File.Exists(_path))
 				return;
 
 			using (XmlReader _xmlReader	= XmlReader.Create(_path))
@@ -129,18 +129,6 @@ namespace VoxelBusters.Utility
 
 		public void SaveLinkerFile ()
 		{
-			if (m_blacklistedAssemblyList.Count == 0)
-			{
-				if (FileOperations.Exists(kSavePath))
-				{
-					FileOperations.Delete(kSavePath);
-					FileOperations.Delete(kSavePath + ".meta");
-				}
-
-				AssetDatabase.Refresh();
-				return;
-			}
-
 			// Settings
 			XmlWriterSettings 	_settings 	= new XmlWriterSettings();
 			_settings.Encoding 				= new System.Text.UTF8Encoding(true);

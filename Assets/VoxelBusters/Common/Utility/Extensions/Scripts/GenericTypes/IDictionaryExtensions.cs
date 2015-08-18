@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-using System.Collections.Generic;
 
 namespace VoxelBusters.Utility
 {
@@ -72,25 +71,6 @@ namespace VoxelBusters.Utility
 			{
 				return default(T);
 			}
-		}
-
-		public static string GetKey<T>(this IDictionary _sourceDictionary, T _value)
-		{
-			string _key = null;
-
-			if(_value != null)
-			{
-				foreach (KeyValuePair<string, T> _eachPair in _sourceDictionary.Keys)
-				{
-					if (_eachPair.Value != null && _eachPair.Value.Equals(_value))
-					{
-						_key = _eachPair.Key;
-						break;
-					}
-				}
-			}
-
-			return _key;
 		}
 	}
 }
