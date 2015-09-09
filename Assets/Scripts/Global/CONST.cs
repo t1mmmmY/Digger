@@ -34,7 +34,7 @@ public static class CONST
 
 	public static readonly string[] DESCRIPTOIN_NAMES = { 
 		"Drunken Digger",
-		"Walter White",
+		"Walker White",
 		"BadMan",
 		"Charlie",
 		"Finn",

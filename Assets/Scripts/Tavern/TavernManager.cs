@@ -44,16 +44,16 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void OnEnable()
 	{
-		ScrollArea.onChangePosition += OnChangePosition;
-		ScrollArea.onStartMoving += OnStartMoving;
+//		ScrollAreax.onChangePosition += OnChangePosition;
+//		ScrollArea.onStartMoving += OnStartMoving;
 		ScrollArea.onEndMoving += OnEndMoving;
 
 	}
 
 	void OnDestroy()
 	{
-		ScrollArea.onChangePosition -= OnChangePosition;
-		ScrollArea.onStartMoving -= OnStartMoving;
+//		ScrollArea.onChangePosition -= OnChangePosition;
+//		ScrollArea.onStartMoving -= OnStartMoving;
 		ScrollArea.onEndMoving -= OnEndMoving;
 	}
 
