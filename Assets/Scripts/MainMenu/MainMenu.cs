@@ -88,24 +88,40 @@ public class MainMenu : MonoBehaviour
 	{
 		SetActiveAllButtons(false);
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
+
+#if UNITY_ANDROID
 		MultiplayerController.Instance.StartMatchMakingRealTime();
+#elif UNITY_IOS
+
+#endif
 	}
 
 	public void StartFastMultiplayerGame()
 	{
 		SetActiveAllButtons(false);
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
+#if UNITY_ANDROID
 		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
+#elif UNITY_IOS
+
+#endif
 	}
 
 	public void SignInToGoogle()
 	{
+#if UNITY_ANDROID
 		MultiplayerController.Instance.SignIn();
+#elif UNITY_IOS
+		
+#endif
 	}
 
 	public void ShowLeaderboard()
 	{
+#if UNITY_ANDROID
 		MultiplayerController.Instance.ShowLeaderboard();
+#elif UNITY_IOS
+#endif
 	}
 
 

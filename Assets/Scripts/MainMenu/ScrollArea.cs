@@ -227,6 +227,11 @@ public class ScrollArea : MonoBehaviour
 
 //		oldPosition = cameraTransform.localPosition;
 
+		if (!scroll)
+		{
+			iTween.Stop(cameraTransform.gameObject);
+		}
+
 		scroll = true;
 
 		Vector3 newPosition = cameraTransform.localPosition;
@@ -368,7 +373,7 @@ public class ScrollArea : MonoBehaviour
 		hash.Add("time", 1.0f);
 		hash.Add("oncomplete", "OnFinishMove");
 		hash.Add("oncompletetarget", this.gameObject);
-		
+
 		iTween.MoveTo(cameraTransform.gameObject, hash);
 		
 		oldPositionNumber = currentPosition;

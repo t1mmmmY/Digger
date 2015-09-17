@@ -18,8 +18,12 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	private MultiplayerController() 
 	{
+#if UNITY_ANDROID
 		PlayGamesPlatform.DebugLogEnabled = false;
 		PlayGamesPlatform.Activate ();
+#elif UNITY_IOS
+
+#endif
 	}
 	
 	public static MultiplayerController Instance 
@@ -37,6 +41,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void SignIn() 
 	{
+#if UNITY_ANDROID
 		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
 		{
 			PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
@@ -57,6 +62,9 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			Debug.Log ("You're already signed in.");
 			// We could also start our game now
 		}
+#elif UNITY_IOS
+
+#endif
 	}
 
 	public void TrySilentSignIn() 
