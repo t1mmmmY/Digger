@@ -33,7 +33,7 @@ public class BonusController : BaseSingleton<BonusController>
         DateTime lastBonusTime = Convert.ToDateTime(lastBonusTimeString);
 
         double deltaSeconds = (currentTime - lastBonusTime).TotalMinutes;
-        Debug.Log(deltaSeconds);
+//        Debug.Log(deltaSeconds);
 
         if (deltaSeconds > bonusFrequency)
         {

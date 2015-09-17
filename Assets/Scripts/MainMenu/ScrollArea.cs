@@ -23,6 +23,7 @@ public class ScrollArea : MonoBehaviour
 //	Vector2 deltaPosition;
 	Vector2 speed = Vector2.zero;
 	Vector3 oldPointPosition = Vector3.zero;
+	bool scroll = false;
 	
 //	bool beginScroll = false;
 //	bool isFinishingMoving = false;
@@ -41,7 +42,7 @@ public class ScrollArea : MonoBehaviour
 //	ScrollState state = ScrollState.Nothing;
 	
 //	public static System.Action onStartMoving;
-//	public static System.Action<int> onChangePosition;
+	public static System.Action<int> onChangePosition;
 	public static System.Action onEndMoving;
 	
 	
@@ -225,6 +226,9 @@ public class ScrollArea : MonoBehaviour
 //		}
 
 //		oldPosition = cameraTransform.localPosition;
+
+		scroll = true;
+
 		Vector3 newPosition = cameraTransform.localPosition;
 		newPosition.x -= deltaPosition.x;
 		
@@ -280,13 +284,18 @@ public class ScrollArea : MonoBehaviour
 	
 	void EndScroll()
 	{
+		if (scroll)
+		{
+			scroll = false;
+			MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
+		}
 //		isFinishingMoving = false;
-		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
+//		MoveToPosition(FindNearetPosition(cameraTransform.localPosition));
 		
-//		if (onChangePosition != null)
-//		{
-//			onChangePosition(currentPosition);
-//		}
+		if (onChangePosition != null)
+		{
+			onChangePosition(currentPosition);
+		}
 //		beginScroll = false;
 		
 	}

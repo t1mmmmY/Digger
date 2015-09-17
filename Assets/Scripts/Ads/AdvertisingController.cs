@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+//using UnityEditor.Advertisements;
 using UnityEngine.Advertisements;
 
 public class AdvertisingController : BaseSingleton<AdvertisingController>

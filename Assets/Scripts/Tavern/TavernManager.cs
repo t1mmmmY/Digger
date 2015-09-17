@@ -44,7 +44,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void OnEnable()
 	{
-//		ScrollAreax.onChangePosition += OnChangePosition;
+		ScrollArea.onChangePosition += OnChangePosition;
 //		ScrollArea.onStartMoving += OnStartMoving;
 		ScrollArea.onEndMoving += OnEndMoving;
 
@@ -52,7 +52,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void OnDestroy()
 	{
-//		ScrollArea.onChangePosition -= OnChangePosition;
+		ScrollArea.onChangePosition -= OnChangePosition;
 //		ScrollArea.onStartMoving -= OnStartMoving;
 		ScrollArea.onEndMoving -= OnEndMoving;
 	}
@@ -101,6 +101,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 		}
 
 		//Add empty right wall
+		AddWall(false);
 		AddWall(false);
 
 		yield return null;

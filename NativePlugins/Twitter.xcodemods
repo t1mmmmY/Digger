@@ -1,0 +1,1 @@
+{"group":"NativePlugins-Twitter","libs":[],"frameworks":["Accounts.framework:weak","Social.framework:weak"],"headerpaths":[],"files":["Twitter\/Framework\/Fabric.framework","Twitter\/Framework\/TwitterKit.framework"],"folders":["Twitter\/Source:-fno-objc-arc"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"],"compiler_flags":[],"linker_flags":[]}
