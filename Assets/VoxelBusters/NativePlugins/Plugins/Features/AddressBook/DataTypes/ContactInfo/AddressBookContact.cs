@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
+using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins
 {

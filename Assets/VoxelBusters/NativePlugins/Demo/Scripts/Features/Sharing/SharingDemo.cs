@@ -36,27 +36,9 @@ namespace VoxelBusters.NativePlugins.Demo
 		[SerializeField]
 		private string 					m_sampleImageAtDataPath;
 
-		GUIScrollView 					m_scrollView;
-
-
 		#endregion
 
-		#region Unity Methods
-
-		protected override void Start()
-		{
-			base.Start();
-			
-			m_scrollView = this.gameObject.AddComponent<GUIScrollView>();
-
-		}
-
-		#endregion
-
-
-		#region API Calls
-
-		//Message Sharing
+		#region Message Sharing
 
 		private bool IsMessagingServiceAvailable()
 		{
@@ -68,7 +50,9 @@ namespace VoxelBusters.NativePlugins.Demo
 			NPBinding.Sharing.SendTextMessage(m_smsBody, m_smsRecipients, FinishedSharing);
 		}
 		
-		//Mail Sharing
+		#endregion
+		
+		#region Mail Sharing
 		
 		private bool IsMailServiceAvailable()
 		{
@@ -112,7 +96,10 @@ namespace VoxelBusters.NativePlugins.Demo
 			return NPBinding.Sharing.IsWhatsAppServiceAvailable();
 		}
 
-		//Share on WhatsApp
+		#endregion
+		
+		#region WhatsApp Sharing
+
 		private void ShareTextMessageOnWhatsApp()
 		{
 			NPBinding.Sharing.ShareTextMessageOnWhatsApp(m_shareMessage, FinishedSharing);			
@@ -128,7 +115,9 @@ namespace VoxelBusters.NativePlugins.Demo
 			NPBinding.Sharing.ShareImageOnWhatsApp(Application.persistentDataPath + "/" + m_sampleImageAtDataPath, FinishedSharing);
 		}
 	
-		//Sharing On Social Network
+		#endregion
+		
+		#region Sharing On Social Network
 		
 		private void ShareTextMessageOnSocialNetwork()
 		{
@@ -169,7 +158,10 @@ namespace VoxelBusters.NativePlugins.Demo
 			
 		}
 		
-		//General Sharing
+		#endregion
+		
+		#region Sharing
+
 		private void ShareMessage()
 		{
 			// Set popover to last touch position
@@ -179,7 +171,6 @@ namespace VoxelBusters.NativePlugins.Demo
 			NPBinding.Sharing.ShareMessage(m_shareMessage, 		m_excludedOptions, 
 			                               FinishedSharing);
 		}
-		
 		
 		private void ShareURL()
 		{
@@ -213,8 +204,7 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#endregion
 
-
-		#region API Callbacks
+		#region Callbacks
 		
 		private void FinishedSharing (eShareResult _result)
 		{
@@ -224,189 +214,144 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#endregion
 
-		
 		#region UI
+
 		protected override void OnGUIWindow ()
 		{
 			base.OnGUIWindow();
 
-			GUILayout.BeginVertical();
+			RootScrollView.BeginScrollView();
 			{
-				m_scrollView.BeginScrollView();
-				{
-					DrawMessageSharing();
-					DrawMailSharing();
-					DrawWhatsAppSharing();
-					DrawSocialNetworkingSharing();
-					DrawGeneralSharing();
-				}
-
-				m_scrollView.EndScrollView();
+				DrawMessageSharing();
+				DrawMailSharing();
+				DrawWhatsAppSharing();
+				DrawSocialNetworkingSharing();
+				DrawGeneralSharing();
 			}
-			GUILayout.EndVertical();
-
-			GUILayout.FlexibleSpace();
+			RootScrollView.EndScrollView();
 			
 			DrawResults();
-			
 			DrawPopButton();
-			
 		}
 
 		private void DrawMessageSharing ()
 		{	
-			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.Label("Share via Message", kSubTitleStyle);
+			
+			if (GUILayout.Button("Is Messaging Available"))
 			{
-				GUILayout.Label("Share via Message", kSubTitleStyle);
-
-				if (GUILayout.Button("Is Messaging Available"))
-				{
-					AddNewResult("IsMessagingAvailable=" + IsMessagingServiceAvailable());
-				}
-				
-				if (GUILayout.Button("Send Text Message"))
-				{
-					SendTextMessage();
-				}
+				AddNewResult("IsMessagingAvailable=" + IsMessagingServiceAvailable());
 			}
-			GUILayout.EndVertical();
+			
+			if (GUILayout.Button("Send Text Message"))
+			{
+				SendTextMessage();
+			}
 		}
 			
-
 		private void DrawMailSharing ()
 		{
-			// First column
-			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.Label("Share via Mail", kSubTitleStyle);
+			
+			if (GUILayout.Button("Is Mail Available"))
 			{
-				GUILayout.Label("Share via Mail", kSubTitleStyle);
-
-				if (GUILayout.Button("Is Mail Available"))
-				{
-					AddNewResult("Can Send Mail = " + IsMailServiceAvailable());
-				}
-				
-				if (GUILayout.Button("Send Plain Text Mail"))
-				{
-					SendPlainTextMail();
-				}
-				
-				if (GUILayout.Button("Send HTML Text Mail"))
-				{
-					SendHTMLTextMail();
-				}
-
-				if (GUILayout.Button("Send Mail With Screenshot"))
-				{
-					SendMailWithScreenshot();
-				}
-				
-				if (GUILayout.Button("Send Mail With Attachment : Path"))
-				{
-					SendMailWithAttachment();
-				}
-				
+				AddNewResult("Can Send Mail = " + IsMailServiceAvailable());
 			}
-			GUILayout.EndVertical();
+			
+			if (GUILayout.Button("Send Plain Text Mail"))
+			{
+				SendPlainTextMail();
+			}
+			
+			if (GUILayout.Button("Send HTML Text Mail"))
+			{
+				SendHTMLTextMail();
+			}
+			
+			if (GUILayout.Button("Send Mail With Screenshot"))
+			{
+				SendMailWithScreenshot();
+			}
+			
+			if (GUILayout.Button("Send Mail With Attachment : Path"))
+			{
+				SendMailWithAttachment();
+			}
 		}
 
 		private void DrawWhatsAppSharing ()
 		{
-			// Start vertical column
-			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.Label("Share on WhatsApp", kSubTitleStyle);
+			
+			if (GUILayout.Button("IsWhatsAppServiceAvailable"))
 			{
-				GUILayout.Label("Share on WhatsApp", kSubTitleStyle);
-
-				if (GUILayout.Button("IsWhatsAppServiceAvailable"))
-				{
-					AddNewResult("Can Share On WhatsApp = " + IsWhatsAppServiceAvailable());
-				}
-
-				if (GUILayout.Button("ShareTextMessageOnWhatsApp"))
-				{
-					ShareTextMessageOnWhatsApp();
-				}
-
-				if (GUILayout.Button("ShareScreenshotOnWhatsApp"))
-				{
-					ShareScreenshotOnWhatsApp();
-				}
-	
-				if (GUILayout.Button("ShareImageOnWhatsApp"))
-				{
-					ShareImageOnWhatsApp();
-				}
-
+				AddNewResult("Can Share On WhatsApp = " + IsWhatsAppServiceAvailable());
 			}
-			GUILayout.EndVertical();
+			
+			if (GUILayout.Button("ShareTextMessageOnWhatsApp"))
+			{
+				ShareTextMessageOnWhatsApp();
+			}
+			
+			if (GUILayout.Button("ShareScreenshotOnWhatsApp"))
+			{
+				ShareScreenshotOnWhatsApp();
+			}
+			
+			if (GUILayout.Button("ShareImageOnWhatsApp"))
+			{
+				ShareImageOnWhatsApp();
+			}
 		}
 
 		private void DrawSocialNetworkingSharing ()
 		{
-			// Start vertical column
-			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.Label("Share on Social Network", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShareTextMessageOnSocialNetwork"))
 			{
-				GUILayout.Label("Share on Social Network", kSubTitleStyle);
-
-				if (GUILayout.Button("ShareTextMessageOnSocialNetwork"))
-				{
-					ShareTextMessageOnSocialNetwork();
-				}
-				
-				if (GUILayout.Button("ShareURLOnSocialNetwork"))
-				{
-					ShareURLOnSocialNetwork();
-				}
-				
-				if (GUILayout.Button("ShareScreenShotOnSocialNetwork"))
-				{
-					ShareScreenShotOnSocialNetwork();
-					
-				}
-				
-				if (GUILayout.Button("ShareImageOnSocialNetwork"))
-				{
-					ShareImageOnSocialNetwork();
-					
-				}
-
+				ShareTextMessageOnSocialNetwork();
 			}
-			GUILayout.EndVertical();
+			
+			if (GUILayout.Button("ShareURLOnSocialNetwork"))
+			{
+				ShareURLOnSocialNetwork();
+			}
+			
+			if (GUILayout.Button("ShareScreenShotOnSocialNetwork"))
+			{
+				ShareScreenShotOnSocialNetwork();
+			}
+			
+			if (GUILayout.Button("ShareImageOnSocialNetwork"))
+			{
+				ShareImageOnSocialNetwork();
+			}
 		}
-
 
 		private void DrawGeneralSharing ()
 		{
-			// First column
-			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.Label("Share", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShareMessage"))
 			{
-				GUILayout.Label("Share", kSubTitleStyle);
-
-				if (GUILayout.Button("ShareMessage"))
-				{
-					ShareMessage();
-					
-				}
-				
-				if (GUILayout.Button("ShareURL"))
-				{
-					ShareURL();
-					
-				}
-				
-				if (GUILayout.Button("ShareScreenShot"))
-				{
-					ShareScreenShot();
-					
-				}
-				
-				if (GUILayout.Button("ShareImageAtPath"))
-				{
-					ShareImageAtPath();
-					
-				}
-				
+				ShareMessage();
 			}
-			GUILayout.EndVertical();
+			
+			if (GUILayout.Button("ShareURL"))
+			{
+				ShareURL();
+			}
+			
+			if (GUILayout.Button("ShareScreenShot"))
+			{
+				ShareScreenShot();
+			}
+			
+			if (GUILayout.Button("ShareImageAtPath"))
+			{
+				ShareImageAtPath();
+			}
 		}
 
 		#endregion

@@ -11,21 +11,25 @@
 
 @implementation UILocalNotification (Payload)
 
-#define kALS			@"aps"
+#define kAPS			@"aps"
 #define kAlert			@"alert"
 #define kBody			@"body"
 #define kAction			@"action-loc-key"
 #define kLaunchImage	@"launch-image"
 #define kFireDate		@"fire-date"
+#define kRepeatInterval	@"repeat-interval"
 #define kBadge			@"badge"
 #define kSound			@"sound"
 
 - (id)payload
 {
-	NSMutableDictionary *payload	= [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionary] forKey:kALS];
-	NSMutableDictionary *als		= [payload objectForKey:kALS];
+	NSMutableDictionary *payload	= [NSMutableDictionary dictionary];
+	NSMutableDictionary *aps		= [NSMutableDictionary dictionary];
 	
-	// Alert
+	// Payload: Add aps info
+	[payload setObject:aps forKey:kAPS];
+	
+	// APS: Add alert info
 	NSMutableDictionary *alert = [NSMutableDictionary dictionary];
 	
 	if ([self alertBody] != NULL)
@@ -43,26 +47,28 @@
 		[alert setObject:[self alertLaunchImage] forKey:kLaunchImage];
 	}
 	
-	[als setObject:alert forKey:kAlert];
+	[aps setObject:alert forKey:kAlert];
 	
-	// User info, fire date
+	// APS: Add badge and sound info
+	[aps setObject:[NSNumber numberWithInteger:[self applicationIconBadgeNumber]] forKey:kBadge];
+	
+	if ([self soundName] != NULL)
+	{
+		[aps setObject:[self soundName] forKey:kSound];
+	}
+	
+	// Payload: Add user info, fire data, repeat interval
 	if ([self userInfo] != NULL)
 	{
-		[als setObject:[self userInfo] forKey:[NotificationHandler GetKeyForUserInfo]];
+		[payload setObject:[self userInfo] forKey:[NotificationHandler GetKeyForUserInfo]];
 	}
 	
 	if ([self fireDate] != NULL)
 	{
-		[als setObject:[Utility ConvertNSDateToNSString:[self fireDate]]forKey:kFireDate];
+		[payload setObject:[Utility ConvertNSDateToNSString:[self fireDate]]forKey:kFireDate];
 	}
 	
-	// Sound, badges
-	[als setObject:[NSNumber numberWithInteger:[self applicationIconBadgeNumber]] forKey:kBadge];
-	
-	if ([self soundName] != NULL)
-	{
-		[als setObject:[self soundName] forKey:kSound];
-	}
+	[payload setObject:[NSNumber numberWithInt:[self repeatInterval]] forKey:kRepeatInterval];
 	
 	return payload;
 }

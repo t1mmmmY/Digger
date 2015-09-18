@@ -62,7 +62,8 @@ namespace VoxelBusters.AssetStoreProductUtility.Demo
 		
 		protected void DrawResults()
 		{
-	
+			GUILayout.FlexibleSpace();
+
 			if(m_results.Count > 0)
 			{
 				m_resultsScrollView.BeginScrollView(UISkin.window,GUILayout.MinHeight(Screen.height*0.3f));

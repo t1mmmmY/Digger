@@ -53,7 +53,18 @@ namespace VoxelBusters.NativePlugins.Internal
 			TransactionDateLocal			= _purchaseDate.ToLocalTime();
 
 			TransactionIdentifier			= GetPurchaseIdentifier(_originalJSON);
-			int _purchaseState 				= _originalJSON.GetIfAvailable<int>(kPurchaseState);
+
+			int _purchaseState;
+
+			if(_transactionInfo.Contains(kPurchaseState))//There is an override for purchase state.
+			{
+				_purchaseState				= _transactionInfo.GetIfAvailable<int>(kPurchaseState);	
+			}
+			else
+			{
+				_purchaseState 				= _originalJSON.GetIfAvailable<int>(kPurchaseState);
+			}
+
 			TransactionState				= GetConvertedPurchaseState(_purchaseState);
 
 			// Data from _transactionInfo
@@ -63,6 +74,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			string _validationState 		= _transactionInfo.GetIfAvailable<string>(kPurchaseValidationState);
 			VerificationState 				= GetValidationState(_validationState);
 
+			
 			// Error
 			Error							= _transactionInfo.GetIfAvailable<string>(kError);					
 		}

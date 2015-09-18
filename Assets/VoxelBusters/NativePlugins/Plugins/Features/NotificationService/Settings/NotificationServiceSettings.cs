@@ -93,27 +93,47 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			[SerializeField]
-			[Tooltip ("Set this if custom icon needs to be displayed in status bar. You need to update the icon in drawable folder {native-plugins_lib/res/Drawable/[app_icon_custom_white.png/app_icon_custom_coloured.png]")]
-			private bool 				m_allowCustomIcon = false;
+			[SerializeField, ExecuteOnValueChange("OnSmallNotificationIconChanged")]
+			[Tooltip ("Used for post Android L Devices. Changes because of material design adaptation.")]
+			private Texture2D m_whiteSmallIcon;
 			/// <summary>
-			/// Selects if custom icon needs to be considered for notification icon.
-			///	\note : You need to update the icon in drawable folder {Assets/Plugins/Android/native-plugins_lib/res/Drawable/[app_icon_custom_white.png/app_icon_custom_coloured.png]
+			/// This texture will be used for showing small icon in notification.
 			/// </summary>
-			/// <value>If true selects the custom icon, else uses the app icon for drawing.</value>
-			public bool  				AllowCustomIcon
+			/// <value> Android L devices will use this as icon in notifications.</value>
+			public Texture2D  				WhiteSmallIcon
 			{
 				get 
 				{ 
-					return m_allowCustomIcon; 
+					return m_whiteSmallIcon; 
 				}
 				
 				set
 				{
-					m_allowCustomIcon = value;
+					m_whiteSmallIcon = value;
+				}
+			}
+			
+			[SerializeField, ExecuteOnValueChange("OnSmallNotificationIconChanged")]
+			[Tooltip ("Coloured icon used for pre Android L Devices.")]
+			private Texture2D m_colouredSmallIcon;
+			/// <summary>
+			/// This texture will be used for showing small icon in notification.
+			/// </summary>
+			/// <value> Android L devices will use this as icon in notifications.</value>
+			public Texture2D  				ColouredSmallIcon
+			{
+				get 
+				{ 
+					return m_colouredSmallIcon; 
+				}
+				
+				set
+				{
+					m_colouredSmallIcon = value;
 				}
 			}
 
+			[Header("Remote Notification Keys")]
 			[SerializeField]
 			[Tooltip ("Custom ticker text key used in remote notifications.")]
 			private string 				m_tickerTextKey = "ticker_text";

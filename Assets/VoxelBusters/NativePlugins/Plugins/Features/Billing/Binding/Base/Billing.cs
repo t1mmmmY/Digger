@@ -48,6 +48,7 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 
 		#region API's
+
 		protected virtual void Initialise (BillingSettings _settings)
 		{}
 
@@ -104,6 +105,7 @@ namespace VoxelBusters.NativePlugins
 		
 		/// <summary>
 		/// Restores the previous non-consumable/Managed billing products that were purchased previously, if any.
+		/// \note On Android, It internally sends consumable list at the start of Billing initialisation, but if you are initializing your products runtime(not form NPSettings), make sure you call RequestBillingProdicts prior to this call. As, billing internally needs consumable list to be updated first for proper functionality.
 		/// </summary>
 		public virtual void RestoreCompletedTransactions ()
 		{}

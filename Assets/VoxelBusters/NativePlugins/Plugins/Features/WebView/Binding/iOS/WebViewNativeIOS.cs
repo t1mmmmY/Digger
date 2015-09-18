@@ -102,8 +102,11 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			base.Create(_webview, _frame);
 
-			// Create native instance
-			webviewCreate(_webview.UniqueID, new WebViewFrame(_frame));
+			// Create native instance and set frame
+			WebViewFrame 	_webviewFrame	= new WebViewFrame(_frame);
+
+			webviewCreate(_webview.UniqueID, 	_webviewFrame);
+			webviewSetFrame(_webviewFrame, 		_webview.UniqueID);
 		}
 		
 		public override void Destroy (VoxelBusters.NativePlugins.WebView _webview)

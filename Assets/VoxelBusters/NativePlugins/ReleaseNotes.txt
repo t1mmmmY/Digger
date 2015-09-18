@@ -1,3 +1,20 @@
+1.1
+New Features:	
+	- Game Services feature: Game application will make use Game Center, Google Play Services in iOS, Android platforms respectively for Leaderboard, Achievement, Score reporting etc.
+
+Feature Request:
+	- Added repeat functionality for Notifications. (Request: ksolo)
+	- Added launch notifications support. (Request: notnotalan)
+
+Changes:
+	- [iOS] Notification payload format change.
+	- [Android] Small icon for notifications selectable from inspector. 
+	- [Android] Removed conflicts with other plugins regarding Billing interface.
+	- [Android] Cancel Notification, Local Notification bug fixes. Thanks Craig for reporting!
+	- [Android] Restore transaction state fix. Thanks notnotalan for reporting!
+	- [Android] Added support for billing items more than 20. Thanks notnotalan for reporting!
+
+Important: Delete package folders before updating.
 
 1.04
 	- *Delete* package folders before updating.

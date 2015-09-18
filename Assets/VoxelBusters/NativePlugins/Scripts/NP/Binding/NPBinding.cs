@@ -7,186 +7,286 @@ using VoxelBusters.NativePlugins.Internal;
 using System.Collections.Generic;
 using System;
 
-[RequireComponent (typeof (PlatformBindingHelper))]
+[RequireComponent(typeof(PlatformBindingHelper))]
 public class NPBinding : SingletonPattern <NPBinding>
 {
-	#region Properties
+	#region Static Properties
 
+	public		new	static 	NPBinding				Instance 
+	{
+		get
+		{
+			NPBinding	_npBindingInstance			= SingletonPattern<NPBinding>.Instance;
+
+			if (_npBindingInstance == null)
+				return null;
+
+			// Add binding components if they werent added previously
+			_npBindingInstance.AddBindingComponentsIfRequired();
+
+			return _npBindingInstance;
+		}
+
+		protected set
+		{
+			SingletonPattern<NPBinding>.instance	= value;
+		}
+	}
+	
+	private 	static		AddressBook				addressBook;
 	/// <summary>
-	/// Provides unique interface to access Address Book for all platforms.
+	/// Returns platform specific interface to access Address Book feature.
 	/// </summary>
-	/// <value>The address book.</value>
-	private AddressBook					m_addressBook;
-	public static AddressBook 			AddressBook 	
+	public 		static 		AddressBook 			AddressBook 	
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesAddressBook)
+			if (!NPSettings.Application.SupportedFeatures.UsesAddressBook)
 			{
-				Debug.LogError("[NPBinding] Enable AddressBook in Supported Features under NPSettings/Application editor window.");
+				Debug.LogError("[NPBinding] Address Book feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesAddressBook\" flag.");
+				return null;
 			}
 
-			return Instance.m_addressBook;
-		}
+			if (Instance == null)
+				return null;
 
-		private set
-		{
-			Instance.m_addressBook = value;
-		} 
+			if (addressBook == null)
+				addressBook		= Instance.CachedGameObject.GetComponent<AddressBook>();
+			
+			return addressBook;
+		}
 	}
 
-	private	NetworkConnectivity			m_networkConnectivity;
-	public static NetworkConnectivity 	NetworkConnectivity 	
+	private		static		NetworkConnectivity			networkConnectivity;
+	/// <summary>
+	/// Returns platform specific interface to access Network Connectivity feature.
+	/// </summary>
+	public 		static 		NetworkConnectivity 		NetworkConnectivity 	
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesNetworkConnectivity)
+			if (!NPSettings.Application.SupportedFeatures.UsesNetworkConnectivity)
 			{
-				Debug.LogError("[NPBinding] Enable Network Connectivity in Supported Features under NPSettings/Application Settings editor window.");
+				Debug.LogError("[NPBinding] Network Connectivity feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesNetworkConnectivity\" flag.");
+				return null;
 			}
-			return Instance.m_networkConnectivity;
+			
+			if (Instance == null)
+				return null;
+
+			if (networkConnectivity == null)
+				networkConnectivity		= Instance.CachedGameObject.GetComponent<NetworkConnectivity>();
+			
+			return networkConnectivity;
 		}
-		
-		private set
-		{
-			Instance.m_networkConnectivity = value;
-		} 
 	}
 
-	private Sharing 					m_sharing; 		
-	public static Sharing 				Sharing 		
+	private 	static		Sharing 					sharing; 		
+	/// <summary>
+	/// Returns platform specific interface to access Sharing feature.
+	/// </summary>
+	public 		static	 	Sharing 					Sharing 		
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesSharing)
+			if (!NPSettings.Application.SupportedFeatures.UsesSharing)
 			{
-				Debug.LogError("[NPBinding] Enable Sharing in Supported Features under NPSettings/Application Settings editor window.");
+				Debug.LogError("[NPBinding] Sharing feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesSharing\" flag.");
+				return null;
 			}
-			return Instance.m_sharing;
+			
+			if (Instance == null)
+				return null;
+			
+			if (sharing == null)
+				sharing			= Instance.CachedGameObject.GetComponent<Sharing>();
+				
+			return sharing;
 		}
-		
-		private set
-		{
-			Instance.m_sharing = value;
-		} 
 	}
 	
-	private	UI 							m_UI;
-	public static UI					UI 		
+	private		static		UI 							userInterface;
+	/// <summary>
+	/// Returns platform specific interface to access Native UI feature.
+	/// </summary>
+	public 		static 		UI							UI 		
 	{ 
 		get
 		{
-			return Instance.m_UI;
+			if (Instance == null)
+				return null;
+			
+			if (userInterface == null)
+				userInterface	= Instance.CachedGameObject.GetComponent<UI>();
+				
+			return userInterface;
 		}
-		
-		private set
-		{
-			Instance.m_UI = value;
-		} 
 	}
 	
-	private	Utility 					m_utility;
-	public static Utility 				Utility 		
+	private		static		Utility 					utility;
+	/// <summary>
+	/// Returns platform specific interface to access Utility functions.
+	/// </summary>
+	public 		static 		Utility 					Utility 		
 	{ 
 		get
 		{
-			return Instance.m_utility;
+			if (Instance == null)
+				return null;
+			
+			if (utility == null)
+				utility			= Instance.CachedGameObject.GetComponent<Utility>();
+				
+			return utility;
 		}
-		
-		private set
-		{
-			Instance.m_utility = value;
-		}  
 	}
 
 #if !NATIVE_PLUGINS_LITE_VERSION
-	private Billing 					m_billing;
-	public static Billing 				Billing 			
+	private 	static		Billing 					billing;
+	/// <summary>
+	/// Returns platform specific interface to access Billing (IAP) feature.
+	/// </summary>
+	public 		static 		Billing 					Billing 			
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesBilling)
+			if (!NPSettings.Application.SupportedFeatures.UsesBilling)
 			{
-				Debug.LogError("[NPBinding] Enable Billing in Supported Features under NPSettings/Application Settings editor window.");
+				Debug.LogError("[NPBinding] Billing feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesBilling\" flag.");
+				return null;
 			}
-			return Instance.m_billing;
+			
+			if (Instance == null)
+				return null;
+
+			if (billing == null)
+				billing			= Instance.CachedGameObject.GetComponent<Billing>();
+			
+			return billing;
 		}
-		
-		private set
-		{
-			Instance.m_billing = value;
-		} 
-	}
-	private MediaLibrary 				m_mediaLibrary;
-	public static MediaLibrary 			MediaLibrary 	
-	{ 
-		get
-		{
-			if(!NPSettings.Application.SupportedFeatures.UsesMediaLibrary)
-			{
-				Debug.LogError("[NPBinding] Enable MediaLibrary in Supported Features under NPSettings/Application Settings editor window.");
-			}
-			return Instance.m_mediaLibrary;
-		}
-		
-		private set
-		{
-			Instance.m_mediaLibrary = value;
-		} 
 	}
 
-	private Twitter 					m_twitter;
-	public static Twitter 				Twitter 		
+	private 	static		MediaLibrary 				mediaLibrary;
+	/// <summary>
+	/// Returns platform specific interface to access Media Library feature.
+	/// </summary>
+	public 		static 		MediaLibrary 				MediaLibrary 	
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesTwitter)
+			if (!NPSettings.Application.SupportedFeatures.UsesMediaLibrary)
 			{
-				Debug.LogError("[NPBinding] Enable Twitter in Supported Features under NPSettings/Application Settings editor window.");
+				Debug.LogError("[NPBinding] Media Library feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesMediaLibrary\" flag.");
+				return null;
 			}
-			return Instance.m_twitter;
+			
+			if (Instance == null)
+				return null;
+
+			if (mediaLibrary == null)
+				mediaLibrary		= Instance.CachedGameObject.GetComponent<MediaLibrary>();
+			
+			return mediaLibrary;
 		}
-		
-		private set
-		{
-			Instance.m_twitter = value;
-		} 
 	}
 
-	private NotificationService 		m_notificationService; 	
-	public static NotificationService 	NotificationService 	
+	private 	static		Twitter 					twitter;
+	/// <summary>
+	/// Returns platform specific interface to access Twitter feature.
+	/// </summary>
+	public 		static 		Twitter 					Twitter 		
 	{ 
 		get
 		{
-			if(!NPSettings.Application.SupportedFeatures.UsesNotificationService)
+			if (!NPSettings.Application.SupportedFeatures.UsesTwitter)
 			{
-				Debug.LogError("[NPBinding] Enable Notification Service in Supported Features under NPSettings/Application Settings editor window.");
+				Debug.LogError("[NPBinding] Twitter feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesTwitter\" flag.");
+				return null;
 			}
-			return Instance.m_notificationService;
+			
+			if (Instance == null)
+				return null;
+
+			if (twitter == null)
+				twitter				= Instance.CachedGameObject.GetComponent<Twitter>();
+			
+			return twitter;
 		}
-		
-		private set
-		{
-			Instance.m_notificationService = value;
-		}  
 	}
 
-	private WebViewNative 				m_webView;
-	public static WebViewNative 		WebView 			
+	private 	static		NotificationService 		notificationService; 	
+	/// <summary>
+	/// Returns platform specific interface to access Notification Service feature.
+	/// </summary>
+	public 		static 		NotificationService 		NotificationService 	
 	{ 
 		get
 		{
-			return Instance.m_webView;
+			if (!NPSettings.Application.SupportedFeatures.UsesNotificationService)
+			{
+				Debug.LogError("[NPBinding] Notification Service feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesNotificationService\" flag.");
+				return null;
+			}
+			
+			if (Instance == null)
+				return null;
+
+			if (notificationService == null)
+				notificationService	= Instance.CachedGameObject.GetComponent<NotificationService>();
+			
+			return notificationService;
 		}
-		
-		private set
-		{
-			Instance.m_webView = value;
-		}  
 	}
 
+	private 	static		WebViewNative 				webview;
+	/// <summary>
+	/// Returns platform specific interface to access Native WebView feature.
+	/// </summary>
+	public 		static 		WebViewNative 				WebView 			
+	{ 
+		get
+		{	
+			if (Instance == null)
+				return null;
+
+			if (webview == null)
+				webview				= Instance.CachedGameObject.GetComponent<WebViewNative>();
+			
+			return webview;
+		}
+	}
+
+	private 	static		GameServices 				gameServices;
+	/// <summary>
+	/// Returns platform specific interface to access Game Services feature.
+	/// </summary>
+	public 		static 		GameServices 				GameServices 			
+	{ 
+		get
+		{
+			if (!NPSettings.Application.SupportedFeatures.UsesGameServices)
+			{
+				Debug.LogError("[NPBinding] GameServices feature is currently marked not required. If you want to use this feature, then goto NPSettings/Application Settings and enable \"UsesGameServices\" flag.");
+				return null;
+			}
+
+			if (Instance == null)
+				return null;
+
+			if (gameServices == null)
+				gameServices		= Instance.CachedGameObject.GetComponent<GameServices>();
+			
+			return gameServices;
+		}
+	}
 #endif
 	
+	#endregion
+
+	#region Properties
+
+	private					bool						m_bindingComponentsAlreadyAdded	= false;
+
 	#endregion
 	
 	#region Overriden Methods
@@ -199,19 +299,30 @@ public class NPBinding : SingletonPattern <NPBinding>
 		if (instance != this)
 			return;
 
-		// Create instances 
-		m_addressBook				= AddComponentBasedOnPlatform<AddressBook>();
-		m_networkConnectivity		= AddComponentBasedOnPlatform<NetworkConnectivity>();
-		m_sharing					= AddComponentBasedOnPlatform<Sharing>();
-		m_UI						= AddComponentBasedOnPlatform<UI>();
-		m_utility					= AddComponentBasedOnPlatform<Utility>();
+		AddBindingComponentsIfRequired();
+	}
+
+	private void AddBindingComponentsIfRequired ()
+	{
+		if (m_bindingComponentsAlreadyAdded)
+			return;
+
+		m_bindingComponentsAlreadyAdded	= true;
+
+		// Create compoennts 
+		addressBook						= AddComponentBasedOnPlatform<AddressBook>();
+		networkConnectivity				= AddComponentBasedOnPlatform<NetworkConnectivity>();
+		sharing							= AddComponentBasedOnPlatform<Sharing>();
+		userInterface					= AddComponentBasedOnPlatform<UI>();
+		utility							= AddComponentBasedOnPlatform<Utility>();
 
 #if !NATIVE_PLUGINS_LITE_VERSION
-		m_billing					= AddComponentBasedOnPlatform<Billing>();
-		m_mediaLibrary				= AddComponentBasedOnPlatform<MediaLibrary>();
-		m_notificationService		= AddComponentBasedOnPlatform<NotificationService>();
-		m_twitter					= AddComponentBasedOnPlatform<Twitter>();
-		m_webView					= AddComponentBasedOnPlatform<WebViewNative>();
+		billing							= AddComponentBasedOnPlatform<Billing>();
+		mediaLibrary					= AddComponentBasedOnPlatform<MediaLibrary>();
+		notificationService				= AddComponentBasedOnPlatform<NotificationService>();
+		twitter							= AddComponentBasedOnPlatform<Twitter>();
+		webview							= AddComponentBasedOnPlatform<WebViewNative>();
+		gameServices					= AddComponentBasedOnPlatform<GameServices>();
 #endif
 	}
 	
@@ -234,6 +345,7 @@ public class NPBinding : SingletonPattern <NPBinding>
 #elif UNITY_ANDROID
 		_platformSpecificTypeName					= _baseTypeName + "Android";
 #endif
+
 		if (!string.IsNullOrEmpty(_platformSpecificTypeName))
 		{
 			System.Type _platformSpecificClassType	= _basicType.Assembly.GetType(_platformSpecificTypeName, false);

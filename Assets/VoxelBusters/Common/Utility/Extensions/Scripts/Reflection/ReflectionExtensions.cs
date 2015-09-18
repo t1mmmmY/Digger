@@ -14,6 +14,98 @@ namespace VoxelBusters.Utility
 {
 	public static class ReflectionExtensions 
 	{
+		#region Field Extensions
+
+		public static object GetStaticValue (this Type _objectType, string _name)
+		{
+			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+			FieldInfo		_fieldInfo		= _objectType.GetField(_name, _bindingAttr);
+			
+			if (_fieldInfo != null)
+			{
+				return _fieldInfo.GetValue(null);
+			}
+			else if (_objectType.BaseType != null)
+			{
+				return GetStaticValue(_objectType.BaseType, _name);
+			}
+
+			throw new MissingFieldException(string.Format("[RS] Field {0} not found.", _name));
+		}
+
+		public static void SetStaticValue (this Type _objectType, string _name, object _value)
+		{
+			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+			FieldInfo		_fieldInfo		= _objectType.GetField(_name, _bindingAttr);
+
+			if (_fieldInfo != null)
+			{
+				_fieldInfo.SetValue(null, _value);
+			}
+			else if (_objectType.BaseType != null)
+			{
+				SetStaticValue(_objectType.BaseType, _name, _value);
+			}
+		}
+
+		#endregion
+
+		#region Method Extensions
+
+		public static void InvokeMethod (this object _object, string _method, object _value = null)
+		{
+			if (_object == null)
+				throw new NullReferenceException("Target Object is null.");
+
+			Type			_objectType		= _object.GetType();
+			object[] 		_argValueList	= null;
+			Type[]			_argTypeList	= null;
+
+			if (_value != null)
+			{
+				_argValueList				= new object[] { _value };
+				_argTypeList				= new Type[] { _value.GetType() };
+			}
+
+			// Invoke method
+			InvokeMethod(_object, _objectType, _method, _argValueList, _argTypeList);
+		}
+
+		public static void InvokeMethod (this object _object, string _method, object[] _argValues, Type[] _argTypes)
+		{
+			InvokeMethod(_object, _object.GetType(), _method, _argValues, _argTypes);
+		}
+
+		private static void InvokeMethod (object _object, Type _objectType, string _method, object[] _argValueList, Type[] _argTypeList)
+		{
+			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.OptionalParamBinding;
+			MethodInfo 		_methodInfo		= null;
+
+			// Find method info based on method name, parameter
+			if (_argValueList != null)
+				_methodInfo 				= _objectType.GetMethod(_method, _bindingAttr, null, _argTypeList, null);
+			else
+				_methodInfo					= _objectType.GetMethod(_method, _bindingAttr);
+
+			// Invoke the method
+			if (_methodInfo != null)
+			{
+				_methodInfo.Invoke(_object, _argValueList);
+			}
+			// Failed to find a matching method, so search for it in base class
+			else if (_objectType.BaseType != null)
+			{
+				InvokeMethod(_object, _objectType.BaseType, _method, _argValueList, _argTypeList);
+			}
+			// Object doesnt have this method
+			else
+			{
+				throw new MissingMethodException();
+			}
+		}
+
+		#endregion
+
 		public static T GetAttribute <T> (this System.Type _type, bool _inherit) where T : System.Attribute
 		{
 			object[] _attributes	= _type.GetCustomAttributes(_inherit);

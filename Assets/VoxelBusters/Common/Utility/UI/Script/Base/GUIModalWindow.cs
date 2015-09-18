@@ -38,8 +38,7 @@ namespace VoxelBusters.Utility
 		protected Rect 	m_windowRect = new Rect(0f, 0f, Screen.width, Screen.height);
 		
 		#endregion
-		
-		
+
 		#region Unity Methods
 
 		protected virtual void Awake ()
@@ -87,8 +86,7 @@ namespace VoxelBusters.Utility
 		}
 
 		#endregion
-		
-		
+
 		#region Helpers
 
 		protected virtual void AdjustFontBasedOnScreen()
@@ -129,4 +127,3 @@ namespace VoxelBusters.Utility
 		#endregion
 	}
 }
-

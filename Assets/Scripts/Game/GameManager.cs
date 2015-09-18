@@ -13,6 +13,7 @@ public abstract class GameManager : BaseSingleton<GameManager>
 	protected float forceShake = 0;
 	protected int level = 0;
 	protected int startCoinsCount = 0;
+//	public BonusCharacter bonusCharacter;
 
 	public int GetLevel()
 	{
@@ -48,6 +49,16 @@ public abstract class GameManager : BaseSingleton<GameManager>
 		BankController.OnChangeCoins -= OnChangeCoins;
 //		StopGame();
 	}
+
+//	public virtual BonusCharacter GetBonusCharacter()
+//	{
+//		return bonusCharacter;
+//	}
+//
+//	public virtual void SetBonusCharacter(BonusCharacter bonusCharacter)
+//	{
+//		this.bonusCharacter = bonusCharacter;
+//	}
 
 	public virtual void StartGame()
 	{

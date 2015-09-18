@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
+using VoxelBusters.DebugPRO;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -83,8 +84,10 @@ namespace VoxelBusters.NativePlugins.Internal
 		private const string 						kRemoteNotifications							= "np-remote-notifications";
 
 		// Event callbacks
+		private const string						kDidReceiveAppLaunchInfoEvent					= "DidReceiveAppLaunchInfo";
 		private const string						kDidReceiveLocalNotificationEvent				= "DidReceiveLocalNotification";
 		private const string						kDidRegisterRemoteNotificationEvent				= "DidRegisterRemoteNotification";
+		private const string						kDidFailToRegisterRemoteNotificationEvent		= "DidFailToRegisterRemoteNotifications";
 		private const string						kDidReceiveRemoteNotificationEvent				= "DidReceiveRemoteNotification";
 
 		#endregion
@@ -146,30 +149,25 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		public void Initialise ()
 		{
-			string _localNotificationJSONStr	= EditorPrefs.GetString(kDidStartWithLocalNotification, string.Empty);
-			string _remoteNotificationJSONStr	= EditorPrefs.GetString(kDidStartWithRemoteNotification, string.Empty);
+			string 						_localNotificationJSONStr	= EditorPrefs.GetString(kDidStartWithLocalNotification, string.Empty);
+			string 						_remoteNotificationJSONStr	= EditorPrefs.GetString(kDidStartWithRemoteNotification, string.Empty);
+			CrossPlatformNotification 	_launchLocalNotification 	= null;
+			CrossPlatformNotification	_launchRemoteNotification	= null;
 
 			// Get launch local notification
 			if (!string.IsNullOrEmpty(_localNotificationJSONStr))
 			{
-				IDictionary _notificationDict					= JSONUtility.FromJSON(_localNotificationJSONStr) as IDictionary;
-				CrossPlatformNotification _launchNotification	= new CrossPlatformNotification(_notificationDict);
-				
-				// Send notification
-				SendLocalNotification(_launchNotification);
+				_launchLocalNotification	= new CrossPlatformNotification(JSONUtility.FromJSON(_localNotificationJSONStr) as IDictionary);
 			}
-
-			// Get launch remote notification
-			if (!string.IsNullOrEmpty(_remoteNotificationJSONStr))		
+			else if (!string.IsNullOrEmpty(_remoteNotificationJSONStr))		
 			{
-				IDictionary _notificationDict					= JSONUtility.FromJSON(_remoteNotificationJSONStr) as IDictionary;
-				CrossPlatformNotification _launchNotification	= new CrossPlatformNotification(_notificationDict);
-				
-				// Send notification
-				SendRemoteNotification(_launchNotification);
+				_launchRemoteNotification	= new CrossPlatformNotification(JSONUtility.FromJSON(_remoteNotificationJSONStr) as IDictionary);
 			}
 
-			// Remove cached values
+			// Send app launch info
+			NPBinding.NotificationService.InvokeMethod(kDidReceiveAppLaunchInfoEvent, new CrossPlatformNotification[] {_launchLocalNotification, _launchRemoteNotification}, new System.Type[] { typeof(CrossPlatformNotification), typeof(CrossPlatformNotification) });
+
+			// Remove saved values
 			EditorPrefs.DeleteKey(kDidStartWithLocalNotification);
 			EditorPrefs.DeleteKey(kDidStartWithRemoteNotification);
 		}
@@ -252,12 +250,46 @@ namespace VoxelBusters.NativePlugins.Internal
 				{
 					OnReceivingLocalNotification(_scheduledNotification);
 
-					// Remove this notification from scheduled list
-					ScheduledLocalNotifications.RemoveAt(_iter);
+					// Handle notification based on its repeat interval
+					eNotificationRepeatInterval _repeatInterval	= _scheduledNotification.RepeatInterval;
 
-					// Update iterator
-					_scheduledNotificationsCount--;
-					_iter--;
+					switch (_repeatInterval)
+					{
+					case eNotificationRepeatInterval.NONE:
+						// Remove the notification from scheduled list, as its not repeatable
+						ScheduledLocalNotifications.RemoveAt(_iter);
+						_scheduledNotificationsCount--;
+						_iter--;
+						break;
+						
+					case eNotificationRepeatInterval.MINUTE:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddMinutes(1);
+						break;
+						
+					case eNotificationRepeatInterval.HOUR:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddHours(1);
+						break;
+						
+					case eNotificationRepeatInterval.DAY:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddDays(1);
+						break;
+						
+					case eNotificationRepeatInterval.WEEK:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddDays(7);
+						break;
+						
+					case eNotificationRepeatInterval.MONTH:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddMonths(1);
+						break;
+						
+					case eNotificationRepeatInterval.YEAR:
+						_scheduledNotification.FireDate	= _scheduledNotification.FireDate.AddYears(1);
+						break;
+
+					default:
+						Console.LogError(Constants.kDebugTag, "[RS] Unhandled notification interval=" + _repeatInterval);
+						break;
+					}
 				}
 			}
 		}
@@ -332,9 +364,19 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			m_isRegisteredForRemoteNotifications	= true;
 
-			// Notify registration success
+			#if UNITY_ANDROID
+			if (NPSettings.Notification.Android.SenderIDList.Length == 0)
+			{
+				Console.LogError(Constants.kDebugTag, "Add senderid list for notifications to work");
+				return;
+			}
+			#endif
+
+			// Notify registration failure on editor
 			if (NPBinding.NotificationService != null)
-				NPBinding.NotificationService.InvokeMethod(kDidRegisterRemoteNotificationEvent, "deviceToken");
+			{      
+				NPBinding.NotificationService.InvokeMethod(kDidFailToRegisterRemoteNotificationEvent, "Device token cannot be retrieved on editor!");
+			}
 		}
 
 		/// <summary>
@@ -448,10 +490,10 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		private bool DisplayAlertDialog (CrossPlatformNotification _notification)
 		{
-			string _title		= string.Empty;
-			string _message		= _notification.AlertBody;
-			string _ok			= "view";
-			bool _canShowAlert	= true;
+			string 	_title			= string.Empty;
+			string 	_message		= _notification.AlertBody;
+			bool 	_canShowAlert	= !string.IsNullOrEmpty(_message);
+			string 	_ok				= "view";
 
 #if UNITY_ANDROID
 			CrossPlatformNotification.AndroidSpecificProperties _androidProperties	= _notification.AndroidProperties;
@@ -463,10 +505,7 @@ namespace VoxelBusters.NativePlugins.Internal
 #elif UNITY_IOS
 			CrossPlatformNotification.iOSSpecificProperties _iosProperties			= _notification.iOSProperties;
 
-			// Check if alert message can be shown
-			_canShowAlert	= _iosProperties.HasAction || !string.IsNullOrEmpty(_message);
-
-			if (_iosProperties != null)
+			if (_iosProperties != null && _iosProperties.HasAction)
 			{
 				if (!string.IsNullOrEmpty(_iosProperties.AlertAction))
 					_ok		= _iosProperties.AlertAction;
@@ -477,6 +516,30 @@ namespace VoxelBusters.NativePlugins.Internal
 				return EditorUtility.DisplayDialog(_title, _message, _ok, "cancel");
 
 			return false;
+		}
+
+		private bool IsNetworkAvailable()
+		{
+			Ping _ping			= new Ping("8.8.8.8");
+			float _startTime	= Time.time;
+			float  _elapsedTime	= 0f;
+			float  _timeOutPeriod = 2f;
+
+			// Ping test
+			while (!_ping.isDone && _elapsedTime < _timeOutPeriod)
+			{
+				_elapsedTime	= Time.time - _startTime;
+			}
+			
+			// Ping request complted within timeout period, so we are connected to network
+			if (_ping.isDone && (_ping.time != -1) && _elapsedTime < _timeOutPeriod)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		#endregion

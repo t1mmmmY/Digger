@@ -32,10 +32,12 @@ namespace VoxelBusters.NativePlugins
 			WriteProviderInfo(_xmlWriter);
 			WriteReceiverInfo(_xmlWriter);
 			WriteServiceInfo(_xmlWriter);
+			WriteMetaInfo(_xmlWriter);
 		}
 
 		private void WriteActivityInfo (XmlWriter _xmlWriter)
 		{
+			#if !NATIVE_PLUGINS_LITE_VERSION
 			// Billing
 			if (m_supportedFeatures.UsesBilling)
 			{
@@ -65,17 +67,18 @@ namespace VoxelBusters.NativePlugins
 				              _name:			"com.voxelbusters.nativeplugins.features.medialibrary.YoutubePlayerActivity",
 				              _comment:			"MediaLibrary : Youtube player activity");
 			}
-			
-			// Sharing
-			if (m_supportedFeatures.UsesSharing)
+
+			// Notifications
+			if (m_supportedFeatures.UsesNotificationService)
 			{
 				WriteActivity(_xmlWriter:		_xmlWriter,
-				              _name:			"com.voxelbusters.nativeplugins.features.sharing.SharingActivity",
-				              _theme:			"@style/FloatingActivityTheme", 
-				              _comment:			"Sharing");
+				              _name:			"com.voxelbusters.nativeplugins.features.notification.core.ApplicationLauncherFromNotification",
+				              _theme:			"@style/FloatingActivityTheme",
+				              _comment:			"Application Launcher - Notifications : Used as a proxy to capture triggered notification.");
 			}
 			
 			
+
 			// Twitter
 			if (m_supportedFeatures.UsesTwitter)
 			{
@@ -85,8 +88,28 @@ namespace VoxelBusters.NativePlugins
 				              _comment:			"SocialNetworking - Twitter : Generic helper activity");
 			}
 
+			if (m_supportedFeatures.UsesGameServices)
+			{
+				WriteActivity(_xmlWriter:		_xmlWriter,
+				              _name:			"com.voxelbusters.nativeplugins.features.gameservices.serviceprovider.google.GooglePlayGameUIActivity",
+				              _theme:			"@style/FloatingActivityTheme", 
+				              _comment:			"Game Play Services helper activity");
+			}
 
+			#endif
+			
+			// Sharing
+			if (m_supportedFeatures.UsesSharing)
+			{
+				WriteActivity(_xmlWriter:		_xmlWriter,
+				              _name:			"com.voxelbusters.nativeplugins.features.sharing.SharingActivity",
+				              _theme:			"@style/FloatingActivityTheme", 
+				              _comment:			"Sharing");
+			}
 
+			
+			
+			
 			//Common required activities
 
 			//UIActivity
@@ -119,6 +142,7 @@ namespace VoxelBusters.NativePlugins
 		
 		private void WriteReceiverInfo (XmlWriter _xmlWriter)
 		{
+			#if !NATIVE_PLUGINS_LITE_VERSION
 			// GCM receiver
 			if (m_supportedFeatures.UsesNotificationService)
 			{
@@ -154,16 +178,35 @@ namespace VoxelBusters.NativePlugins
 				}
 				_xmlWriter.WriteEndElement();
 			}
+			#endif
 		}
 
 		private void WriteServiceInfo (XmlWriter _xmlWriter)
 		{
+			#if !NATIVE_PLUGINS_LITE_VERSION
 			if (m_supportedFeatures.UsesNotificationService)
 			{
 				WriteService(_xmlWriter:	_xmlWriter, 
 				             _name:			"com.voxelbusters.nativeplugins.features.notification.serviceprovider.gcm.GCMIntentService",
 				             _comment:		"Notifications : GCM Service");
 			}
+			#endif
+		}
+
+		private void WriteMetaInfo (XmlWriter _xmlWriter)
+		{
+			#if !NATIVE_PLUGINS_LITE_VERSION
+			if (m_supportedFeatures.UsesGameServices)
+			{
+				_xmlWriter.WriteStartElement("meta-data");
+				{
+					_xmlWriter.WriteAttributeString("android:name", 	"com.google.android.gms.games.APP_ID");
+					_xmlWriter.WriteAttributeString("android:value", string.Format("\\ {0}", NPSettings.GameServicesSettings.Android.PlayServicesApplicationID));// \ added because its getting considered as integer when added from xml instead of string.
+				}
+				_xmlWriter.WriteEndElement();
+
+			}
+			#endif
 		}
 
 		#endregion
@@ -179,6 +222,16 @@ namespace VoxelBusters.NativePlugins
 				                    _comment: 	"Address Book");
 			}
 
+			if (m_supportedFeatures.UsesNetworkConnectivity)
+			{
+				
+				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+				                    _name: 		"android.permission.ACCESS_NETWORK_STATE",
+				                    _comment: 	"Network Connectivity");
+			}
+			
+
+			#if !NATIVE_PLUGINS_LITE_VERSION
 			if (m_supportedFeatures.UsesBilling)
 			{
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
@@ -199,14 +252,6 @@ namespace VoxelBusters.NativePlugins
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
 				                    _name: 		"com.google.android.apps.photos.permission.GOOGLE_PHOTOS");
 
-			}
-
-			if (m_supportedFeatures.UsesNetworkConnectivity)
-			{
-
-				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
-				                    _name: 		"android.permission.ACCESS_NETWORK_STATE",
-				                    _comment: 	"Network Connectivity");
 			}
 
 			if (m_supportedFeatures.UsesNotificationService)
@@ -233,6 +278,21 @@ namespace VoxelBusters.NativePlugins
 				                    _comment: 	"Notifications : If vibration is required for notification");
 			}
 
+			if(m_supportedFeatures.UsesGameServices)
+			{
+				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+					                _name: 		"com.google.android.providers.gsf.permission.READ_GSERVICES", 	
+					                _comment: 	"GameServices : For getting content provider access.");
+
+				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+				                    _name: 		"android.permission.GET_ACCOUNTS");
+
+				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+				                    _name: 		"android.permission.USE_CREDENTIALS");
+			}
+
+			#endif
+
 
 			//Write common permissions here
 
@@ -242,9 +302,12 @@ namespace VoxelBusters.NativePlugins
 			                    _comment:	"Required for internet access");
 
 			//Storage Access
-			if(	m_supportedFeatures.UsesMediaLibrary || 
-				m_supportedFeatures.UsesSharing ||
-			   m_supportedFeatures.UsesTwitter)
+			if(	m_supportedFeatures.UsesSharing 
+			   	#if !NATIVE_PLUGINS_LITE_VERSION
+				||m_supportedFeatures.UsesMediaLibrary
+				||m_supportedFeatures.UsesTwitter
+				#endif
+				)	
 			{
 				WriteUsesPermission(_xmlWriter:	_xmlWriter,
 				                    _name: 		"android.permission.WRITE_EXTERNAL_STORAGE", 	

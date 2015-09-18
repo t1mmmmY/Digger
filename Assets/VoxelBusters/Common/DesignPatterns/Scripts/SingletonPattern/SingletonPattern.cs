@@ -6,50 +6,24 @@ namespace VoxelBusters.DesignPatterns
 {
 	public class SingletonPattern <T> : MonoBehaviour, ISingleton where T : MonoBehaviour
 	{
-		#region Properties
-					
-		// Components
-		private Transform		m_transform;
-		public Transform 		CachedTransform
-		{
-			get
-			{
-				if (m_transform == null)
-					m_transform	= transform;
-				
-				return m_transform;
-			}
-		}
+		#region Static Properties
 
-		private GameObject		m_gameObject;
-		public GameObject 		CachedGameObject
-		{
-			get
-			{
-				if (m_gameObject == null)
-					m_gameObject	= gameObject;
-				
-				return m_gameObject;
-			}
-		}
+		private 		static 		bool 			destroyedOnApplicationQuit 	= false;
+		private 		static 		object 			instanceLock			 	= new object();
 
-		protected static bool 	destroyedAsApplicationQuit 	= false;
-		protected bool			m_forciblyDeleted			= false;
-
-		private static object 	instanceLock			 	= new object();
-		protected static T 		instance 					= null;
+		protected 		static 		T 				instance 					= null;
 		/// <summary>
 		/// Gets the singleton instance which will be persistent until Application quits.
 		/// </summary>
 		/// <value>The instance.</value>
-		public static T 		Instance
+		public			static 		T 				Instance
 		{
 			get 
 			{
 				System.Type _singletonType	= typeof(T);
 
 				// We are requesting an instance after application is quit
-				if (destroyedAsApplicationQuit) 
+				if (destroyedOnApplicationQuit) 
 				{
 					Debug.LogWarning("[SingletonPattern] " + _singletonType + " already destroyed ");
 					return null;
@@ -101,18 +75,70 @@ namespace VoxelBusters.DesignPatterns
 
 				return instance;
 			}
+
+			protected set
+			{
+				instance	= value;
+			}
 		}
 
 		#endregion
 
-		#region Unity Methods
+		#region Properties
+		
+		// Components
+		private 					Transform		m_transform;
+		public 						Transform 		CachedTransform
+		{
+			get
+			{
+				if (m_transform == null)
+					m_transform	= transform;
+				
+				return m_transform;
+			}
+		}
+		
+		private 					GameObject		m_gameObject;
+		public 						GameObject 		CachedGameObject
+		{
+			get
+			{
+				if (m_gameObject == null)
+					m_gameObject	= gameObject;
+				
+				return m_gameObject;
+			}
+		}
+		
+		protected					bool			IsInitialized
+		{
+			get;
+			private set;
+		}
+		
+		private 					bool			m_isForcefullyDestroyed		= false;
+		
+		#endregion
+
+		#region Static Methods
+
+		protected static void ResetStaticProperties ()
+		{
+			instance					= null;
+			destroyedOnApplicationQuit	= false;
+		}
+	
+		#endregion
+
+		#region Methods
 
 		protected virtual void Awake ()
 		{
 			// Just in case, handling so that only one instance is alive
 			if (instance == null)
 			{
-				instance = this as T;
+				instance 	= this as T;
 			}
 			// Destroying the reduntant copy of this class type
 			else if (instance != this)
@@ -121,12 +147,21 @@ namespace VoxelBusters.DesignPatterns
 				return;
 			}
 
+			// Set as initialized
+			IsInitialized	= true;
+
 			// Set it as persistent object
 			DontDestroyOnLoad(CachedGameObject);
 		}
 
 		protected virtual void Start ()
 		{}
+
+		protected virtual void Reset ()
+		{
+			IsInitialized			= false;
+			m_isForcefullyDestroyed	= false;
+		}
 
 		protected virtual void OnEnable ()
 		{}
@@ -138,18 +173,18 @@ namespace VoxelBusters.DesignPatterns
 		{
 			// Singleton instance means same instance will run throughout the gameplay session
 			// If its destroyed that means application is quit
-			if (instance == this && !m_forciblyDeleted)
-				destroyedAsApplicationQuit = true;
+			if (instance == this && !m_isForcefullyDestroyed)
+				destroyedOnApplicationQuit = true;
 		}
 
 		#endregion
 	
 		#region Destroy Methods
 
-		public void ForciblyDestroy ()
+		public void ForceDestroy ()
 		{			
 			// Destroy this gameobject
-			m_forciblyDeleted = true;
+			m_isForcefullyDestroyed = true;
 			Destroy(CachedGameObject);
 		}
 

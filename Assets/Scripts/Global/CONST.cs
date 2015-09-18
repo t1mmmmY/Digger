@@ -22,6 +22,8 @@ public static class CONST
 
 	public static readonly string TAVERN_PREFIX = "_Tavern";
 
+	public static readonly string IOS_LEADERBOARD_ID = "SmartestDigger";
+
 	public static readonly string[] PLAYER_NAMES = { 
 		"DrunkenDigger",
 		"WalterWhite",

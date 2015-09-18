@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !UNITY_WINRT
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -606,3 +607,4 @@ namespace ExifLibrary
         #endregion
     }
 }
+#endif

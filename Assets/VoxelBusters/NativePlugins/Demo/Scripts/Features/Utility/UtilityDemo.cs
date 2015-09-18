@@ -49,55 +49,50 @@ namespace VoxelBusters.NativePlugins.Demo
 		protected override void OnGUIWindow()
 		{		
 			base.OnGUIWindow();
+
 			RootScrollView.BeginScrollView();
 			{
-				GUILayout.BeginVertical(UISkin.scrollView);
+				if (GUILayout.Button("GetUUID"))
 				{
-					if (GUILayout.Button("GetUUID"))
-					{
-						string _uuid = GetUUID();
-	
-						AddNewResult("New UUID = " + _uuid);
-					}
+					string _uuid = GetUUID();
 					
-					if (GUILayout.Button("OpenStoreLink"))
-					{
-						string _appIdentifier = NPSettings.Application.StoreIdentifier;
-	
-						AddNewResult("Opening store link, ApplicationID = " + _appIdentifier);
-						OpenStoreLink(_appIdentifier);
-					}
-	
-					if (GUILayout.Button("Ask For Review Now"))
-					{
-						AskForReviewNow();
-					}	
-	
-					if (GUILayout.Button("SetApplicationIconBadgeNumber"))
-					{
-						SetApplicationIconBadgeNumber();
-					}
-	
-					if (GUILayout.Button("GetBundleVersion"))
-					{
-						AddNewResult("Bundle Version = " + NPBinding.Utility.GetBundleVersion());
-					}
-	
-					if (GUILayout.Button("GetBundleIdentifier"))
-					{
-						AddNewResult("Bundle Identifier = " + NPBinding.Utility.GetBundleIdentifier());
-					}
+					AddNewResult("New UUID = " + _uuid);
 				}
-				GUILayout.EndVertical();
+				
+				if (GUILayout.Button("OpenStoreLink"))
+				{
+					string _appIdentifier = NPSettings.Application.StoreIdentifier;
+					
+					AddNewResult("Opening store link, ApplicationID = " + _appIdentifier);
+					OpenStoreLink(_appIdentifier);
+				}
+				
+				if (GUILayout.Button("Ask For Review Now"))
+				{
+					AskForReviewNow();
+				}	
+				
+				if (GUILayout.Button("SetApplicationIconBadgeNumber"))
+				{
+					SetApplicationIconBadgeNumber();
+				}
+				
+				if (GUILayout.Button("GetBundleVersion"))
+				{
+					AddNewResult("Bundle Version = " + NPBinding.Utility.GetBundleVersion());
+				}
+				
+				if (GUILayout.Button("GetBundleIdentifier"))
+				{
+					AddNewResult("Bundle Identifier = " + NPBinding.Utility.GetBundleIdentifier());
+				}
 			}
 			RootScrollView.EndScrollView();
 
 			DrawResults();
-			
 			DrawPopButton();
 		}
 		
 		#endregion
-		
 	}
 }

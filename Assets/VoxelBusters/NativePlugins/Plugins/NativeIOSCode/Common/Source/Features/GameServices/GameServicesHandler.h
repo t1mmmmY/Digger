@@ -7,10 +7,15 @@
 //
 
 #import "HandlerBase.h"
+#import <GameKit/GameKit.h>
 
-@interface GameServicesHandler : HandlerBase
+@interface GameServicesHandler : HandlerBase <GKGameCenterControllerDelegate>
 
 // Methods
 - (BOOL)isGameCenterAvailable;
+
+// UI methods
+- (void)showLeaderboardView:(NSString *)leaderboardID withTimeScope:(GKLeaderboardTimeScope)timeScope;
+- (void)showAchievementView;
 
 @end

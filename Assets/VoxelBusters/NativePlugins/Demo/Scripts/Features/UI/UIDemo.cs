@@ -94,58 +94,54 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Alert Dialogs", kSubTitleStyle);
-	
-					if (GUILayout.Button("ShowAlertDialogWithSingleButton"))
-					{
-						ShowAlertDialogWithSingleButton();
-					}
-	
-					if (GUILayout.Button("ShowAlertDialogWithMultipleButtons"))
-					{
-						ShowAlertDialogWithMultipleButtons();
-					}
-				}
-				GUILayout.EndVertical();
-	
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Prompt Dialogs", kSubTitleStyle);
-	
-					if (GUILayout.Button("ShowPlainTextPromptDialog"))
-					{
-						ShowPlainTextPromptDialog();
-					}
-					
-					if (GUILayout.Button("ShowSecuredTextPromptDialog"))
-					{
-						ShowSecuredTextPromptDialog();
-					}
-				}
-				GUILayout.EndVertical();
-	
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Login Dialog", kSubTitleStyle);
-					
-					if (GUILayout.Button("ShowLoginPromptDialog"))
-					{
-						ShowLoginPromptDialog();
-					}
-				}
-				GUILayout.EndVertical();
+				DrawAlertDialogAPI();
+				DrawPromptDialogAPI();
+				DrawLoginDialogAPI();
 			}
 			RootScrollView.EndScrollView();
-			// Draw results
+
 			DrawResults();
-			
-			// Back button
 			DrawPopButton();
+		}
+
+		private void DrawAlertDialogAPI ()
+		{
+			GUILayout.Label("Alert Dialogs", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShowAlertDialogWithSingleButton"))
+			{
+				ShowAlertDialogWithSingleButton();
+			}
+			
+			if (GUILayout.Button("ShowAlertDialogWithMultipleButtons"))
+			{
+				ShowAlertDialogWithMultipleButtons();
+			}
+		}
+
+		private void DrawPromptDialogAPI ()
+		{
+			GUILayout.Label("Prompt Dialogs", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShowPlainTextPromptDialog"))
+			{
+				ShowPlainTextPromptDialog();
+			}
+			
+			if (GUILayout.Button("ShowSecuredTextPromptDialog"))
+			{
+				ShowSecuredTextPromptDialog();
+			}
+		}
+
+		private void DrawLoginDialogAPI ()
+		{
+			GUILayout.Label("Login Dialog", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShowLoginPromptDialog"))
+			{
+				ShowLoginPromptDialog();
+			}
 		}
 
 		#endregion

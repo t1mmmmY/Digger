@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
+using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins
 {
@@ -75,6 +76,17 @@ namespace VoxelBusters.NativePlugins
 		public void ShareImageOnSocialNetwork (string _message, string _imagePath, SharingCompletion _onCompletion)
 		{
 			ShareImageAtPath(_message, _imagePath, m_socialNetworkExcludedList, _onCompletion);
+		}
+
+		/// <summary>
+		/// Shares the image on social network.
+		/// </summary>
+		/// <param name="_message">Message to share.</param>
+		/// <param name="_imageByteArray">image byte array to create the image from.</param>
+		/// <param name="_onCompletion">Callback to be triggered when sharing action completes.</param>
+		public void ShareImageOnSocialNetwork (string _message, byte[] _imageByteArray, SharingCompletion _onCompletion)
+		{
+			Share(_message, null, _imageByteArray, m_socialNetworkExcludedList, _onCompletion);
 		}
 
 		#endregion

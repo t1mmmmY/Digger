@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
+using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins
 {

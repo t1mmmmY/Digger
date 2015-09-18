@@ -156,78 +156,65 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Product Requests", kSubTitleStyle);
-	
-					if (GUILayout.Button("RequestForBillingProducts"))
-					{
-						RequestBillingProducts(m_products);
-					}
-					
-					if (GUILayout.Button("RestorePurchases"))
-					{
-						RestoreCompletedTransactions();
-					}
-				}
-				GUILayout.EndVertical();
+				GUILayout.Label("Product Requests", kSubTitleStyle);
 				
-				if(m_products.Count == 0)
+				if (GUILayout.Button("RequestForBillingProducts"))
+				{
+					RequestBillingProducts(m_products);
+				}
+				
+				if (GUILayout.Button("RestorePurchases"))
+				{
+					RestoreCompletedTransactions();
+				}
+				
+				if (m_products.Count == 0)
 				{
 					GUILayout.Box("There are no billing products. Add products in NPSettings");
 				}
 				else
 				{
-					GUILayout.BeginVertical(UISkin.scrollView);
+					GUILayout.Label("Product Purchases", kSubTitleStyle);
+					GUILayout.Box("Current Product = " + GetCurrentProduct().Name + " " + "[Products Available = " + GetProductsCount() + "]");
+					
+					GUILayout.BeginHorizontal();
 					{
-						GUILayout.Label("Product Purchases", kSubTitleStyle);
-	
-						if (GUILayout.Button("Buy"))
+						if (GUILayout.Button("Next Product"))
 						{
-							AddNewResult("Requesting to buy product = " + GetCurrentProduct().Name);
-							BuyProduct(GetCurrentProduct().ProductIdentifier);
+							GotoNextProduct();
 						}
 						
-						if (GUILayout.Button("IsProductPurchased"))
-						{
-							
-							bool _isPurchased = IsProductPurchased(GetCurrentProduct().ProductIdentifier);
-							
-							AddNewResult("Is " + GetCurrentProduct().Name +  "Purchased ? " + _isPurchased);
-							
+						if (GUILayout.Button("Previous Product"))
+						{ 
+							GotoPreviousProduct();
 						}
-						
-						if (GUILayout.Button("IsConsumableProduct"))
-						{
-							bool _isConsumable = GetCurrentProduct().IsConsumable;
-							
-							AddNewResult("Is " + GetCurrentProduct().Name +  "Consumable ? " + _isConsumable);
-						}
-						
-						GUILayout.Box("Current Product = " + GetCurrentProduct().Name + " " + "[Products Available = " + GetProductsCount() + "]");
-						
-						GUILayout.BeginHorizontal();
-						{
-							if (GUILayout.Button("Next Product"))
-							{
-								GotoNextProduct();
-							}
-							
-							if (GUILayout.Button("Previous Product"))
-							{ 
-								GotoPreviousProduct();
-							}
-						}
-						GUILayout.EndHorizontal();
 					}
-					GUILayout.EndVertical();
+					GUILayout.EndHorizontal();
+					
+					if (GUILayout.Button("Buy"))
+					{
+						AddNewResult("Requesting to buy product = " + GetCurrentProduct().Name);
+						BuyProduct(GetCurrentProduct().ProductIdentifier);
+					}
+					
+					if (GUILayout.Button("IsProductPurchased"))
+					{
+						bool _isPurchased = IsProductPurchased(GetCurrentProduct().ProductIdentifier);
+						
+						AddNewResult("Is " + GetCurrentProduct().Name +  "Purchased ? " + _isPurchased);
+					}
+					
+					if (GUILayout.Button("IsConsumableProduct"))
+					{
+						bool _isConsumable = GetCurrentProduct().IsConsumable;
+						
+						AddNewResult("Is " + GetCurrentProduct().Name +  "Consumable ? " + _isConsumable);
+					}
 				}
 			}
 			RootScrollView.EndScrollView();
 
 			DrawResults();
-			
 			DrawPopButton();
 		}
 		

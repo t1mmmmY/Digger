@@ -3,6 +3,7 @@ using System.Collections;
 using VoxelBusters.Utility;
 using System.Collections.Generic;
 using VoxelBusters.DebugPRO;
+using System;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
@@ -15,6 +16,9 @@ namespace VoxelBusters.NativePlugins.Internal
 		public  const string		kAlertBody						= "alert-body";
 		public  const string		kCustomSound					= "custom-sound";
 		public  const string		kLargeIcon						= "large-icon";
+		public 	const string 		kRepeatIntervalKey				= "repeat-interval";
+		public 	const string 		kIsRemoteNotification			= "is-remote-notification";
+				
 
 		public static string 		ContentTitleKey 
 		{ 
@@ -68,7 +72,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			if (_payloadDict.Contains(NPSettings.Notification.Android.ContentTextKey))
 			{
 				//Check here which key is being received.
-				Console.Log(Constants.kDebugTag, "[BillingTransaction] " + _payloadDict.ToJSON());//TODO
+				VoxelBusters.DebugPRO.Console.Log(Constants.kDebugTag, "[AndroidNotificationPayload] " + _payloadDict.ToJSON());//TODO
 				object _alertUnknownType	= _payloadDict[ContentTextKey] as object;
 				
 				// String type
@@ -85,7 +89,10 @@ namespace VoxelBusters.NativePlugins.Internal
 			long _secsFromNow	= _payloadDict.GetIfAvailable<long>(kFireDate);
 				
 			FireDate			= _secsFromNow.ToDateTimeFromJavaTime();
-			
+
+			if (_payloadDict.Contains(kRepeatIntervalKey))
+				RepeatInterval		= (eNotificationRepeatInterval)_payloadDict.GetIfAvailable<int>(kRepeatIntervalKey);
+
 			// Sound, Badge
 			AndroidProperties.ContentTitle		=  	_payloadDict.GetIfAvailable<string>(ContentTitleKey);
 			AndroidProperties.TickerText		=  	_payloadDict.GetIfAvailable<string>(TickerTextKey);
@@ -111,6 +118,10 @@ namespace VoxelBusters.NativePlugins.Internal
 			// User info, fire date
 			_payloadDict[UserInfoKey]			= _notification.UserInfo;
 			_payloadDict[kFireDate]				= _notification.FireDate.ToJavaTimeFromDateTime();
+
+
+			_payloadDict[kRepeatIntervalKey]	= (int)_notification.RepeatInterval;
+			
 
 			// ContentTitle, TickerText, Tag
 			if(_androidProperties != null)

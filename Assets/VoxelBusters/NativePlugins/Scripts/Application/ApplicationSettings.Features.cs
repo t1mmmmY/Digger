@@ -20,8 +20,9 @@ namespace VoxelBusters.NativePlugins
 					return m_usesAddressBook;
 				}
 			}
-			
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
+
+			#if !NATIVE_PLUGINS_LITE_VERSION
+			[SerializeField, ExecuteOnValueChange("OnBillingConfigurationChanged")]
 			private				bool			m_usesBilling = true;
 			public				bool			UsesBilling
 			{
@@ -40,6 +41,7 @@ namespace VoxelBusters.NativePlugins
 					return m_usesMediaLibrary;
 				}
 			}
+			#endif
 
 			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
 			private				bool			m_usesNetworkConnectivity = true;
@@ -51,7 +53,7 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 			
-
+			#if !NATIVE_PLUGINS_LITE_VERSION
 			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
 			private				bool			m_usesNotificationService = true;
 			public				bool			UsesNotificationService
@@ -61,7 +63,7 @@ namespace VoxelBusters.NativePlugins
 					return m_usesNotificationService;
 				}
 			}
-			
+			#endif
 			
 			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
 			private				bool			m_usesSharing = true;
@@ -72,8 +74,9 @@ namespace VoxelBusters.NativePlugins
 					return m_usesSharing;
 				}
 			}
-			
-			[SerializeField, ExecuteOnValueChange("OnTwitterConfigChanged")]
+
+			#if !NATIVE_PLUGINS_LITE_VERSION
+			[SerializeField, ExecuteOnValueChange("OnTwitterConfigurationChanged")]
 			private				bool			m_usesTwitter = false;
 			public				bool			UsesTwitter
 			{
@@ -82,6 +85,18 @@ namespace VoxelBusters.NativePlugins
 					return m_usesTwitter;
 				}
 			}
+
+			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
+			private				bool			m_usesGameServices = false;
+			public				bool			UsesGameServices
+			{
+				get
+				{
+					return m_usesGameServices;
+				}
+			}
+			
+			#endif
 			
 			#endregion
 		}

@@ -20,6 +20,7 @@ For further information, check the Documentation.pdf shipped with this package o
  
 Feel free to shoot a mail for suggestions/improvements/issues.
 
+Manual	 : https://jsapi.apiary.io/previews/crossplatformnativeplugins/reference
 Email ID : support@voxelbusters.com
 Twitter  : @voxelbusters
 

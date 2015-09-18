@@ -9,7 +9,9 @@ namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
+#if !NATIVE_PLUGINS_LITE_VERSION
 	[CustomEditor(typeof(NPSettings))]
+#endif
 	public class NPSettingsVerticalInspector : AssetStoreProductInspector
 	{
 		private enum eTabView
@@ -61,7 +63,7 @@ namespace VoxelBusters.NativePlugins
 			m_settingsProperties.Add(eTabView.SOCIAL_NETWORK,	serializedObject.FindProperty("m_socialNetworkSettings"));
 			m_settingsProperties.Add(eTabView.UTILITY,			serializedObject.FindProperty("m_utilitySettings"));
 			m_settingsProperties.Add(eTabView.GAME_SERVICES,	serializedObject.FindProperty("m_gameServicesSettings"));
-
+			
 			// Restoring last selection
 			m_activeView			= (eTabView)EditorPrefs.GetInt(kActiveView, 0);
 		}

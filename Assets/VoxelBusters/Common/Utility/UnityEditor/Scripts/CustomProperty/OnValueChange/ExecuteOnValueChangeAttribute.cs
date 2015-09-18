@@ -6,16 +6,23 @@ namespace VoxelBusters.Utility
 	public class ExecuteOnValueChangeAttribute : PropertyAttribute 
 	{
 		#region Properties
-
-		public string	Function { get; private set; }
-
+		
+		public		string			CallbackMethod 
+		{ 
+			get; 
+			private set; 
+		}
+		
 		#endregion
 
 		#region Constructor
 
-		public ExecuteOnValueChangeAttribute (string _function)
+		private ExecuteOnValueChangeAttribute ()
+		{}
+
+		public ExecuteOnValueChangeAttribute (string _method)
 		{
-			Function	= _function;
+			CallbackMethod	= _method;
 		}
 
 		#endregion

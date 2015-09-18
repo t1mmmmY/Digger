@@ -132,8 +132,16 @@ namespace VoxelBusters.Utility
 		[MenuItem("Assets/Decompress", true)]
 		private static bool DecompressValidation ()
 		{
-			string 	_selectedFilePath	= AssetsUtility.GUIDToAssetAbsolutePath(Selection.assetGUIDs[0]);
+			string[] _guids	= Selection.assetGUIDs;
+			
+			if (_guids.Length <= 0)
+				return false;
+
+			string 	_selectedFilePath	= AssetsUtility.GUIDToAssetAbsolutePath(_guids[0]);
 			string	_fileExtension		= Path.GetExtension(_selectedFilePath);
+
+			if (_fileExtension == null)
+				return false;
 			
 			return _fileExtension.Equals(".gz");
 		}

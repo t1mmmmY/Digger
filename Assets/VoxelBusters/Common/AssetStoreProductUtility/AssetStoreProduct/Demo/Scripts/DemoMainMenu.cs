@@ -76,35 +76,27 @@ namespace VoxelBusters.AssetStoreProductUtility.Demo
 
 		protected override void OnGUIWindow()
 		{		
-	
-			if(m_currentSubMenu == null)
+			if (m_currentSubMenu == null)
 			{
 				RootScrollView.BeginScrollView();
 				{
-					GUILayout.BeginVertical(UISkin.scrollView);
-		
-						GUILayout.Box(name);
+					GUILayout.Box(name);
 					
-						//If on, just list all the features
-						for(int _i = 0 ; _i <  m_subMenuList.Length ; _i++)
+					//If on, just list all the features
+					for(int _i = 0 ; _i <  m_subMenuList.Length ; _i++)
+					{
+						DemoSubMenu  _each = 	m_subMenuList[_i];
+						if(GUILayout.Button(_each.gameObject.name))
 						{
-							DemoSubMenu  _each = 	m_subMenuList[_i];
-							if(GUILayout.Button(_each.gameObject.name))
-							{
-								EnableSubMenu(_each);
-								break;
-							}
+							EnableSubMenu(_each);
+							break;
 						}
-		
-					GUILayout.EndVertical();
+					}
 				}
 				RootScrollView.EndScrollView();
 				
 				GUILayout.FlexibleSpace();
-				
-				
 			}
-	
 		}
 
 		#endregion

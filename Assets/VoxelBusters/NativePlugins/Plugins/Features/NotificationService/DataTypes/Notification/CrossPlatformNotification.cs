@@ -36,6 +36,16 @@ namespace VoxelBusters.NativePlugins
 		}
 
 		/// <summary>
+		/// Gets or sets the interval at which to reschedule the notification.
+		/// </summary>
+		/// <value>The intervalinterval at which to reschedule the notification.</value>
+		public eNotificationRepeatInterval	RepeatInterval
+		{ 
+			get; 
+			set; 
+		}
+
+		/// <summary>
 		/// Gets or sets the dictionary for passing custom information to the notified application.
 		/// </summary>
 		/// <value>The user info.</value>
@@ -72,6 +82,7 @@ namespace VoxelBusters.NativePlugins
 		// Related to JSON representation
 		private const string 				kAlertBodyKey			= "alert-body";
 		private const string 				kFireDateKey			= "fire-date";
+		private const string 				kRepeatIntervalKey		= "repeat-interval";
 		private const string 				kUserInfoKey			= "user-info";
 		private const string 				kiOSPropertiesKey		= "ios-properties";
 		private const string 				kAndroidPropertiesKey	= "android-properties";
@@ -86,6 +97,7 @@ namespace VoxelBusters.NativePlugins
 		{
 			AlertBody			= null;
 			UserInfo			= null;
+			RepeatInterval		= eNotificationRepeatInterval.NONE;
 			iOSProperties		= null;
 			AndroidProperties	= null;
 		}
@@ -95,11 +107,13 @@ namespace VoxelBusters.NativePlugins
 			// Get alert body
 			AlertBody			= _jsonDict.GetIfAvailable<string>(kAlertBodyKey);
 
-			// Get fire date
+			// Get fire date, repeat interval
 			string _fireDateStr	= _jsonDict.GetIfAvailable<string>(kFireDateKey);
 			
 			if (!string.IsNullOrEmpty(_fireDateStr))
 				FireDate		= _fireDateStr.ToDateTimeLocalUsingZuluFormat();
+
+			RepeatInterval		= _jsonDict.GetIfAvailable<eNotificationRepeatInterval>(kRepeatIntervalKey);
 
 			// Get user info
 			UserInfo			= _jsonDict[kUserInfoKey] as IDictionary;
@@ -142,6 +156,7 @@ namespace VoxelBusters.NativePlugins
 			Dictionary<string, object> _jsonDict	= new Dictionary<string, object>();
 			_jsonDict[kAlertBodyKey]				= AlertBody;
 			_jsonDict[kFireDateKey]					= FireDate.ToStringUsingZuluFormat();
+			_jsonDict[kRepeatIntervalKey]			= (int)RepeatInterval;
 			_jsonDict[kUserInfoKey]					= UserInfo;
 
 			if (iOSProperties != null)
@@ -160,17 +175,19 @@ namespace VoxelBusters.NativePlugins
 		public static CrossPlatformNotification CreateNotificationFromPayload (string _notificationPayload)
 		{
 			IDictionary _payloadDict	= JSONUtility.FromJSON(_notificationPayload) as IDictionary;
-			
+
 			if (_payloadDict == null)
 			{
-				Console.LogError(Constants.kDebugTag, "[CrossPlatformNotification] Failed to create notification from payload=" + _notificationPayload);
+				Console.LogError(Constants.kDebugTag, "[CrossPlatformNotification] Failed to create notification.");
 				return null;
 			}
-			
-#if UNITY_ANDROID	
+
+#if UNITY_ANDROID
 			return new AndroidNotificationPayload(_payloadDict);
-#else
+#elif UNITY_IOS
 			return new iOSNotificationPayload(_payloadDict);
+#else
+			return null;
 #endif
 		}
 		
@@ -183,8 +200,8 @@ namespace VoxelBusters.NativePlugins
 		/// </summary>
 		public override string ToString ()
 		{
-			return string.Format ("CrossPlatformNotification: AlertBody={0} FireDate={1} UserInfo={2} iOSProperties={3} AndroidProperties={4}",
-			                      AlertBody, FireDate, UserInfo.ToJSON() ,iOSProperties, AndroidProperties);
+			return string.Format ("CrossPlatformNotification: AlertBody={0}, FireDate={1}, RepeatInterval={2}, UserInfo={3}, iOSProperties={4}, AndroidProperties={5}", 
+			                      AlertBody, FireDate, RepeatInterval, UserInfo, iOSProperties, AndroidProperties);
 		}
 		
 		#endregion

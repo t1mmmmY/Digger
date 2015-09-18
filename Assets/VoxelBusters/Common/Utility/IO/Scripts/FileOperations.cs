@@ -30,6 +30,22 @@ namespace VoxelBusters.Utility
 		}
 
 		/// <summary>
+		/// Moves the specified file to destination path.
+		/// </summary>
+		/// <param name="_sourcePath">Path of file to move.</param>
+		/// <param name="_destinationPath">Path of destination.</param>
+		public static void Move (string _sourcePath, string _destinationPath)
+		{
+			#if (UNITY_WEBPLAYER || UNITY_WEBGL)
+			Debug.LogError("[CPFileOperations] File operations are not supported.");
+			#elif UNITY_WINRT
+			Debug.LogError("[CPFileOperations] Rename Unimplemeted on windows");
+			#else
+			File.Move(_sourcePath, _destinationPath);
+			#endif
+		}
+
+		/// <summary>
 		/// Determines whether the specified file exists.
 		/// </summary>
 		/// <returns><c>true</c>, if file exists at given path, <c>false</c> otherwise.</returns>
@@ -108,6 +124,31 @@ namespace VoxelBusters.Utility
 
 		}
 
+		/// <summary>
+		/// Renames a file
+		/// </summary>
+		/// <param name="_filePath">The file to rename.</param>
+		/// <param name="_newFileName">New file name for this file.</param>
+		public static void Rename (string _filePath, string _newFileName)
+		{
+			#if (UNITY_WEBPLAYER || UNITY_WEBGL)
+			Debug.LogError("[CPFileOperations] File operations are not supported.");
+			#elif UNITY_WINRT
+			Debug.LogError("[CPFileOperations] Rename Unimplemeted on windows");
+			#else
+			string _fileName = Path.GetFileName(_filePath);
+			string _newFilePath = _filePath.Replace(_fileName, _newFileName);
+
+			if (File.Exists(_filePath))
+			{
+				if (File.Exists(_newFilePath))
+				{
+					File.Delete(_newFilePath);//Just deleting a head incase if exists.
+				}
+				File.Move(_filePath, _newFilePath);
+			}
+			#endif
+		}
 
 		#endregion
 	}

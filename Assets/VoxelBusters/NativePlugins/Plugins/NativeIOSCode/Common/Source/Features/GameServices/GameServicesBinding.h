@@ -9,3 +9,5 @@
 #import <Foundation/Foundation.h>
 
 UIKIT_EXTERN bool isGameCenterAvailable ();
+UIKIT_EXTERN void showLeaderboardView (const char* leaderboardID, int timeScope);
+UIKIT_EXTERN void showAchievementView ();

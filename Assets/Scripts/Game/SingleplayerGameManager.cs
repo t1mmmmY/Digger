@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using VoxelBusters.NativePlugins;
 
 public class SingleplayerGameManager : GameManager 
 {
@@ -27,6 +28,16 @@ public class SingleplayerGameManager : GameManager
 	{
 		base.OnDisable ();
 	}
+
+//	public override void SetBonusCharacter(BonusCharacter bonusCharacter)
+//	{
+//		base.SetBonusCharacter(bonusCharacter);
+//	}
+//
+//	public override BonusCharacter GetBonusCharacter()
+//	{
+//		return bonusCharacter;
+//	}
 	
 	public override void StartGame ()
 	{
@@ -85,17 +96,29 @@ public class SingleplayerGameManager : GameManager
 	{
 		if (canShare)
 		{
+			// Set popover to last touch position
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+
 //			canShare = false;
-			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
+			eShareOptions[] options = new eShareOptions[] { eShareOptions.FB,
+															eShareOptions.MAIL,
+															eShareOptions.MESSAGE,
+															eShareOptions.TWITTER,
+															eShareOptions.UNDEFINED,
+															eShareOptions.WHATSAPP 
+														};
+			NPBinding.Sharing.ShareScreenShot("My result", options, OnFinishSharing);
+//			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
 
 			base.ShareGame();
 		}
 	}
 
-//	void OnFinishSharing(VoxelBusters.NativePlugins.Sharing.SharingCompletion _result)
-//	{
-//		canShare = true;
-//	}
+	void OnFinishSharing(eShareResult _result)
+	{
+		Debug.Log("OnFinishSharing" + _result.ToString());
+		canShare = true;
+	}
 	
 	protected override void OnAnswer (bool isRight)
 	{

@@ -44,7 +44,6 @@ namespace VoxelBusters.Utility
 
 		protected override void OnFetchingResponse ()
 		{
-			Debug.Log("[DownloadTexture] Did finish downloading");
 			Texture2D _finalTexture	= null;
 
 			// Callbacks isnt set
@@ -60,9 +59,11 @@ namespace VoxelBusters.Utility
 			}
 
 			// Fix orientation to normal
+			#if !UNITY_WINRT
 			if (AutoFixOrientation)
 			{
 				Stream  _textureStream 	= new MemoryStream(WWWObject.bytes);	
+
 				ExifFile _exifFile 		= ExifFile.Read(_textureStream);
 				
 				if(_exifFile != null && _exifFile.Properties.ContainsKey(ExifTag.Orientation))
@@ -112,6 +113,7 @@ namespace VoxelBusters.Utility
 						_finalTexture	= WWWObject.texture.Rotate(-90);
 						break;
 					}
+					
 				}
 				else
 				{
@@ -120,6 +122,7 @@ namespace VoxelBusters.Utility
 			}
 			// Use original image 
 			else
+			#endif
 			{
 				_finalTexture	= WWWObject.texture;
 			}

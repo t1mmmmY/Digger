@@ -13,3 +13,14 @@ bool isGameCenterAvailable ()
 {
 	return [[GameServicesHandler Instance] isGameCenterAvailable];
 }
+
+
+void showLeaderboardView (const char* leaderboardID, int timeScope)
+{
+	[[GameServicesHandler Instance] showLeaderboardView:ConvertToNSString(leaderboardID) withTimeScope:(GKLeaderboardTimeScope)timeScope];
+}
+
+void showAchievementView ()
+{
+	[[GameServicesHandler Instance] showAchievementView];
+}

@@ -47,6 +47,13 @@ public class GoldKeeper : MonoBehaviour
 
 	void OnInitInfiniteMap()
 	{
+		float goldMultiplier = GeneralGameController.Instance.goldMultiplier;
+//		if (bonusCharacter != null)
+//		{
+			goldDensity *= goldMultiplier;
+			goldDensityBonus *= goldMultiplier;
+//		}
+
 		if (BonusController.Instance != null)
 		{
         	isBonus = BonusController.Instance.IsBonusReady();

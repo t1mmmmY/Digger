@@ -166,127 +166,121 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Authentication", kSubTitleStyle);
-
-					if (GUILayout.Button("Initialise"))
-					{
-						Initialise();
-					}
-
-					if (GUILayout.Button("Login"))
-					{
-						Login();
-					}
-					
-					if (GUILayout.Button("Logout"))
-					{
-						Logout();
-					}
-					
-					if (GUILayout.Button("IsLoggedIn"))
-					{
-						bool _isLoggedIn 	= NPBinding.Twitter.IsLoggedIn();
-						AddNewResult("Is Loggedin=" + _isLoggedIn);
-					}
-				}
-				GUILayout.EndVertical();
-				
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{		
-					GUILayout.Label("Session Details", kSubTitleStyle);
-					
-					if (GUILayout.Button("GetAuthToken"))
-					{
-						string _authToken		= NPBinding.Twitter.GetAuthToken();
-						AddNewResult("Auth Token=" + _authToken);
-					}
-					
-					if (GUILayout.Button("GetAuthTokenSecret"))
-					{
-						string _authTokenSecret	= NPBinding.Twitter.GetAuthTokenSecret();
-						AddNewResult("Auth Token Secret=" + _authTokenSecret);
-					}
-					
-					if (GUILayout.Button("GetUserID"))
-					{
-						string _userID			= NPBinding.Twitter.GetUserID();
-						AddNewResult("User ID=" + _userID);
-					}
-					
-					if (GUILayout.Button("GetUserName"))
-					{
-						string _userName		= NPBinding.Twitter.GetUserName();
-						AddNewResult("Username=" + _userName);
-					}
-				}
-				GUILayout.EndVertical();
-				
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Tweet Composer", kSubTitleStyle);
-
-					if (GUILayout.Button("ShowTweetComposerWithMessage"))
-					{
-						ShowTweetComposerWithMessage();
-					}
-					
-					if (GUILayout.Button("ShowTweetComposerWithLink"))
-					{
-						ShowTweetComposerWithLink();
-					}
-					
-					if (GUILayout.Button("ShowTweetComposerWithScreenshot"))
-					{
-						ShowTweetComposerWithScreenshot();
-					}
-					
-					if (GUILayout.Button("ShowTweetComposerWithImage"))
-					{
-						ShowTweetComposerWithImage();
-					}
-				}
-				GUILayout.EndVertical();
-				
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Account Details", kSubTitleStyle);
-
-					if (GUILayout.Button("RequestAccountDetails"))
-					{
-						RequestAccountDetails();
-					}
-					
-					if (GUILayout.Button("RequestEmailAccess"))
-					{
-						RequestEmailAccess();
-					}
-				}
-				GUILayout.EndVertical();
-				
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("API Request Access", kSubTitleStyle);
-					if (GUILayout.Button("URLRequest"))
-					{
-						MakeURLRequest();
-					}
-				}
-				GUILayout.EndVertical();
+				DrawAuthenticationAPI();
+				DrawSessionDetailsAPI();
+				DrawTweetComposeAPI();
+				DrawAccountDetailsAPI();
+				DrawRequestAPI();
 			}
 			RootScrollView.EndScrollView();
 			
-			// Draw results
 			DrawResults();
-			
-			// Back button
 			DrawPopButton();
+		}
+
+		private void DrawAuthenticationAPI ()
+		{
+			GUILayout.Label("Authentication", kSubTitleStyle);
+			
+			if (GUILayout.Button("Initialise"))
+			{
+				Initialise();
+			}
+			
+			if (GUILayout.Button("Login"))
+			{
+				Login();
+			}
+			
+			if (GUILayout.Button("Logout"))
+			{
+				Logout();
+			}
+			
+			if (GUILayout.Button("IsLoggedIn"))
+			{
+				bool _isLoggedIn 	= NPBinding.Twitter.IsLoggedIn();
+				AddNewResult("Is Loggedin=" + _isLoggedIn);
+			}
+		}
+
+		private void DrawSessionDetailsAPI ()
+		{
+			GUILayout.Label("Session Details", kSubTitleStyle);
+			
+			if (GUILayout.Button("GetAuthToken"))
+			{
+				string _authToken		= NPBinding.Twitter.GetAuthToken();
+				AddNewResult("Auth Token=" + _authToken);
+			}
+			
+			if (GUILayout.Button("GetAuthTokenSecret"))
+			{
+				string _authTokenSecret	= NPBinding.Twitter.GetAuthTokenSecret();
+				AddNewResult("Auth Token Secret=" + _authTokenSecret);
+			}
+			
+			if (GUILayout.Button("GetUserID"))
+			{
+				string _userID			= NPBinding.Twitter.GetUserID();
+				AddNewResult("User ID=" + _userID);
+			}
+			
+			if (GUILayout.Button("GetUserName"))
+			{
+				string _userName		= NPBinding.Twitter.GetUserName();
+				AddNewResult("Username=" + _userName);
+			}
+		}
+
+		private void DrawTweetComposeAPI ()
+		{
+			GUILayout.Label("Tweet Composer", kSubTitleStyle);
+			
+			if (GUILayout.Button("ShowTweetComposerWithMessage"))
+			{
+				ShowTweetComposerWithMessage();
+			}
+			
+			if (GUILayout.Button("ShowTweetComposerWithLink"))
+			{
+				ShowTweetComposerWithLink();
+			}
+			
+			if (GUILayout.Button("ShowTweetComposerWithScreenshot"))
+			{
+				ShowTweetComposerWithScreenshot();
+			}
+			
+			if (GUILayout.Button("ShowTweetComposerWithImage"))
+			{
+				ShowTweetComposerWithImage();
+			}
+		}
+
+		private void DrawAccountDetailsAPI ()
+		{
+			GUILayout.Label("Account Details", kSubTitleStyle);
+			
+			if (GUILayout.Button("RequestAccountDetails"))
+			{
+				RequestAccountDetails();
+			}
+			
+			if (GUILayout.Button("RequestEmailAccess"))
+			{
+				RequestEmailAccess();
+			}
+		}
+
+		private void DrawRequestAPI ()
+		{
+			GUILayout.Label("API Request Access", kSubTitleStyle);
+
+			if (GUILayout.Button("URLRequest"))
+			{
+				MakeURLRequest();
+			}
 		}
 
 		#endregion

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
 using Newtonsoft.Json;
+using VoxelBusters.NativePlugins;
 
 public class MultiplayerController : RealTimeMultiplayerListener
 {
@@ -14,6 +15,11 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private uint maximumOpponents = 1;
 	private uint gameVariation = 0;
 
+#if UNITY_IOS
+//	LocalUser localUser;
+//	GameServicesIOS gameServices;
+#endif
+
 //	private List<string> opponentId = "";
 
 	private MultiplayerController() 
@@ -22,7 +28,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.DebugLogEnabled = false;
 		PlayGamesPlatform.Activate ();
 #elif UNITY_IOS
-
+//		gameServices = new GameServicesIOS();
 #endif
 	}
 	
@@ -63,12 +69,38 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			// We could also start our game now
 		}
 #elif UNITY_IOS
+		if(NPSettings.Application.SupportedFeatures.UsesGameServices)
+		{
+			if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+			{
+				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>{
+					
+					if (_success)
+					{
+						Debug.Log("Sign-In Successfully");
+						Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
+					}
+					else
+					{
+						Debug.Log("Sign-In Failed");
+					}
+				});
+				//			NPBinding.GameServices.LocalUser.Authenticate(null);
+			}
+		}
+		else
+		{
+			Debug.LogWarning("Enable Game services feature in NPSettings.");
+		}
 
+
+//		localUser.Authenticate(OnComleteAuthentication);
 #endif
 	}
 
 	public void TrySilentSignIn() 
 	{
+#if UNITY_ANDROID
 		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
 		{
 			PlayGamesPlatform.Instance.Authenticate((bool success) => 
@@ -87,11 +119,29 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		{
 			Debug.Log("We're already signed in");
 		}
+
+#elif UNITY_IOS
+		SignIn();
+//		localUser.Authenticate(OnComleteAuthentication);
+#endif
+	}
+
+	private void OnComleteAuthentication(bool result)
+	{
+		Debug.Log("OnComleteAuthentication " + result);
 	}
 
 	public void SetBestSore(int score, System.Action<bool> callback = null)
 	{
+#if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
+#elif UNITY_IOS
+		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+		{
+			NPBinding.GameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback);
+		}
+//		gameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback); 
+#endif
 	}
 
 	public int GetRang()
@@ -103,13 +153,30 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void ChangeRang(int score, System.Action<bool> callback = null)
 	{
+#if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ReportScore((long)(GetRang() + score), "CgkImYnr8fAKEAIQAw", callback);
+#elif UNITY_IOS
+//		gameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, score, 
+#endif
 		PlayerPrefs.SetInt("PlayerRang", GetRang() + score);
 	}
 
 	public void ShowLeaderboard()
 	{
+#if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ShowLeaderboardUI();//"CgkImYnr8fAKEAIQAg");
+#elif UNITY_IOS
+		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+		{
+			NPBinding.GameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
+		}
+		else
+		{
+			SignIn();
+		}
+//		NPBinding.GameServices.CreateLeaderboard(CONST.IOS_LEADERBOARD_ID);
+//		gameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
+#endif
 	}
 
 

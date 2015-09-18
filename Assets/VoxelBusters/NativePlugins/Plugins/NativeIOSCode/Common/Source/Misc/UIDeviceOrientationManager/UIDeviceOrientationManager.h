@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "Singleton.h"
+#include "LifeCycleListener.h"
 
 @protocol UIDeviceOrientationObserver <NSObject>
 
@@ -15,7 +16,7 @@
 
 @end
 
-@interface UIDeviceOrientationManager : Singleton
+@interface UIDeviceOrientationManager : Singleton <LifeCycleListener>
 
 // Properties
 @property(nonatomic, retain) 	NSMutableArray		 	*observers;

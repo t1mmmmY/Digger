@@ -7,6 +7,9 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 //	Character currentCharacter;
 	int currentCharacterNumber = 0;
     string muteAudioKey = "MUTE_AUDIO";
+
+	public float goldMultiplier { get; private set; }
+	
     //Object backgroundMusic;
 
 	public int characterNumber
@@ -71,6 +74,21 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 		}
 	}
 
+	public void SetBonus(float multiplier)
+	{
+		goldMultiplier = multiplier;
+	}
+
+//	public BonusCharacter GetBonusCharacter()
+//	{
+//		return bonusCharacter;
+//	}
+//	
+//	public void SetBonusCharacter(BonusCharacter bonusCharacter)
+//	{
+//		this.bonusCharacter = bonusCharacter;
+//	}
+
     public void MuteAudio(bool isPlaying)
     {
         int volume = isPlaying == true ? 1 : 0;
@@ -122,7 +140,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 			onLoadLobby();
 		}
 
-		MultiplayerController.Instance.TrySilentSignIn();
+//		MultiplayerController.Instance.TrySilentSignIn();
 	}
 
 

@@ -13,9 +13,19 @@ public class Digger : MonoBehaviour
 	public static System.Action onDig;
 //	int level = 0;
 
+
+	void Awake()
+	{
+		BonusCharacter bonusCharacter = GetComponent<BonusCharacter>();
+		float multiplier = bonusCharacter == null ? 1 : bonusCharacter.goldMultiplier;
+		GeneralGameController.Instance.SetBonus(multiplier);
+	}
+
 	void OnEnable()
 	{
 //		level = 0;
+
+
 		FormulaDrawer.OnAnswer += OnAnswer;
 		GameManager.OnGameOver += OnGameOver;
 	}

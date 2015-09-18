@@ -57,20 +57,20 @@ namespace VoxelBusters.NativePlugins.Demo
 		
 		#endregion
 
-
 		#region UI
 
 		protected override void OnGUIWindow()
 		{
 			base.OnGUIWindow();
 			
-			GUILayout.BeginVertical();
+			RootScrollView.BeginScrollView();
 			{
-				if(GUILayout.Button("Initialise"))
+				if (GUILayout.Button("Initialise"))
 				{
 					Initialise();
 				}
-				if(GUILayout.Button("Is Network Reachable?"))
+
+				if (GUILayout.Button("Is Network Reachable?"))
 				{
 					bool _isConnected = IsConnected();
 
@@ -83,20 +83,13 @@ namespace VoxelBusters.NativePlugins.Demo
 						AddNewResult("Network is Unreachable.");
 					}
 				}				
-
 			}
-			GUILayout.EndVertical();
-	
-			GUILayout.FlexibleSpace();
+			RootScrollView.EndScrollView();
 
 			DrawResults();
-
 			DrawPopButton();
 		}
 
 		#endregion
-
-		
-		
 	}
 }

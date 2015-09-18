@@ -6,10 +6,16 @@ namespace VoxelBusters.Utility
 {
 	public class GUIDialog : GUIModalWindow 
 	{
-
 		#region Delegates
 		
 		protected delegate void GUIDialogResult (string _buttonPressed);
+		
+		#endregion
+		
+		#region Fields
+		
+		protected 	bool 	m_show;
+		private		bool	m_returnPressed;
 		
 		#endregion
 
@@ -35,12 +41,6 @@ namespace VoxelBusters.Utility
 
 		#endregion
 
-		#region Private Properties
-		
-		protected bool m_show;
-
-		#endregion
-
 		protected override void Start()
 		{
 			base.Start();
@@ -49,6 +49,11 @@ namespace VoxelBusters.Utility
 			gameObject.hideFlags = HideFlags.HideInHierarchy;
 		}
 
+		private void Update ()
+		{
+			if (Input.GetKeyDown(KeyCode.Return))
+				m_returnPressed	= true;
+		}
 
 		#region Visibility Control Methods
 		
@@ -75,7 +80,6 @@ namespace VoxelBusters.Utility
 		
 		#endregion
 
-
 		#region Helpers
 
 		protected void DrawTitle(float _widthFactor = 0.5f)
@@ -99,23 +103,25 @@ namespace VoxelBusters.Utility
 			if (ButtonList == null)
 				return;
 
-			GUILayoutOption _width	= GUILayout.Width(Screen.width * _widthFactor);
+			GUILayoutOption _width			= GUILayout.Width(Screen.width * _widthFactor);
+			bool			_buttonPressed	= false;
 
 			if (ButtonList.Length <= 2)
 			{
 				GUILayout.BeginHorizontal(_width);
 				{
-					foreach(string each in ButtonList)
+					foreach (string each in ButtonList)
 					{
 						if (GUILayout.Button(each))
 						{
-							//Send the callback and destroy
+							// Update flag
+							_buttonPressed	= true;
+
+							// Send the callback and destroy
 							if (_delegate != null)
-							{
 								_delegate(each);					
-							}
-							
-							//Close by destroying this object
+
+							// Close by destroying this object
 							Close();
 						}
 					}
@@ -126,23 +132,37 @@ namespace VoxelBusters.Utility
 			{
 				GUILayout.BeginVertical(_width);
 				{
-					foreach(string each in ButtonList)
+					foreach (string each in ButtonList)
 					{
 						if (GUILayout.Button(each))
 						{
-							//Send the callback and destroy
+							// Update flag
+							_buttonPressed	= true;
+
+							// Send the callback and destroy
 							if (_delegate != null)
-							{
 								_delegate(each);					
-							}
-							
-							//Close by destroying this object
+
+							// Close by destroying this object
 							Close();
 						}
 					}
 				}
-				GUILayout.EndHorizontal();
+				GUILayout.EndVertical();
 			}
+
+			// Check if enter was pressed
+			if (!_buttonPressed && m_returnPressed)
+			{
+				// Send the callback and destroy
+				if (_delegate != null)
+					_delegate(ButtonList[0]);					
+				
+				// Close by destroying this object
+				Close();
+			}
+
+			m_returnPressed	= false;
 		}
 
 		protected void Close()

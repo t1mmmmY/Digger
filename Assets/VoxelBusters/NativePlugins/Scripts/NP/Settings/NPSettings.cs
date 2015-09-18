@@ -20,7 +20,7 @@ namespace VoxelBusters.NativePlugins
 		#region Constants
 		
 		private const 	string 						kProductName					= "Native Plugins";
-		private const 	string 						kProductVersion					= "1.04";
+		private const 	string 						kProductVersion					= "1.1";
 		
 		#endregion
 
@@ -135,6 +135,23 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
+
+		
+
+		[SerializeField]
+		private GameServicesSettings				m_gameServicesSettings			= new GameServicesSettings();
+		/// <summary>
+		/// Gets the Game Services settings.
+		/// </summary>
+		/// <value>The Game Services settings.</value>
+		public static GameServicesSettings			GameServicesSettings
+		{
+			get 
+			{ 
+				return Instance.m_gameServicesSettings; 
+			}
+		}
+		
 #endif
 
 		public		static	string						Version
@@ -209,12 +226,14 @@ namespace VoxelBusters.NativePlugins
 		#region Methods
 
 #if UNITY_EDITOR
-		private void OnTwitterConfigChanged ()
+
+#if !NATIVE_PLUGINS_LITE_VERSION
+		private void OnTwitterConfigurationChanged ()
 		{
 			// Take action on configuration changes
 			OnApplicationConfigurationChanged();
 
-			#if !(UNITY_WEBPLAYER || UNITY_WEBGL)
+#if !(UNITY_WEBPLAYER || UNITY_WEBGL)
 
 			// Update defines
 			GlobalDefinesManager _definesManager	= new GlobalDefinesManager();
@@ -236,19 +255,70 @@ namespace VoxelBusters.NativePlugins
 
 			_definesManager.SaveAllCompilers();
 
-			#endif
+#endif
 		}
+
+		private void OnBillingConfigurationChanged ()
+		{
+			// Take action on configuration changes
+			OnApplicationConfigurationChanged();
+
+			string _filePath	= Constants.kAndroidPluginsJARPath + "/" + Constants.kBillingInterfaceJARName;
+
+			if(Application.SupportedFeatures.UsesBilling)
+			{
+				FileOperations.Rename(_filePath + ".jar.unused", Constants.kBillingInterfaceJARName + ".jar" );
+			}
+			else
+			{
+				FileOperations.Rename(_filePath + ".jar", Constants.kBillingInterfaceJARName + ".jar.unused" );
+				EditorUtility.DisplayDialog("Cross Platform Native Plugins - Warning",Constants.kDisabledBillingWarning, "ok");	
+			}
+		}
+
+		private void OnSmallNotificationIconChanged ()
+		{
+			// Copy save the texture data in res/drawable folder
+			Texture2D[] _smallIcons = new Texture2D[]
+											{	
+												NPSettings.Notification.Android.WhiteSmallIcon,
+												NPSettings.Notification.Android.ColouredSmallIcon
+											};
+			string[]	  _paths		= new string[]
+											{	
+												Constants.kAndroidPluginsLibraryPath + "/res/drawable/app_icon_custom_white.png",
+												Constants.kAndroidPluginsLibraryPath + "/res/drawable/app_icon_custom_coloured.png"
+											};
+
+			int _iconsConfiguredCount = 0;
+			for(int _i = 0 ; _i < _smallIcons.Length ; _i++)
+			{
+				if(_smallIcons[_i] != null)
+				{
+					string _destinationFile = UnityEngine.Application.dataPath + "/../" + _paths[_i];
+					System.IO.File.Copy(AssetDatabase.GetAssetPath(_smallIcons[_i]), _destinationFile, true);
+					_iconsConfiguredCount++;
+				}
+			}
+
+			if(_iconsConfiguredCount == 1)
+			{
+				Debug.LogError("[NPSettings] Should set both(white & coloured) icons for proper functionality on all devices. As, White icon will be used by post Android L devices and coloured one by pre Android L Devices.");
+			}
+		}
+		
+#endif
 
 		private void OnApplicationConfigurationChanged ()
 		{
-			string _manifestFolderPath = "Assets/Plugins/Android/native_plugins_lib/";
+			string _manifestFolderPath = Constants.kAndroidPluginsLibraryPath;
 
 			if (AssetsUtility.FolderExists(_manifestFolderPath))
 			{
 				NPAndroidManifestGenerator _generator	= new NPAndroidManifestGenerator();
 
 				// Save file
-				_generator.SaveManifest("com.voxelbusters.androidnativeplugin", _manifestFolderPath + "AndroidManifest.xml");
+				_generator.SaveManifest("com.voxelbusters.androidnativeplugin", _manifestFolderPath + "/AndroidManifest.xml");
 
 				// Refresh
 				AssetDatabase.Refresh();

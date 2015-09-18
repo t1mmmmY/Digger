@@ -44,8 +44,8 @@ namespace VoxelBusters.NativePlugins.Internal
 				_displayName = "";
 			}
 
-			FirstName 		= ParseFirstName(_givenName, _familyName, _displayName);
-			LastName 		= ParseLastName(_givenName, _familyName, _displayName);
+			FirstName 		= _givenName;
+			LastName 		= _familyName;
 			ImagePath		= _contactInfoJsontDict[kImagePath] as string;
 			PhoneNumberList	= new List<string>();
 			EmailIDList		= new List<string>();
@@ -59,48 +59,6 @@ namespace VoxelBusters.NativePlugins.Internal
 			IList _emailIDJsonList	= _contactInfoJsontDict[kEmailList] as IList;
 			foreach (string _emailID in _emailIDJsonList)
 				EmailIDList.Add(_emailID);
-		}
-
-		#endregion
-
-		#region Helpers			
-
-		//If given name or last name is null, the details will be picked from display name
-		private string ParseFirstName (string _givenName, string _familyName, string _displayName)
-		{
-			string  _firstName = "";
-
-			_firstName = _givenName;
-
-			if (string.IsNullOrEmpty(_firstName))//Pick from display name 
-			{
-				int _index = _displayName.TrimStart().LastIndexOf(' ');
-
-				if (!string.IsNullOrEmpty(_familyName))
-				{
-					_displayName = _displayName.Replace(_familyName, "");
-				}
-	
-				if(_index != -1)
-				{
-					_firstName = _displayName.Substring(0, _index);
-				}
-				else
-				{
-					_firstName = _displayName;
-				}
-			}
-
-			return _firstName;
-		}
-		
-		private string ParseLastName (string _givenName, string _familyName, string _displayName)		
-		{
-			string  _lastName = "";
-
-			_lastName = _familyName;
-
-			return _lastName;	
 		}
 
 		#endregion

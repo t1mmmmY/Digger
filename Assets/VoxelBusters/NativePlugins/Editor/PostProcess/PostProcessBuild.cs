@@ -35,6 +35,9 @@ namespace VoxelBusters.NativePlugins
 		private	const string	kTwitterConfigKey						= "twitter-config";
 		private	const string	kExtenalFolderRelativePath				= "NativePlugins";
 
+		// Plist keys
+		private const string	kDeviceCapablitiesKey					= "UIRequiredDeviceCapabilities";
+
 		#endregion
 
 		#region Methods
@@ -49,16 +52,13 @@ namespace VoxelBusters.NativePlugins
 #endif
 			{
 #if !NATIVE_PLUGINS_LITE_VERSION
-
 				RemoveOlderVersionFiles();
 
+				// Xcode project modification section
 				if (NPSettings.Application.SupportedFeatures.UsesTwitter)
 				{
-					// Decompress
+					// Decompress zip files and add it to project
 					AddTwitterFilesToProject();
-					
-					// Append fabric details
-					AppendFabricKitToInfoPlist(_buildPath);
 				}
 				else
 				{
@@ -70,6 +70,9 @@ namespace VoxelBusters.NativePlugins
 					// Remove twitter config key
 					EditorPrefs.DeleteKey(kTwitterConfigKey);
 				}
+
+				// Info plist modification section
+				ModifyInfoPlist(_buildPath);
 #endif
 
 				// Append code
@@ -204,11 +207,13 @@ namespace VoxelBusters.NativePlugins
 //			}
 //		}
 
-		private static void AppendFabricKitToInfoPlist (string _buildPath)
+		private static void ModifyInfoPlist (string _buildPath)
 		{
-			TwitterSettings 	_twitterSettings			= NPSettings.SocialNetworkSettings.TwitterSettings;
-			string 				_fabricJsonStr				= string.Format(kFabricKitJsonStringFormat, _twitterSettings.ConsumerKey);
-			IDictionary 		_fabricJsonDictionary		= JSONUtility.FromJSON(_fabricJsonStr) as IDictionary;
+			ApplicationSettings.Features _supportedFeatures	= NPSettings.Application.SupportedFeatures;
+
+			if (!(_supportedFeatures.UsesTwitter || _supportedFeatures.UsesGameServices))
+				return;
+
 			string 				_path2InfoPlist				= Path.Combine(_buildPath, kInfoPlistFileRelativePath);
 			string 				_path2InfoPlistBackupFile	= Path.Combine(_buildPath, kInfoPlistBackupFileRelativePath);
 			Plist 				_infoPlist					= Plist.LoadPlistAtPath(_path2InfoPlist);
@@ -216,8 +221,30 @@ namespace VoxelBusters.NativePlugins
 			// Create backup
 			_infoPlist.Save(_path2InfoPlistBackupFile);
 
-			// Add fabric
-			_infoPlist.AddValue(kFabricKitRootKey, _fabricJsonDictionary[kFabricKitRootKey] as IDictionary);
+			// Adding twitter settings 
+			if (_supportedFeatures.UsesTwitter)
+			{
+				TwitterSettings 	_twitterSettings			= NPSettings.SocialNetworkSettings.TwitterSettings;
+				string 				_fabricJsonStr				= string.Format(kFabricKitJsonStringFormat, _twitterSettings.ConsumerKey);
+				IDictionary 		_fabricJsonDictionary		= JSONUtility.FromJSON(_fabricJsonStr) as IDictionary;
+
+				// Add fabric
+				_infoPlist.AddValue(kFabricKitRootKey, _fabricJsonDictionary[kFabricKitRootKey] as IDictionary);
+			}
+
+			// Adding gamecenter settings
+			if (_supportedFeatures.UsesGameServices)
+			{
+				IList				_deviceCapablitiesList		= _infoPlist.GetKeyPathValue(kDeviceCapablitiesKey) as IList;
+
+				if (_deviceCapablitiesList == null)
+					_deviceCapablitiesList						= new List<string>();
+
+				if (!_deviceCapablitiesList.Contains("gamekit"))
+					_deviceCapablitiesList.Add("gamekit");
+
+				_infoPlist.AddValue(kDeviceCapablitiesKey, _deviceCapablitiesList);
+			}
 
 			// Save
 			_infoPlist.Save(_path2InfoPlist);

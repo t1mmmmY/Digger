@@ -11,10 +11,7 @@
 
 void initNotificationService (const char* keyForUserInfo)
 {
-	[NotificationHandler SetKeyForUserInfo:ConvertToNSString(keyForUserInfo)];
-	
-	// Sends all launch notifications
-	[[NotificationHandler Instance] sendLaunchNotifications];
+	[[NotificationHandler Instance] initialize:ConvertToNSString(keyForUserInfo)];
 }
 
 void registerNotificationTypes (int notificationTypes)

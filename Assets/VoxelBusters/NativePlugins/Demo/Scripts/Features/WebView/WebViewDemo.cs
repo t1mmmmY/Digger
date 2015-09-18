@@ -180,128 +180,137 @@ namespace VoxelBusters.NativePlugins.Demo
 		{		
 			base.OnGUIWindow();
 
+			if (m_webview == null)
+			{
+				GUILayout.Label("Create WebView", kSubTitleStyle);
+				
+				if (GUILayout.Button("Create"))
+				{
+					GameObject _newWebviewGO	= new GameObject("WebView");
+					m_webview					= _newWebviewGO.AddComponent<WebView>();
+					
+					AddNewResult("Successfully created new WebView.");
+				}
+				
+				return;
+			}
+
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Load API's", kSubTitleStyle);
+				DrawLoadAPI();
+				DrawLifeCycleAPI();
+				DrawPropertiesAPI();
 
-					if (GUILayout.Button("LoadRequest"))
-					{
-						LoadRequest();
-					}
-					
-					if (GUILayout.Button("LoadHTMLString"))
-					{
-						LoadHTMLString();
-					}
-					
-					if (GUILayout.Button("LoadHTMLStringWithJavaScript"))
-					{
-						LoadHTMLStringWithJavaScript();
-					}
-					
-					if (GUILayout.Button("EvaluateJavaScript"))
-					{
-						EvaluateJavaScriptFromString();
-					}
-					
-					if (GUILayout.Button("LoadFile"))
-					{
-						LoadFile();
-					}
-				}
-				GUILayout.EndVertical();
+				// Misc
+				GUILayout.Label("Misc.", kSubTitleStyle);
 				
-				GUILayout.BeginVertical(UISkin.scrollView);
+				if (GUILayout.Button("AddNewURLSchemeName"))
 				{
-					GUILayout.Label("Lifecycle", kSubTitleStyle);
-
-					if (GUILayout.Button("Show"))
-					{		
-						ShowWebView();
-					}
-					
-					if (GUILayout.Button("Hide"))
-					{		
-						HideWebView();
-					}
-					
-					if (GUILayout.Button("Destroy"))
-					{		
-						DestroyWebView();
-					}
+					AddNewURLSchemeName();
 				}
-				GUILayout.EndVertical();
 				
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Properties", kSubTitleStyle);
-
-					GUILayout.BeginVertical(UISkin.scrollView);
-					GUILayout.BeginHorizontal();
-
-					bool _canHideNewValue				= GUILayout.Toggle(m_webview.CanHide, "CanHide");
-					bool _canBounceNewValue				= GUILayout.Toggle(m_webview.CanBounce, "CanBounce");
-					bool _showSpinnerOnLoadNewValue		= GUILayout.Toggle(m_webview.ShowSpinnerOnLoad, "ShowSpinnerOnLoad");
-
-					GUILayout.EndHorizontal();
-
-					GUILayout.BeginHorizontal();
-
-					bool _autoShowOnLoadFinishNewValue	= GUILayout.Toggle(m_webview.AutoShowOnLoadFinish, "AutoShowOnLoadFinish");
-					bool _scalesPageToFitNewValue		= GUILayout.Toggle(m_webview.ScalesPageToFit, "ScalesPageToFit");
-
-					GUILayout.EndHorizontal();
-					GUILayout.EndVertical();
-					
-					// Update the value only on value change
-					if (_canHideNewValue != m_webview.CanHide)
-						m_webview.CanHide				= _canHideNewValue;
-					
-					if (_canBounceNewValue != m_webview.CanBounce)
-						m_webview.CanBounce				= _canBounceNewValue;
-					
-					if (_showSpinnerOnLoadNewValue != m_webview.ShowSpinnerOnLoad)
-						m_webview.ShowSpinnerOnLoad		= _showSpinnerOnLoadNewValue;
-					
-					if (_autoShowOnLoadFinishNewValue != m_webview.AutoShowOnLoadFinish)
-						m_webview.AutoShowOnLoadFinish	= _autoShowOnLoadFinishNewValue;
-					
-					if (_scalesPageToFitNewValue != m_webview.ScalesPageToFit)
-						m_webview.ScalesPageToFit		= _scalesPageToFitNewValue;
-					
-					if (GUILayout.Button("SetFrame"))
-					{		
-						SetFrame();
-					}
+				if (GUILayout.Button("ClearCache"))
+				{		
+					ClearCache();
 				}
-				GUILayout.EndVertical();
-				
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{	
-					GUILayout.Label("Misc.", kSubTitleStyle);
-
-					if (GUILayout.Button("AddNewURLSchemeName"))
-					{
-						AddNewURLSchemeName();
-					}
-					
-					if (GUILayout.Button("ClearCache"))
-					{		
-						ClearCache();
-					}
-				}
-				GUILayout.EndVertical();
 			}
 			RootScrollView.EndScrollView();
 			
-			// Draw results
 			DrawResults();
-			
-			// Back button
 			DrawPopButton();
+		}
+
+		private void DrawLoadAPI ()
+		{
+			GUILayout.Label("Load API's", kSubTitleStyle);
+			
+			if (GUILayout.Button("LoadRequest"))
+			{
+				LoadRequest();
+			}
+			
+			if (GUILayout.Button("LoadHTMLString"))
+			{
+				LoadHTMLString();
+			}
+			
+			if (GUILayout.Button("LoadHTMLStringWithJavaScript"))
+			{
+				LoadHTMLStringWithJavaScript();
+			}
+			
+			if (GUILayout.Button("EvaluateJavaScript"))
+			{
+				EvaluateJavaScriptFromString();
+			}
+			
+			if (GUILayout.Button("LoadFile"))
+			{
+				LoadFile();
+			}
+		}
+
+		private void DrawLifeCycleAPI ()
+		{
+			GUILayout.Label("Lifecycle", kSubTitleStyle);
+			
+			if (GUILayout.Button("Show"))
+			{		
+				ShowWebView();
+			}
+			
+			if (GUILayout.Button("Hide"))
+			{		
+				HideWebView();
+			}
+			
+			if (GUILayout.Button("Destroy"))
+			{		
+				DestroyWebView();
+			}
+		}
+
+		private void DrawPropertiesAPI ()
+		{
+			GUILayout.Label("Properties", kSubTitleStyle);
+			
+			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.BeginHorizontal();
+			
+			bool _canHideNewValue				= GUILayout.Toggle(m_webview.CanHide, "CanHide");
+			bool _canBounceNewValue				= GUILayout.Toggle(m_webview.CanBounce, "CanBounce");
+			bool _showSpinnerOnLoadNewValue		= GUILayout.Toggle(m_webview.ShowSpinnerOnLoad, "ShowSpinnerOnLoad");
+			
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+			
+			bool _autoShowOnLoadFinishNewValue	= GUILayout.Toggle(m_webview.AutoShowOnLoadFinish, "AutoShowOnLoadFinish");
+			bool _scalesPageToFitNewValue		= GUILayout.Toggle(m_webview.ScalesPageToFit, "ScalesPageToFit");
+			
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
+			
+			// Update the value only on value change
+			if (_canHideNewValue != m_webview.CanHide)
+				m_webview.CanHide				= _canHideNewValue;
+			
+			if (_canBounceNewValue != m_webview.CanBounce)
+				m_webview.CanBounce				= _canBounceNewValue;
+			
+			if (_showSpinnerOnLoadNewValue != m_webview.ShowSpinnerOnLoad)
+				m_webview.ShowSpinnerOnLoad		= _showSpinnerOnLoadNewValue;
+			
+			if (_autoShowOnLoadFinishNewValue != m_webview.AutoShowOnLoadFinish)
+				m_webview.AutoShowOnLoadFinish	= _autoShowOnLoadFinishNewValue;
+			
+			if (_scalesPageToFitNewValue != m_webview.ScalesPageToFit)
+				m_webview.ScalesPageToFit		= _scalesPageToFitNewValue;
+			
+			if (GUILayout.Button("SetFrame"))
+			{		
+				SetFrame();
+			}
 		}
 
 		#endregion

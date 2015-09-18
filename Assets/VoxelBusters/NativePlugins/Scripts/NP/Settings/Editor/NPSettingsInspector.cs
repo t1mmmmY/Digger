@@ -10,6 +10,9 @@ namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
+#if NATIVE_PLUGINS_LITE_VERSION
+	[CustomEditor(typeof(NPSettings))]
+#endif
 	public class NPSettingsInspector : AssetStoreProductInspector
 	{
 		private enum eTabView
@@ -143,7 +146,7 @@ namespace VoxelBusters.NativePlugins
 						break;
 
 					case eTabView.GAME_SERVICES:
-						ShowGameServiesSettings();
+						ShowGameServicesSettings();
 						break;
 
 					default:
@@ -182,6 +185,11 @@ namespace VoxelBusters.NativePlugins
 			DrawTabView("m_networkConnectivitySettings");
 		}
 
+		private void ShowUtilitySettings ()
+		{
+			DrawTabView("m_utilitySettings");
+		}
+
 		private void ShowNotificationSettings ()
 		{
 #if !NATIVE_PLUGINS_LITE_VERSION
@@ -208,16 +216,14 @@ namespace VoxelBusters.NativePlugins
 			DrawUnsupportedFeature();
 #endif
 		}
-		
-		private void ShowUtilitySettings ()
-		{
-			DrawTabView("m_utilitySettings");
-		}
 
-		private void ShowGameServiesSettings ()
+		private void ShowGameServicesSettings ()
 		{
+#if !NATIVE_PLUGINS_LITE_VERSION
 			DrawTabView("m_gameServicesSettings");
-
+#else
+			DrawUnsupportedFeature();
+#endif
 		}
 
 		#endregion

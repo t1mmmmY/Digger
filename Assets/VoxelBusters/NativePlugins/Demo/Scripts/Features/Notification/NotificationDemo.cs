@@ -60,6 +60,18 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#region API Callbacks
 		
+		private void DidLaunchWithLocalNotificationEvent (CrossPlatformNotification _notification)
+		{
+			AddNewResult("Received DidLaunchWithLocalNotificationEvent");
+			AppendNotificationResult(_notification);
+		}
+		
+		private void DidLaunchWithRemoteNotificationEvent (CrossPlatformNotification _notification)
+		{
+			AddNewResult("Received DidLaunchWithRemoteNotificationEvent");
+			AppendNotificationResult(_notification);
+		}
+
 		private void DidReceiveLocalNotificationEvent (CrossPlatformNotification _notification)
 		{
 			AddNewResult("Received DidReceiveLocalNotificationEvent");
@@ -145,14 +157,16 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			// Note for developers
 			AddNewResult("Callbacks" +
-			             "\nDidFinishRegisterForRemoteNotificationEvent: Triggered when registering for remote notification finished" +
-			             "\nDidReceiveLocalNotificationEvent: Triggered when local notification is received" +
-			             "\nDidReceiveRemoteNotificationEvent: Triggered when remote notification is received");
-			
-			
-			
+			             "\nDidFinishRegisterForRemoteNotificationEvent: Triggered when registering for remote notification finished." +
+			             "\nDidLaunchWithLocalNotificationEvent: Triggered when application is launched from local notification." +
+			             "\nDidLaunchWithRemoteNotificationEvent: Triggered when application is launched from remote notification." +
+			             "\nDidReceiveLocalNotificationEvent: Triggered when local notification is received." +
+			             "\nDidReceiveRemoteNotificationEvent: Triggered when remote notification is received.");
+
 			// Register for callbacks
 			NotificationService.DidFinishRegisterForRemoteNotificationEvent	+= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidLaunchWithLocalNotificationEvent			+= DidLaunchWithLocalNotificationEvent;
+			NotificationService.DidLaunchWithRemoteNotificationEvent		+= DidLaunchWithRemoteNotificationEvent;
 			NotificationService.DidReceiveLocalNotificationEvent 			+= DidReceiveLocalNotificationEvent;
 			NotificationService.DidReceiveRemoteNotificationEvent			+= DidReceiveRemoteNotificationEvent;
 		}
@@ -163,6 +177,8 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			// Un-Register from callbacks
 			NotificationService.DidFinishRegisterForRemoteNotificationEvent	-= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidLaunchWithLocalNotificationEvent 		-= DidLaunchWithLocalNotificationEvent;
+			NotificationService.DidLaunchWithRemoteNotificationEvent 		-= DidLaunchWithRemoteNotificationEvent;
 			NotificationService.DidReceiveLocalNotificationEvent 			-= DidReceiveLocalNotificationEvent;
 			NotificationService.DidReceiveRemoteNotificationEvent			-= DidReceiveRemoteNotificationEvent;
 		}
@@ -177,109 +193,128 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Register/Unregister", kSubTitleStyle);
-	
-					if (GUILayout.Button("Register Notification Types [None, Alert, Badge and Sound]"))
-					{
-						RegisterNotificationTypes(m_notificationType);
-						AddNewResult("Registered Types : " + m_notificationType.GetValue());
-					}
-	
-					if (GUILayout.Button("Register For Remote Notifications"))
-					{
-						RegisterForRemoteNotifications();
-					}
-	
-					if (GUILayout.Button("Unregister For Remote Notifications"))
-					{
-						UnregisterForRemoteNotifications();
-						AddNewResult("Unregistered for remote notifications");
-					}
-				}
-				GUILayout.EndVertical();
-				
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Schedule Notifications", kSubTitleStyle);
-	
-					if (GUILayout.Button("Schedule Local Notification (After 1min)"))
-					{
-						// Schedules a local notification after 1 min
-						string _nID = ScheduleLocalNotification(CreateNotification(60));
-	
-						// Add notification id to list
-						m_scheduledNotificationIDList.Add(_nID);
-	
-						// Update info
-						AddNewResult("Newly scheduled notification ID = " + _nID);
-					}
-	
-				}
-				GUILayout.EndVertical();
-	
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Cancel Notifications", kSubTitleStyle);
-					
-					if (GUILayout.Button("Cancel Local Notification"))
-					{
-						if (m_scheduledNotificationIDList.Count > 0)
-						{
-							string _nID		= m_scheduledNotificationIDList[0] as string;
-							
-							AddNewResult("Cancelling notification with ID=" + _nID);
-							
-							CancelLocalNotification(_nID);
-							
-							// Remove notification id
-							m_scheduledNotificationIDList.RemoveAt(0);
-						}
-						else
-						{
-							AddNewResult("No Scheduled Local Notifications");
-						}
-					}
-	
-					if (GUILayout.Button("Cancel All Local Notifications"))
-					{
-						// Clearing list
-						m_scheduledNotificationIDList.Clear();
-	
-						// Cancelling all notifications
-						CancelAllLocalNotifications();
-	
-						// Update info
-						AddNewResult("Scheduled notifications are invalidated");
-					}
-
-					if (GUILayout.Button("Clear Notifications"))
-					{
-						ClearNotifications();
-						
-						// Update info
-						AddNewResult("Cleared notifications from notification bar.");
-					}
-				}
-				GUILayout.EndVertical();
+				DrawRegisterAPI();
+				DrawScheduleNotificationAPI();
+				DrawCancelNotificationAPI();
 			}
 			RootScrollView.EndScrollView();
-			
-			
+						
 			DrawResults();
-			
 			DrawPopButton();
 		}
 
+		private void DrawRegisterAPI ()
+		{
+			GUILayout.Label("Register/Unregister", kSubTitleStyle);
+			
+			if (GUILayout.Button("Register Notification Types [None, Alert, Badge and Sound]"))
+			{
+				RegisterNotificationTypes(m_notificationType);
+				AddNewResult("Registered Types : " + m_notificationType.GetValue());
+			}
+			
+			if (GUILayout.Button("Register For Remote Notifications"))
+			{
+				RegisterForRemoteNotifications();
+			}
+			
+			if (GUILayout.Button("Unregister For Remote Notifications"))
+			{
+				UnregisterForRemoteNotifications();
+				AddNewResult("Unregistered for remote notifications");
+			}
+		}
+
+		private void DrawScheduleNotificationAPI ()
+		{
+			GUILayout.Label("Schedule Notifications", kSubTitleStyle);
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Disabled)"))
+			{
+				// Schedules a local notification after 1 min
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.NONE));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Minute)"))
+			{
+				// Schedules a local notification after 1 min and it keeps rescheduling for every minute
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.MINUTE));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Hour)"))
+			{
+				// Schedules a local notification after 1 min and it keeps rescheduling for every hour
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.HOUR));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+		}
+
+		private void DrawCancelNotificationAPI ()
+		{
+			GUILayout.Label("Cancel Notifications", kSubTitleStyle);
+			
+			if (GUILayout.Button("Cancel Local Notification"))
+			{
+				if (m_scheduledNotificationIDList.Count > 0)
+				{
+					string _nID		= m_scheduledNotificationIDList[0] as string;
+					
+					AddNewResult("Cancelling notification with ID=" + _nID);
+					
+					CancelLocalNotification(_nID);
+					
+					// Remove notification id
+					m_scheduledNotificationIDList.RemoveAt(0);
+				}
+				else
+				{
+					AddNewResult("No Scheduled Local Notifications");
+				}
+			}
+			
+			if (GUILayout.Button("Cancel All Local Notifications"))
+			{
+				// Clearing list
+				m_scheduledNotificationIDList.Clear();
+				
+				// Cancelling all notifications
+				CancelAllLocalNotifications();
+				
+				// Update info
+				AddNewResult("Scheduled notifications are invalidated");
+			}
+			
+			if (GUILayout.Button("Clear Notifications"))
+			{
+				ClearNotifications();
+				
+				// Update info
+				AddNewResult("Cleared notifications from notification bar.");
+			}
+		}
+
 		#endregion
-		
-		
 
 		#region Misc. Methods
  
-		private CrossPlatformNotification CreateNotification (long _fireAfterSec)
+		private CrossPlatformNotification CreateNotification (long _fireAfterSec, eNotificationRepeatInterval _repeatInterval)
 		{
 			// User info
 			IDictionary _userInfo			= new Dictionary<string, string>();
@@ -292,14 +327,13 @@ namespace VoxelBusters.NativePlugins.Demo
 			CrossPlatformNotification.AndroidSpecificProperties _androidProperties	= new CrossPlatformNotification.AndroidSpecificProperties();
 			_androidProperties.ContentTitle	= "content title";
 			_androidProperties.TickerText	= "ticker ticks over here";
-
-			_androidProperties.CustomSound	=	"song.mp3";
-			//_androidProperties.CustomSound	= "soundname.mp3" //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
-			//_androidProperties.LargeIcon		= "icon.png" //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
+			_androidProperties.CustomSound	= "Notification.mp3"; //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
+			_androidProperties.LargeIcon	= "NativePlugins.png"; //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
 			
 			CrossPlatformNotification _notification	= new CrossPlatformNotification();
 			_notification.AlertBody			= "alert body"; //On Android, this is considered as ContentText
 			_notification.FireDate			= System.DateTime.Now.AddSeconds(_fireAfterSec);
+			_notification.RepeatInterval	= _repeatInterval;
 			_notification.UserInfo			= _userInfo;
 			_notification.iOSProperties		= _iosProperties;
 			_notification.AndroidProperties	= _androidProperties;

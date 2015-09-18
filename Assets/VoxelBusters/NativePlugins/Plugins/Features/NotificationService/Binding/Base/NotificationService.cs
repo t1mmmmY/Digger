@@ -11,7 +11,13 @@ namespace VoxelBusters.NativePlugins
 	{
 		#region properties
 
-		protected NotificationType		m_supportedNotifcationTypes		= (NotificationType)0;
+		// Notification types
+		protected 			NotificationType			m_supportedNotifcationTypes		= (NotificationType)0;
+
+		// Received notifications
+		private				CrossPlatformNotification	m_launchLocalNotification		= null;
+		private				CrossPlatformNotification	m_launchRemoteNotification		= null;
+		private				bool						m_receivedAppLaunchInfo			= false;
 
 		#endregion
 
@@ -19,19 +25,44 @@ namespace VoxelBusters.NativePlugins
 
 		private void Awake ()
 		{
-			if(NPSettings.Application.SupportedFeatures.UsesNotificationService)
+			if (NPSettings.Application.SupportedFeatures.UsesNotificationService)
 			{
 				// Initialise component
 				Initialise(NPSettings.Notification);
 			}
 		}
 
+		private void Start ()
+		{
+			StartCoroutine(ProcessAppLaunchInfo());
+		}
+
 		#endregion
 
-		#region Initialise
+		#region Initialise Methods
 
 		protected virtual void Initialise (NotificationServiceSettings _settings)
 		{}
+
+		private IEnumerator ProcessAppLaunchInfo ()
+		{
+			yield return new WaitForEndOfFrame();
+			
+			while (!m_receivedAppLaunchInfo)
+				yield return null;
+			
+			if (m_launchLocalNotification != null)
+			{
+				if (DidLaunchWithLocalNotificationEvent != null)
+					DidLaunchWithLocalNotificationEvent(m_launchLocalNotification);
+			}
+			
+			if (m_launchRemoteNotification != null)
+			{
+				if (DidLaunchWithRemoteNotificationEvent != null)
+					DidLaunchWithRemoteNotificationEvent(m_launchRemoteNotification);
+			}
+		}
 
 		#endregion
 

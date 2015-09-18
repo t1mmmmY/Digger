@@ -64,6 +64,20 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		#endregion
 		
+		#region Game Services
+
+		[MenuItem(kMenuNodeName + "Game Center", false, kGameServicesPriority)]
+		private static void SelectGameCenter ()
+		{
+			EditorGameCenter _gameCenter	= EditorGameCenter.Instance;
+			
+			if (_gameCenter != null)
+			{
+				Selection.activeObject		= _gameCenter;
+			}
+		}
+		
+		#endregion
 
 		#region Settings
 

@@ -3,6 +3,7 @@ using System.Collections;
 using VoxelBusters.Utility;
 using System.Text.RegularExpressions;
 using VoxelBusters.DebugPRO;
+using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins
 {

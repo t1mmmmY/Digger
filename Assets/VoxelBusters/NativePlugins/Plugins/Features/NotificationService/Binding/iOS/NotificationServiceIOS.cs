@@ -11,6 +11,8 @@ using NotificationServices = UnityEngine.iOS.NotificationServices;
 #if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	public partial class NotificationServiceIOS : NotificationService
 	{
 		#region Native Methods
@@ -60,6 +62,7 @@ namespace VoxelBusters.NativePlugins
 			LocalNotification _newNotification	= new LocalNotification();
 			_newNotification.alertBody			= _notification.AlertBody;
 			_newNotification.fireDate			= _notification.FireDate;
+			_newNotification.repeatInterval		= iOSNotificationPayload.ConvertToCalendarUnit(_notification.RepeatInterval);
 			_newNotification.userInfo			= _notification.UserInfo;
 			
 			// iOS Notification additional data

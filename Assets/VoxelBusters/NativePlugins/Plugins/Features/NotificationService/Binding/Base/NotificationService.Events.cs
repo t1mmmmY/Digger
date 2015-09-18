@@ -39,6 +39,16 @@ namespace VoxelBusters.NativePlugins
 		public static event RegisterForRemoteNotificationCompletion 	DidFinishRegisterForRemoteNotificationEvent;
 
 		/// <summary>
+		/// Occurs when app was launched by opening local notification.
+		/// </summary>
+		public static event ReceivedNotificationResponse 				DidLaunchWithLocalNotificationEvent;
+		
+		/// <summary>
+		/// Occurs when app was launched by opening remote notification.
+		/// </summary>
+		public static event ReceivedNotificationResponse 				DidLaunchWithRemoteNotificationEvent;
+
+		/// <summary>
 		/// Occurs when app receives a local notification.
 		/// </summary>
 		public static event ReceivedNotificationResponse 				DidReceiveLocalNotificationEvent;
@@ -48,6 +58,27 @@ namespace VoxelBusters.NativePlugins
 		/// </summary>
 		public static event ReceivedNotificationResponse 				DidReceiveRemoteNotificationEvent;
 		
+		#endregion
+
+		#region Launch Callback Methods
+
+		private void DidReceiveAppLaunchInfo (string _launchData)
+		{
+			CrossPlatformNotification	_launchLocalNotification;
+			CrossPlatformNotification	_launchRemoteNotification;
+
+			// Parse and handle launch data
+			ParseAppLaunchInfo(_launchData, out _launchLocalNotification, out _launchRemoteNotification);
+			DidReceiveAppLaunchInfo(_launchLocalNotification, _launchRemoteNotification);
+		}
+
+		private void DidReceiveAppLaunchInfo (CrossPlatformNotification _launchLocalNotification, CrossPlatformNotification _launchRemoteNotification)
+		{
+			m_receivedAppLaunchInfo		= true;
+			m_launchLocalNotification	= _launchLocalNotification;
+			m_launchRemoteNotification	= _launchRemoteNotification;
+		}
+
 		#endregion
 
 		#region Local Notification Callback Methods
@@ -116,9 +147,15 @@ namespace VoxelBusters.NativePlugins
 
 		#region Parse Methods
 
+		protected virtual void ParseAppLaunchInfo (string _launchData, out CrossPlatformNotification _launchLocalNotification, out CrossPlatformNotification _launchRemoteNotification)
+		{
+			_launchLocalNotification	= null;
+			_launchRemoteNotification	= null;
+		}
+
 		protected virtual void ParseNotificationPayloadData (string _payload, out CrossPlatformNotification _notification)
 		{
-			_notification	= CrossPlatformNotification.CreateNotificationFromPayload(_payload);
+			_notification				= CrossPlatformNotification.CreateNotificationFromPayload(_payload);
 		}
 
 		#endregion

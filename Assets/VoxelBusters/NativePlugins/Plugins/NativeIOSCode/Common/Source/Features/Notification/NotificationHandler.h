@@ -17,11 +17,10 @@
 @property(nonatomic)			int						supportedNotificationTypes;
 
 // Static Methods
-+ (void)SetKeyForUserInfo:(NSString *)value;
 + (NSString *)GetKeyForUserInfo;
 
-// Send Notification to unity
-- (void)sendLaunchNotifications;
+// Init
+- (void)initialize:(NSString*)userInfoKey;
 
 // Register
 - (void)registerUserNotificationTypes:(int)notificationTypes;

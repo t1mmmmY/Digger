@@ -25,6 +25,10 @@ static NSString 	*keyUserInfo		= NULL;
 #define kDidReceiveRemoteNotificationEvent						"DidReceiveRemoteNotification"
 #define kDidRegisterRemoteNotificationEvent						"DidRegisterRemoteNotification"
 #define kDidFailRemoteNotificationRegistrationWithErrorEvent	"DidFailToRegisterRemoteNotifications"
+#define kDidReceiveAppLaunchInfoEvent							"DidReceiveAppLaunchInfo"
+
+#define kAppLaunchLocalNotification								@"launch-local-notification"
+#define kAppLaunchRemoteNotification							@"launch-remote-notification"
 
 @synthesize launchLocalNotification;
 @synthesize launchRemoteNotification;
@@ -105,7 +109,40 @@ static NSString 	*keyUserInfo		= NULL;
 	[super dealloc];
 }
 
-#pragma mark - Methods
+#pragma - Initialize Methods
+
+- (void)initialize:(NSString*)userInfoKey
+{
+	[NotificationHandler SetKeyForUserInfo:userInfoKey];
+	
+	// Sends app launch notification
+	[self sendAppLaunchInfo];
+}
+
+- (void)sendAppLaunchInfo
+{
+	// Can send notifications
+	[self setCanSendNotifications:YES];
+	
+	// Send notifications received at launch
+	NSMutableDictionary	*launchData	= [NSMutableDictionary dictionary];
+	
+	if (self.launchLocalNotification != NULL)
+	{
+		[launchData setObject:[self.launchLocalNotification payload] forKey:kAppLaunchLocalNotification];
+		self.launchLocalNotification	= nil;
+	}
+	
+	if (self.launchRemoteNotification != NULL)
+	{
+		[launchData setObject:self.launchRemoteNotification forKey:kAppLaunchRemoteNotification];
+		self.launchRemoteNotification	= nil;
+	}
+	
+	NotifyEventListener(kDidReceiveAppLaunchInfoEvent, ToJsonCString(launchData));
+}
+
+#pragma mark - Register Methods
 
 - (void)registerUserNotificationTypes:(int)notificationTypes
 {
@@ -145,35 +182,7 @@ static NSString 	*keyUserInfo		= NULL;
 	[[UIApplication sharedApplication] unregisterForRemoteNotifications];
 }
 
-- (void)sendLaunchNotifications
-{
-	// Can send notifications
-	[self setCanSendNotifications:YES];
-	
-	// Send notifications received at launch
-	[self notifyReceivedLocalNotification:self.launchLocalNotification];
-	[self notifyReceivedRemoteNotification:self.launchRemoteNotification];
-}
-
-- (void)notifyReceivedLocalNotification:(UILocalNotification *)localNotification;
-{
-	// Notify unity
-	if (localNotification != NULL && self.canSendNotifications)
-	{
-		NotifyEventListener(kDidReceiveLocalNotificationEvent, ToJsonCString([localNotification payload]));
-	}
-}
-
-- (void)notifyReceivedRemoteNotification:(NSDictionary *)remoteNotification
-{
-	// Notify unity
-	if (remoteNotification != NULL && self.canSendNotifications)
-	{
-		NotifyEventListener(kDidReceiveRemoteNotificationEvent, ToJsonCString(remoteNotification));
-	}
-}
-
-#pragma mark - Register notifications
+#pragma mark - Register Callbacks
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSNotification *)notification
 {
@@ -191,7 +200,7 @@ static NSString 	*keyUserInfo		= NULL;
 	NotifyEventListener(kDidFailRemoteNotificationRegistrationWithErrorEvent, [[error description] UTF8String]);
 }
 
-#pragma mark - Received notifications
+#pragma mark - Received Notification Callbacks
 
 - (void)didLaunchWithLocalNotification:(NSNotification *)notification
 {
@@ -203,14 +212,15 @@ static NSString 	*keyUserInfo		= NULL;
 {
 	UILocalNotification *localNotification	= (UILocalNotification *)[notification userInfo];
 	
-	// Not yet ready
-	if (![self canSendNotifications])
-	{
+	// If launch notification is same as current then ignore
+	if (localNotification == self.launchLocalNotification)
 		return;
-	}
-	
+
 	// Notify unity
-	[self notifyReceivedLocalNotification:localNotification];
+	if (localNotification != NULL && self.canSendNotifications)
+	{
+		NotifyEventListener(kDidReceiveLocalNotificationEvent, ToJsonCString([localNotification payload]));
+	}
 }
 
 - (void)didLaunchWithRemoteNotification:(NSNotification *)notification
@@ -223,14 +233,11 @@ static NSString 	*keyUserInfo		= NULL;
 {
 	NSDictionary *payload	= (NSDictionary *)[notification userInfo];
 	
-	// Not yet ready
-	if (![self canSendNotifications])
-	{
-		return;
-	}
-	
 	// Notify unity
-	[self notifyReceivedRemoteNotification:payload];
+	if (payload != NULL && self.canSendNotifications)
+	{
+		NotifyEventListener(kDidReceiveRemoteNotificationEvent, ToJsonCString(payload));
+	}
 }
 
 @end

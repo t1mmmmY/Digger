@@ -6,6 +6,10 @@ labels:
 - Local
 - LocalNotification
 - Native
+- Push
+- Repeat
+- Remote
+- Notifications
 MonoImporter:
   serializedVersion: 2
   defaultReferences: []

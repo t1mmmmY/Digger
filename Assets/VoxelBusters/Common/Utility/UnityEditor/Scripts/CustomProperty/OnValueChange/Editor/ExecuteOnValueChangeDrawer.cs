@@ -10,9 +10,12 @@ namespace VoxelBusters.Utility
 	{
 		#region Properties
 
-		private ExecuteOnValueChangeAttribute ExecuteOnValueChange 
+		private 		ExecuteOnValueChangeAttribute 	ExecuteOnValueChange 
 		{ 
-			get { return ((ExecuteOnValueChangeAttribute)attribute); } 
+			get 
+			{ 
+				return attribute as ExecuteOnValueChangeAttribute; 
+			} 
 		}
 
 		#endregion
@@ -41,12 +44,7 @@ namespace VoxelBusters.Utility
 				_property.serializedObject.ApplyModifiedProperties();
 
 				// Trigger callback
-				object 			_instance		= _property.serializedObject.targetObject;
-				BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.OptionalParamBinding;
-				MethodInfo 		_methodInfo		= _instance.GetType().GetMethod(ExecuteOnValueChange.Function, _bindingAttr);
-				
-				if (_methodInfo != null)
-					_methodInfo.Invoke(_instance, null);
+				_property.serializedObject.targetObject.InvokeMethod(ExecuteOnValueChange.CallbackMethod);
 			}
 
 			EditorGUI.EndProperty();

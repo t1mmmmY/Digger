@@ -38,7 +38,7 @@ namespace VoxelBusters.Utility
 
 		#region Static Method
 
-#if !DISABLE_AUTO_GENERATE_SETTINGS_FILES
+#if !DISABLE_STRIPPING_BLACKLIST_GENERATOR
 		private static void OnPostprocessAllAssets (string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
 		{
 			StrippingBlacklistGenerator _generator	= new StrippingBlacklistGenerator();
@@ -56,7 +56,7 @@ namespace VoxelBusters.Utility
 		private void LoadLinkerFileData (string _path)
 		{
 			// Parse existing link xml file
-			if (!File.Exists(_path))
+			if (!FileOperations.Exists(_path))
 				return;
 
 			using (XmlReader _xmlReader	= XmlReader.Create(_path))
@@ -129,6 +129,18 @@ namespace VoxelBusters.Utility
 
 		public void SaveLinkerFile ()
 		{
+			if (m_blacklistedAssemblyList.Count == 0)
+			{
+				if (FileOperations.Exists(kSavePath))
+				{
+					FileOperations.Delete(kSavePath);
+					FileOperations.Delete(kSavePath + ".meta");
+				}
+
+				AssetDatabase.Refresh();
+				return;
+			}
+
 			// Settings
 			XmlWriterSettings 	_settings 	= new XmlWriterSettings();
 			_settings.Encoding 				= new System.Text.UTF8Encoding(true);

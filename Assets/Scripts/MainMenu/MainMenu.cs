@@ -23,6 +23,8 @@ public class MainMenu : MonoBehaviour
     GameObject currentCharacterGameObject;
     bool isMusicPlaying = true;
 
+
+
 	public static MainMenu Instance;
 
 
@@ -112,15 +114,28 @@ public class MainMenu : MonoBehaviour
 #if UNITY_ANDROID
 		MultiplayerController.Instance.SignIn();
 #elif UNITY_IOS
-		
+		MultiplayerController.Instance.SignIn();
 #endif
 	}
+
 
 	public void ShowLeaderboard()
 	{
 #if UNITY_ANDROID
 		MultiplayerController.Instance.ShowLeaderboard();
 #elif UNITY_IOS
+		MultiplayerController.Instance.ShowLeaderboard();
+		
+//		if (localUser.IsAuthenticated)
+//		{
+//			GameServicesIOS gs;
+//			gs = new GameServicesIOS();
+//			gs.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
+//		}
+//		else
+//		{
+//			SignInToGoogle();
+//		}
 #endif
 	}
 

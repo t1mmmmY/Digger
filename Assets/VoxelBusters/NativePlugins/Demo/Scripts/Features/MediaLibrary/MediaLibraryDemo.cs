@@ -117,12 +117,9 @@ namespace VoxelBusters.NativePlugins.Demo
 			AddNewResult("Finished playing video");
 			AppendResult("Reason = " + _reason);
 		}
-		
 
 		#endregion
 
-
-		
 		#region UI
 		
 		protected override void OnGUIWindow()
@@ -131,79 +128,75 @@ namespace VoxelBusters.NativePlugins.Demo
 			
 			RootScrollView.BeginScrollView();
 			{
-				// Start vertical column
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Image", kSubTitleStyle);
-	
-					if (GUILayout.Button("IsCameraSupported"))
-					{
-						bool _isSupported = IsCameraSupported();
-						AddNewResult("IsCameraSupported ? " + _isSupported);
-					}
-					
-					GUILayout.BeginHorizontal();
-					{
-						if (GUILayout.Button("PickImage From ALBUM"))
-						{
-							PickImageFromAlbum();
-						} 
-						
-						if (GUILayout.Button("PickImage From CAMERA"))
-						{
-							PickImageFromCamera();
-						}
-					}
-					GUILayout.EndHorizontal(); 
-					
-					if (GUILayout.Button("PickImage From BOTH - ALBUM & CAMERA"))
-					{
-						PickImageFromBoth();
-					} 
-					
-					if (GUILayout.Button("SaveScreenshotToAlbum"))
-					{						
-						SaveScreenshotToGallery();
-					}
-	
-				}
-				GUILayout.EndVertical();
-				
-				GUILayout.BeginVertical(UISkin.scrollView);
-				{
-					GUILayout.Label("Video", kSubTitleStyle);
-	
-					if (GUILayout.Button("Play Youtube Video"))
-					{						
-						PlayYoutubeVideo();
-					} 
-					
-					if (GUILayout.Button("Play Video From URL"))
-					{		
-						PlayVideoFromURL();
-					} 
-					
-					if (GUILayout.Button("Play Video From Gallery"))
-					{						
-						PlayVideoFromGallery();
-					} 
-	
-					if (GUILayout.Button("Play Embedded Video"))
-					{		
-						PlayEmbeddedVideo();				
-					} 
-				}
-				GUILayout.EndVertical();
+				DrawImageAPI();
+				DrawVideoAPI();
 			}
 			RootScrollView.EndScrollView();
 			
 			DrawResults();
-			
 			DrawPopButton();
+		}
+
+		private void DrawImageAPI ()
+		{
+			GUILayout.Label("Image", kSubTitleStyle);
+			
+			if (GUILayout.Button("IsCameraSupported"))
+			{
+				bool _isSupported = IsCameraSupported();
+				AddNewResult("IsCameraSupported ? " + _isSupported);
+			}
+			
+			GUILayout.BeginHorizontal();
+			{
+				if (GUILayout.Button("PickImage From ALBUM"))
+				{
+					PickImageFromAlbum();
+				} 
+				
+				if (GUILayout.Button("PickImage From CAMERA"))
+				{
+					PickImageFromCamera();
+				}
+			}
+			GUILayout.EndHorizontal(); 
+			
+			if (GUILayout.Button("PickImage From BOTH - ALBUM & CAMERA"))
+			{
+				PickImageFromBoth();
+			} 
+			
+			if (GUILayout.Button("SaveScreenshotToAlbum"))
+			{						
+				SaveScreenshotToGallery();
+			}
+		}
+
+		private void DrawVideoAPI ()
+		{
+			GUILayout.Label("Video", kSubTitleStyle);
+			
+			if (GUILayout.Button("Play Youtube Video"))
+			{						
+				PlayYoutubeVideo();
+			} 
+			
+			if (GUILayout.Button("Play Video From URL"))
+			{		
+				PlayVideoFromURL();
+			} 
+			
+			if (GUILayout.Button("Play Video From Gallery"))
+			{						
+				PlayVideoFromGallery();
+			} 
+			
+			if (GUILayout.Button("Play Embedded Video"))
+			{		
+				PlayEmbeddedVideo();				
+			} 
 		}
 		
 		#endregion
-
-
 	}
 }
