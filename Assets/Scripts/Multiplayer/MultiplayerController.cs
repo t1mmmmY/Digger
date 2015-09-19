@@ -15,6 +15,8 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private uint maximumOpponents = 1;
 	private uint gameVariation = 0;
 
+	bool signingIn = false;
+
 #if UNITY_IOS
 //	LocalUser localUser;
 //	GameServicesIOS gameServices;
@@ -69,12 +71,14 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			// We could also start our game now
 		}
 #elif UNITY_IOS
-		if(NPSettings.Application.SupportedFeatures.UsesGameServices)
+		if(NPBinding.GameServices.IsAvailable() && !signingIn)
 		{
 			if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
 			{
-				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>{
-					
+				signingIn = true;
+				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>
+            	{
+					signingIn = false;
 					if (_success)
 					{
 						Debug.Log("Sign-In Successfully");
@@ -92,7 +96,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		{
 			Debug.LogWarning("Enable Game services feature in NPSettings.");
 		}
-
 
 //		localUser.Authenticate(OnComleteAuthentication);
 #endif
