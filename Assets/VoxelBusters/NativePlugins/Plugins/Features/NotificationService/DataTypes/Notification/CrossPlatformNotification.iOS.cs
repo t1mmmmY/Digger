@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE 
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 
@@ -18,7 +20,7 @@ namespace VoxelBusters.NativePlugins
 			/// Gets or sets the title of the action button or slider.
 			/// </summary>
 			/// <value>The alert action.</value>
-			public string 			AlertAction
+			public string AlertAction
 			{
 				get; 
 				set;
@@ -28,7 +30,7 @@ namespace VoxelBusters.NativePlugins
 			/// Gets or sets a value indicating whether the alert action is visible or not.
 			/// </summary>
 			/// <value><c>true</c> if this instance has action; otherwise, <c>false</c>.</value>
-			public bool 			HasAction
+			public bool HasAction
 			{
 				get; 
 				set;
@@ -38,17 +40,7 @@ namespace VoxelBusters.NativePlugins
 			/// Gets or sets the number to display as the application's icon badge.
 			/// </summary>
 			/// <value>The badge count.</value>
-			public int	 			BadgeCount
-			{
-				get; 
-				set;
-			}
-
-			/// <summary>
-			/// Gets or sets the name of the sound file to play when an alert is displayed.
-			/// </summary>
-			/// <value>The name of the sound.</value>
-			public string 			SoundName
+			public int BadgeCount
 			{
 				get; 
 				set;
@@ -58,7 +50,7 @@ namespace VoxelBusters.NativePlugins
 			/// Gets or sets the image used as the launch image when the user taps the action button..
 			/// </summary>
 			/// <value>The launch image.</value>
-			public string 			LaunchImage
+			public string LaunchImage
 			{
 				get; 
 				set;
@@ -71,7 +63,6 @@ namespace VoxelBusters.NativePlugins
 			private const string 	kAlertActionKey		= "alert-action";
 			private const string 	kHasActionKey		= "has-action";
 			private const string 	kBadgeCountKey		= "badge-count";
-			private const string 	kSoundNameKey		= "sound-name";
 			private const string 	kLaunchImageKey		= "launch-image";
 
 			#endregion
@@ -83,7 +74,6 @@ namespace VoxelBusters.NativePlugins
 				AlertAction	= null;
 				HasAction	= true;
 				BadgeCount	= 0;
-				SoundName	= null;
 				LaunchImage	= null;
 			}
 
@@ -92,7 +82,6 @@ namespace VoxelBusters.NativePlugins
 				AlertAction	= _jsonDict.GetIfAvailable<string>(kAlertActionKey);
 				HasAction	= _jsonDict.GetIfAvailable<bool>(kHasActionKey);
 				BadgeCount	= _jsonDict.GetIfAvailable<int>(kBadgeCountKey);
-				SoundName	= _jsonDict.GetIfAvailable<string>(kSoundNameKey);
 				LaunchImage	= _jsonDict.GetIfAvailable<string>(kLaunchImageKey);
 			}
 
@@ -106,7 +95,6 @@ namespace VoxelBusters.NativePlugins
 				_jsonDict[kAlertActionKey]				= AlertAction;
 				_jsonDict[kHasActionKey]				= HasAction;
 				_jsonDict[kBadgeCountKey]				= BadgeCount;
-				_jsonDict[kSoundNameKey]				= SoundName;
 				_jsonDict[kLaunchImageKey]				= LaunchImage;
 
 				return _jsonDict;
@@ -117,11 +105,12 @@ namespace VoxelBusters.NativePlugins
 			/// </summary>
 			public override string ToString ()
 			{
-				return string.Format ("[iOSSpecificProperties: AlertAction={0}, HasAction={1}, BadgeCount={2}, SoundName={3}, LaunchImage={4}]", 
-				                      AlertAction, HasAction, BadgeCount, SoundName, LaunchImage);
+				return string.Format ("[iOSSpecificProperties: AlertAction={0}, HasAction={1}, BadgeCount={2}, LaunchImage={3}]", 
+				                      AlertAction, HasAction, BadgeCount, LaunchImage);
 			}
 
 			#endregion
 		}
 	}
 }
+#endif

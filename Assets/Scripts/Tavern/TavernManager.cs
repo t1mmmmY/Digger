@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+
 public class TavernManager : BaseSingleton<TavernManager>
 {
 	[SerializeField] Transform background;
@@ -38,6 +39,8 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void Start()
 	{
+
+
 		StartCoroutine("LoadCharacters");
 		ShowDescription(0);
 	}
@@ -47,14 +50,22 @@ public class TavernManager : BaseSingleton<TavernManager>
 		ScrollArea.onChangePosition += OnChangePosition;
 //		ScrollArea.onStartMoving += OnStartMoving;
 		ScrollArea.onEndMoving += OnEndMoving;
-
 	}
 
-	void OnDestroy()
+
+	void OnDisable()
 	{
 		ScrollArea.onChangePosition -= OnChangePosition;
 //		ScrollArea.onStartMoving -= OnStartMoving;
 		ScrollArea.onEndMoving -= OnEndMoving;
+	}
+
+	void OnGUI()
+	{
+		if (GUILayout.Button("Restore"))
+		{
+			InGameStore.Instance.RestoreCompletedTransactions();
+		}
 	}
 
 	IEnumerator LoadCharacters()
@@ -217,21 +228,22 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void ShowDescription(int positionNumber)
 	{
-		if (PlayerStatsController.Instance != null)
-		{
-			switch (PlayerStatsController.Instance.GetStatus(positionNumber))
+//		if (PlayerStatsController.Instance != null)
+//		{
+
+			switch (InGameStore.Instance.IsProductPurchased(positionNumber))
 			{
-			case PlayerStatus.NotBought:
+			case false:
 				buyCharacterButton.gameObject.SetActive(true);
-				BuyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+				BuyCharacterCost.text = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
 				playCharacterButton.gameObject.SetActive(false);
 				break;
-			case PlayerStatus.Bought:
+			case true:
 				buyCharacterButton.gameObject.SetActive(false);
 				playCharacterButton.gameObject.SetActive(true);
 				break;
 			}
-		}
+//		}
 
 		characterNameLabel.text = CONST.DESCRIPTOIN_NAMES[positionNumber];
 
@@ -256,30 +268,59 @@ public class TavernManager : BaseSingleton<TavernManager>
 	public void SelectCharacter(int characterNumber)
 	{
 		//		Debug.Log("Select " + character.number);
-		if (PlayerStatsController.Instance != null)
+		switch (InGameStore.Instance.IsProductPurchased(characterNumber))
 		{
-			PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
-			switch (playerStatus)
+		case false:
+			
+			InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
+
+			break;
+		case true:
+			PlaySelectAnimation(characterNumber);
+			
+			if (GeneralGameController.Instance != null)
 			{
-			case PlayerStatus.Bought:
-				PlaySelectAnimation(characterNumber);
-				
-				if (GeneralGameController.Instance != null)
-				{
-					GeneralGameController.Instance.SelectCharacter(characterNumber);
-				}
-				break;
-			case PlayerStatus.NotBought:
-				
-				//Temp
-				PlaySelectAnimation(characterNumber);
-				
-				if (GeneralGameController.Instance != null)
-				{
-					GeneralGameController.Instance.SelectCharacter(characterNumber);
-				}
-				break;
+				GeneralGameController.Instance.SelectCharacter(characterNumber);
 			}
+			break;
+		}
+		
+//		if (PlayerStatsController.Instance != null)
+//		{
+//			PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
+//			switch (playerStatus)
+//			{
+//			case PlayerStatus.Bought:
+//				PlaySelectAnimation(characterNumber);
+//				
+//				if (GeneralGameController.Instance != null)
+//				{
+//					GeneralGameController.Instance.SelectCharacter(characterNumber);
+//				}
+//				break;
+//			case PlayerStatus.NotBought:
+//
+//				InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
+//
+//				break;
+//			}
+//		}
+	}
+
+	void OnTransacionFinishedCallback(bool success)
+	{
+		if (success)
+		{
+			PlaySelectAnimation(currentCharacterNumber);
+			
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(currentCharacterNumber);
+			}
+		}
+		else
+		{
+			Debug.LogWarning("Transacion finished with error");
 		}
 	}
     

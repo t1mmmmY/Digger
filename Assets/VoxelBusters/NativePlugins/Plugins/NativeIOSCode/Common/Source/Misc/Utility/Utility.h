@@ -1,6 +1,6 @@
 //
 //  Utility.h
-//  Unity-iPhone
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 06/12/14.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -10,7 +10,9 @@
 
 // String
 UIKIT_EXTERN NSString*			kNSStringDefault;
-UIKIT_EXTERN const char*		kCStringDefault;
+UIKIT_EXTERN NSString*			kBoolTrue;
+UIKIT_EXTERN NSString*			kBoolFalse;
+UIKIT_EXTERN const char*		kCStringEmpty;
 UIKIT_EXTERN char* 				CStringCopy (const char* str);
 UIKIT_EXTERN NSString* 			ConvertToNSString (const char * jsonCharArray);
 UIKIT_EXTERN bool 				IsNullOrEmpty (NSString* string);
@@ -40,7 +42,8 @@ typedef void (^ImageCompletionHandler)(const void *, NSInteger);
 + (void)GetImageBytes:(NSString *)imageName completion:(ImageCompletionHandler)completion;
 
 // Related to date time
-+ (NSString *)ConvertNSDateToNSString:(NSDate*)date;
++ (NSString *)ConvertNSDateToNSString:(NSDate *)date;
++ (NSDate *)ConvertNSStringToNSDate:(NSString *)dateString;
 
 // NSData
 + (NSData *)CreateNSDataFromByteArray:(void*)byteArray ofLength:(int)length;

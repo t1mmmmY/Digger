@@ -12,9 +12,33 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class Settings 
 		{
+			#region Fields
+
 			[SerializeField]
-			private bool 			m_isEnabled						= false;
-			public bool 			IsEnabled
+			private 	bool 			m_isEnabled						= false;
+			[SerializeField]
+			private 	string 			m_title							= "Rate My App";
+			[SerializeField]
+			private 	string 			m_message						= "If you enjoy using Native Plugin would you mind taking a moment to rate it? " +
+																		"It wont take more than a minute. Thanks for your support";
+			[SerializeField]
+			private 	int				m_showFirstPromptAfterHours		= 2;
+			[SerializeField]
+			private 	int				m_successivePromptAfterHours	= 6;
+			[SerializeField]
+			private 	int				m_successivePromptAfterLaunches	= 5;
+			[SerializeField]
+			private 	string			m_remindMeLaterButtonText		= "Remind Me Later";
+			[SerializeField]
+			private 	string			m_rateItButtonText				= "Rate It Now";
+			[SerializeField]
+			private 	string			m_dontAskButtonText				= "No, Thanks";
+			
+			#endregion
+
+			#region Properties
+
+			public bool IsEnabled
 			{
 				get
 				{
@@ -22,40 +46,23 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			[SerializeField]
-			private string 			m_title							= "Rate My App";
-			public string 			Title
+			public string Title
 			{
 				get
 				{
 					return m_title;
 				}
-
-				set
-				{
-					m_title	= value;
-				}
 			}
 			
-			[SerializeField]
-			private string 			m_message						= "If you enjoy using Native Plugin would you mind taking a moment to rate it? " +
-																	"It wont take more than a minute. Thanks for your support";
-			public string 			Message
+			public string Message
 			{
 				get
 				{
 					return m_message;
 				}
-				
-				set
-				{
-					m_message	= value;
-				}
 			}
 
-			[SerializeField]
-			private int				m_showFirstPromptAfterHours		= 2;
-			public int 				ShowFirstPromptAfterHours
+			public int ShowFirstPromptAfterHours
 			{
 				get
 				{
@@ -63,9 +70,7 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			[SerializeField]
-			private int				m_successivePromptAfterHours	= 6;
-			public int 				SuccessivePromptAfterHours
+			public int SuccessivePromptAfterHours
 			{
 				get
 				{
@@ -73,9 +78,7 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			[SerializeField]
-			private int				m_successivePromptAfterLaunches	= 5;
-			public int 				SuccessivePromptAfterLaunches
+			public int SuccessivePromptAfterLaunches
 			{
 				get
 				{
@@ -83,20 +86,15 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 			
-			[SerializeField]
-			private string			m_remindMeLaterButtonText		= "Remind Me Later";
-			public string 			RemindMeLaterButtonText
+			public string RemindMeLaterButtonText
 			{
 				get
 				{
 					return m_remindMeLaterButtonText;
 				}
-
 			}
 
-			[SerializeField]
-			private string			m_rateItButtonText				= "Rate It Now";
-			public string 			RateItButtonText
+			public string RateItButtonText
 			{
 				get
 				{
@@ -104,9 +102,7 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			[SerializeField]
-			private string			m_dontAskButtonText				= "No, Thanks";
-			public string 			DontAskButtonText
+			public string DontAskButtonText
 			{
 				get
 				{
@@ -115,10 +111,12 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		#region Properties
+		#endregion
+
+		#region Fields
 	
-		private string[]		m_buttonList;
-		private Settings		m_rateMyAppSettings;
+		private 	string[]		m_buttonList;
+		private 	Settings		m_rateMyAppSettings;
 
 		#endregion
 

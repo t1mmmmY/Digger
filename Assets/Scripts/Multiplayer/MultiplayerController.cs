@@ -71,33 +71,55 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			// We could also start our game now
 		}
 #elif UNITY_IOS
-		if(NPBinding.GameServices.IsAvailable() && !signingIn)
-		{
-			if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-			{
-				signingIn = true;
-				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>
-            	{
-					signingIn = false;
-					if (_success)
-					{
-						Debug.Log("Sign-In Successfully");
-						Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
-					}
-					else
-					{
-						Debug.Log("Sign-In Failed");
-					}
-				});
-				//			NPBinding.GameServices.LocalUser.Authenticate(null);
-			}
-		}
-		else
-		{
-			Debug.LogWarning("Enable Game services feature in NPSettings.");
-		}
 
-//		localUser.Authenticate(OnComleteAuthentication);
+		UnityEngine.Social.localUser.Authenticate(null);
+		
+
+//		UnityEngine.Social.localUser.Authenticate((bool success) =>
+//      	{
+////			signingIn = false;
+//			if (success)
+//			{
+//				Debug.Log("Sign-In Successfully");
+//				Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
+//			}
+//			else
+//			{
+//				Debug.Log("Sign-In Failed");
+//			}
+//		});
+
+//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
+
+
+////		if(NPBinding.GameServices.IsAvailable() && !signingIn)
+//		{
+////			if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+//			if (!signingIn)
+//			{
+//				signingIn = true;
+//				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>
+//            	{
+//					signingIn = false;
+//					if (_success)
+//					{
+//						Debug.Log("Sign-In Successfully");
+//						Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
+//					}
+//					else
+//					{
+//						Debug.Log("Sign-In Failed");
+//					}
+//				});
+				////			NPBinding.GameServices.LocalUser.Authenticate(null);
+//			}
+//		}
+////		else
+//		{
+////			Debug.LogWarning("Enable Game services feature in NPSettings.");
+//		}
+
+////		localUser.Authenticate(OnComleteAuthentication);
 #endif
 	}
 
@@ -139,10 +161,11 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
 #elif UNITY_IOS
-		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-		{
-			NPBinding.GameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback);
-		}
+		UnityEngine.Social.ReportScore((long)score, CONST.IOS_LEADERBOARD_ID, callback);
+//		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+//		{
+//			NPBinding.GameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback);
+//		}
 //		gameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback); 
 #endif
 	}
@@ -169,16 +192,23 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ShowLeaderboardUI();//"CgkImYnr8fAKEAIQAg");
 #elif UNITY_IOS
-		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-		{
-			NPBinding.GameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
-		}
-		else
-		{
-			SignIn();
-		}
-//		NPBinding.GameServices.CreateLeaderboard(CONST.IOS_LEADERBOARD_ID);
-//		gameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
+		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
+		
+
+//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
+		
+
+//		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
+//		{
+//			NPBinding.GameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
+//		}
+//		else
+//		{
+//			SignIn();
+//		}
+
+////		NPBinding.GameServices.CreateLeaderboard(CONST.IOS_LEADERBOARD_ID);
+////		gameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
 #endif
 	}
 
@@ -215,16 +245,16 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	private void TurnCallback(bool success, TurnBasedMatch match)
 	{
-		if (success) 
-		{
-			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
-			ShowMPStatus("We are connected to the room! I would probably start our game now.");
-		} 
-		else 
-		{
-			MainMenu.Instance.SetActiveAllButtons(true);
-			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
-		}
+//		if (success) 
+//		{
+//			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
+//			ShowMPStatus("We are connected to the room! I would probably start our game now.");
+//		} 
+//		else 
+//		{
+//			MainMenu.Instance.SetActiveAllButtons(true);
+//			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
+//		}
 	}
 	
 	
@@ -241,16 +271,16 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void OnRoomConnected (bool success)
 	{
-		if (success) 
-		{
-			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
-			ShowMPStatus("We are connected to the room! I would probably start our game now.");
-		} 
-		else 
-		{
-			MainMenu.Instance.SetActiveAllButtons(true);
-			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
-		}
+//		if (success) 
+//		{
+//			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
+//			ShowMPStatus("We are connected to the room! I would probably start our game now.");
+//		} 
+//		else 
+//		{
+//			MainMenu.Instance.SetActiveAllButtons(true);
+//			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
+//		}
 	}
 
 	public void OnLeftRoom ()

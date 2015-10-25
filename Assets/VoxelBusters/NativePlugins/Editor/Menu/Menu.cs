@@ -10,21 +10,21 @@ namespace VoxelBusters.NativePlugins.Internal
 		#region Constants
 	
 		// Menu item names
-		private const string 	kMenuNodeName						= "Window/Voxel Busters/NativePlugins/";
-		public const string		kPushNotificationServiceMenuItem	= kMenuNodeName + "Push Notification Service";
+		private 	const 	string 	kMenuNodeMainNode					= "Window/Voxel Busters/NativePlugins";
+		private 	const 	string 	kMenuNodeSimulation					= kMenuNodeMainNode + "/Editor Simulation";
+		public 		const 	string 	kMenuItemPushNotification			= kMenuNodeSimulation + "/Test Notification Payload";
 
 		// Priority
-		private const int		kAddressBookMenuItemPriority		= 100;
-		private const int		kNoticationMenuItemPriority			= 120;
-		private const int		kGameServicesPriority				= 140;
-		private const int		kSettingsMenuItemPriority			= 160;
-		private const int		kAboutProductMenuItemPriority		= 180;
-
+		private 	const 	int		kMenuItemPrioritySimulate			= 100;
+		private 	const 	int		kMenuItemPriorityNPSettings			= 120;
+		private 	const 	int		kMenuItemPriorityMisc				= 140;
+		
 		#endregion
 
-		#region AddressBook
+		#region Simulation Methods
 
-		[MenuItem(kMenuNodeName + "AddressBook", false, kAddressBookMenuItemPriority)]
+#if USES_ADDRESS_BOOK
+		[MenuItem(kMenuNodeSimulation + "/Select AddressBook", false, kMenuItemPrioritySimulate)]
 		private static void ShowAddressBook ()
 		{
 			EditorAddressBook _addressBook	= EditorAddressBook.Instance;
@@ -34,23 +34,21 @@ namespace VoxelBusters.NativePlugins.Internal
 				Selection.activeObject	= _addressBook;
 			}
 		}
+#endif
 
-		#endregion
-
-		#region Notification
-
-#if !NATIVE_PLUGINS_LITE_VERSION
-		[MenuItem(kPushNotificationServiceMenuItem, false, kNoticationMenuItemPriority)]
-		private static void ShowPushNotificationService ()
+#if USES_GAME_SERVICES
+		[MenuItem(kMenuNodeSimulation + "/Select Game Center", false, kMenuItemPrioritySimulate)]
+		private static void SelectGameCenter ()
 		{
-			// Notification center is selected
-			ShowNotificationCenter();
-
-			// Show post notification window
-			EditorPushNotificationService.ShowWindow();
+			EditorGameCenter _gameCenter	= EditorGameCenter.Instance;
+			
+			if (_gameCenter != null)
+				Selection.activeObject		= _gameCenter;
 		}
+#endif
 
-		[MenuItem(kMenuNodeName + "Notification Center", false, kNoticationMenuItemPriority)]
+#if USES_NOTIFICATION_SERVICE
+		[MenuItem(kMenuNodeSimulation + "/Select Notification Center", false, kMenuItemPrioritySimulate)]
 		private static void ShowNotificationCenter ()
 		{
 			EditorNotificationCenter _notificationCenter	= EditorNotificationCenter.Instance;
@@ -60,28 +58,23 @@ namespace VoxelBusters.NativePlugins.Internal
 				Selection.activeObject	= _notificationCenter;
 			}
 		}
-#endif
 
-		#endregion
-		
-		#region Game Services
-
-		[MenuItem(kMenuNodeName + "Game Center", false, kGameServicesPriority)]
-		private static void SelectGameCenter ()
+		[MenuItem(kMenuItemPushNotification, false, kMenuItemPrioritySimulate)]
+		private static void ShowPushNotificationService ()
 		{
-			EditorGameCenter _gameCenter	= EditorGameCenter.Instance;
-			
-			if (_gameCenter != null)
-			{
-				Selection.activeObject		= _gameCenter;
-			}
+			// Notification center is selected
+			ShowNotificationCenter();
+
+			// Show post notification window
+			EditorPushNotificationService.ShowWindow();
 		}
+#endif
 		
 		#endregion
 
 		#region Settings
 
-		[MenuItem(kMenuNodeName + "Settings", false, kSettingsMenuItemPriority)]
+		[MenuItem(kMenuNodeMainNode + "/Select NPSettings", false, kMenuItemPriorityNPSettings)]
 		private static void SelectSettings ()
 		{
 			NPSettings _npSettings	= NPSettings.Instance;
@@ -96,13 +89,13 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		#region Product
 
-		[MenuItem(kMenuNodeName + "Welcome Tour", false, kAboutProductMenuItemPriority)]
+		[MenuItem(kMenuNodeMainNode + "/Welcome Tour", false, kMenuItemPriorityMisc)]
 		private static void ShowWelcomeTourWindow ()
 		{
 			WelcomeTourWindow.ShowWindow();
 		}
 
-		[MenuItem(kMenuNodeName + "Check for Updates", false, kAboutProductMenuItemPriority)]
+		[MenuItem(kMenuNodeMainNode + "/Check for Updates", false, kMenuItemPriorityMisc)]
 		private static void CheckForUpdates ()
 		{
 			NPSettings _npSettings	= NPSettings.Instance;
@@ -112,6 +105,14 @@ namespace VoxelBusters.NativePlugins.Internal
 				_npSettings.AssetStoreProduct.CheckForUpdates();
 			}
 		}
+
+#if UNITY_EDITOR && !(UNITY_WEBPLAYER || UNITY_WEBGL || NETFX_CORE)
+		[MenuItem(kMenuNodeMainNode + "/Uninstall", false, kMenuItemPriorityMisc)]
+		private static void UninstallNativePlugins ()
+		{				
+			UninstallPlugin.Uninstall();
+		}
+#endif
 
 		#endregion
 	}

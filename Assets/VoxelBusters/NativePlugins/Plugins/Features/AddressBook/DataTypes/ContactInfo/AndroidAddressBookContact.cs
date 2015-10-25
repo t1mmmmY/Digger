@@ -34,31 +34,43 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		public AndroidAddressBookContact (IDictionary _contactInfoJsontDict)
 		{
-			//If Given Name is available set it. Else pick from Display Name
-			string _displayName = _contactInfoJsontDict.GetIfAvailable<string>(kDisplayName);
 			string _givenName 	= _contactInfoJsontDict.GetIfAvailable<string>(kGivenName);
 			string _familyName 	= _contactInfoJsontDict.GetIfAvailable<string>(kFamilyName);
 		
-			if(string.IsNullOrEmpty(_displayName))
-			{
-				_displayName = "";
-			}
-
+			// Set first name and last name
 			FirstName 		= _givenName;
 			LastName 		= _familyName;
-			ImagePath		= _contactInfoJsontDict[kImagePath] as string;
-			PhoneNumberList	= new List<string>();
-			EmailIDList		= new List<string>();
+			ImagePath		= _contactInfoJsontDict.GetIfAvailable<string>(kImagePath);
+
+			// Set phone numbers
+			IList 		_phoneNumJSONList	= _contactInfoJsontDict.GetIfAvailable<IList>(kPhoneNumList);
+			string[] 	_newPhoneNumList	= null;
 			
-			// Add phone numbers
-			IList _phoneNumJsonList	= _contactInfoJsontDict[kPhoneNumList] as IList;
-			foreach (string _phoneNo in _phoneNumJsonList)
-				PhoneNumberList.Add(_phoneNo);
+			if (_phoneNumJSONList != null)
+			{
+				int		_totalCount			= _phoneNumJSONList.Count;
+				_newPhoneNumList			= new string[_totalCount];
+				
+				for (int _iter = 0; _iter < _totalCount; _iter++)
+					_newPhoneNumList[_iter]	= (string)_phoneNumJSONList[_iter];
+			}
 			
-			// Add email id's
-			IList _emailIDJsonList	= _contactInfoJsontDict[kEmailList] as IList;
-			foreach (string _emailID in _emailIDJsonList)
-				EmailIDList.Add(_emailID);
+			PhoneNumberList		= _newPhoneNumList;
+			
+			// Set email id list
+			IList 		_emailIDJsonList	= _contactInfoJsontDict.GetIfAvailable<IList>(kEmailList);
+			string[] 	_newEmailIDList		= null;
+			
+			if (_emailIDJsonList != null)
+			{
+				int		_totalCount			= _emailIDJsonList.Count;
+				_newEmailIDList				= new string[_totalCount];
+				
+				for (int _iter = 0; _iter < _totalCount; _iter++)
+					_newEmailIDList[_iter]	= (string)_emailIDJsonList[_iter];
+			}
+			
+			EmailIDList			= _newEmailIDList;
 		}
 
 		#endregion

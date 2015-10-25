@@ -6,77 +6,91 @@ namespace VoxelBusters.DesignPatterns
 {
 	public class SingletonPattern <T> : MonoBehaviour, ISingleton where T : MonoBehaviour
 	{
+		#region Static Fields
+
+		protected 	static 		T 			instance 					= null;
+		private 	static 		object 		instanceLock			 	= new object ();
+		private 	static 		bool 		destroyedOnApplicationQuit 	= false;
+
+		#endregion
+
+		#region Fields
+
+		private 				Transform	m_transform					= null;
+		private 				GameObject	m_gameObject				= null;
+
+		private					bool		m_isInitialized				= false;
+		private 				bool		m_isForcefullyDestroyed		= false;
+
+		#endregion
+
 		#region Static Properties
 
-		private 		static 		bool 			destroyedOnApplicationQuit 	= false;
-		private 		static 		object 			instanceLock			 	= new object();
-
-		protected 		static 		T 				instance 					= null;
 		/// <summary>
 		/// Gets the singleton instance which will be persistent until Application quits.
 		/// </summary>
 		/// <value>The instance.</value>
-		public			static 		T 				Instance
+		public static T Instance
 		{
 			get 
 			{
-				System.Type _singletonType	= typeof(T);
-
+				System.Type _singletonType	= typeof (T);
+				
 				// We are requesting an instance after application is quit
 				if (destroyedOnApplicationQuit) 
 				{
-					Debug.LogWarning("[SingletonPattern] " + _singletonType + " already destroyed ");
+					// Debug.LogWarning("[SingletonPattern] " + _singletonType + " instance is already destroyed.");
 					return null;
 				}
-
+				
 				lock (instanceLock)
 				{
 					if (instance == null)
 					{
-						// Check if there is already gameobject of this component type
-						instance 			= FindObjectOfType(_singletonType) as T;
-					
-						// Check if multiple instances exist
-						T []monocomponents 	= FindObjectsOfType(_singletonType) as T[];
-
-						if (monocomponents.Length > 1)
+						// Get all the instances that exist in the screen
+						T[] _monoComponents = FindObjectsOfType (_singletonType) as T[];
+						
+						if (_monoComponents.Length > 0)
 						{
-							Debug.LogError("[SingletonPattern] Multiple singleton instances are present in the scene");
-							for (int iter = 0; iter < monocomponents.Length; iter++)
-							{
-								if (instance != monocomponents[iter])
-									Destroy(monocomponents[iter].gameObject);
-							}
-						}
+							instance		= _monoComponents[0];
 
+							for (int iter = 1; iter < _monoComponents.Length; iter++)
+								Destroy (_monoComponents[iter].gameObject);
+						}
+						
 						// We need to create new instance
 						if (instance == null)
 						{
 							// First search in resource if prefab exists for this class
-							string _singletonName			= _singletonType.Name;
-							GameObject _singletonPrefabGO 	=  Resources.Load("Singleton/" + _singletonName, typeof(GameObject)) as GameObject;
-
-							if (_singletonPrefabGO != null)
+							string 		_singletonName		= _singletonType.Name;
+							GameObject 	_singletonPrefab 	=  Resources.Load ("Singleton/" + _singletonName, typeof(GameObject)) as GameObject;
+							
+							if (_singletonPrefab != null)
 							{
 								Debug.Log("[SingletonPattern] Creating singeton using prefab");
-								instance		= (Instantiate(_singletonPrefabGO) as GameObject).GetComponent<T>();	
+								instance		= (Instantiate (_singletonPrefab) as GameObject).GetComponent<T> ();	
 							}
 							else
 							{
-								GameObject _go	= new GameObject();
-								instance 		= _go.AddComponent<T>();
+								instance 		= new GameObject ().AddComponent<T> ();
 							}
-
+							
 							// Update name 
 							instance.name		= _singletonName;
 						}
 					}
 				}
 
+				// Check if component is initialized or not
+				SingletonPattern<T> 	_singletonInstance	= (SingletonPattern<T>)(object)instance;
+
+				if (!_singletonInstance.m_isInitialized)
+					_singletonInstance.Init ();
+
 				return instance;
 			}
-
-			protected set
+			
+			private set
 			{
 				instance	= value;
 			}
@@ -86,9 +100,7 @@ namespace VoxelBusters.DesignPatterns
 
 		#region Properties
 		
-		// Components
-		private 					Transform		m_transform;
-		public 						Transform 		CachedTransform
+		public Transform CachedTransform
 		{
 			get
 			{
@@ -99,8 +111,7 @@ namespace VoxelBusters.DesignPatterns
 			}
 		}
 		
-		private 					GameObject		m_gameObject;
-		public 						GameObject 		CachedGameObject
+		public GameObject CachedGameObject
 		{
 			get
 			{
@@ -110,14 +121,6 @@ namespace VoxelBusters.DesignPatterns
 				return m_gameObject;
 			}
 		}
-		
-		protected					bool			IsInitialized
-		{
-			get;
-			private set;
-		}
-		
-		private 					bool			m_isForcefullyDestroyed		= false;
 		
 		#endregion
 
@@ -133,25 +136,10 @@ namespace VoxelBusters.DesignPatterns
 
 		#region Methods
 
-		protected virtual void Awake ()
+		private void Awake ()
 		{
-			// Just in case, handling so that only one instance is alive
-			if (instance == null)
-			{
-				instance 	= this as T;
-			}
-			// Destroying the reduntant copy of this class type
-			else if (instance != this)
-			{
-				Destroy(CachedGameObject);
-				return;
-			}
-
-			// Set as initialized
-			IsInitialized	= true;
-
-			// Set it as persistent object
-			DontDestroyOnLoad(CachedGameObject);
+			if (!m_isInitialized)			
+				Init ();
 		}
 
 		protected virtual void Start ()
@@ -159,7 +147,7 @@ namespace VoxelBusters.DesignPatterns
 
 		protected virtual void Reset ()
 		{
-			IsInitialized			= false;
+			m_isInitialized			= false;
 			m_isForcefullyDestroyed	= false;
 		}
 
@@ -179,13 +167,36 @@ namespace VoxelBusters.DesignPatterns
 
 		#endregion
 	
-		#region Destroy Methods
+		#region Methods
+
+		protected virtual void Init ()
+		{
+			// Set as initialized
+			m_isInitialized	= true;
+
+			// Just in case, handling so that only one instance is alive
+			if (instance == null)
+			{
+				instance 	= this as T;
+			}
+			// Destroying the reduntant copy of this class type
+			else if (instance != this)
+			{
+				Destroy (CachedGameObject);
+				return;
+			}
+			
+			// Set it as persistent object
+			DontDestroyOnLoad (CachedGameObject);
+		}
 
 		public void ForceDestroy ()
 		{			
-			// Destroy this gameobject
+			// Mark that object was forcefully destroyed
 			m_isForcefullyDestroyed = true;
-			Destroy(CachedGameObject);
+
+			// Destory
+			Destroy (CachedGameObject);
 		}
 
 		#endregion

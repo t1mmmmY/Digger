@@ -22,6 +22,12 @@ namespace VoxelBusters.Utility
 			set; 
 		}
 
+		public float ScaleFactor 
+		{
+			get;
+			set;
+		}
+
 		public Completion	OnCompletion 
 		{ 
 			get; 
@@ -36,35 +42,46 @@ namespace VoxelBusters.Utility
 		{
 			AutoFixOrientation	= _autoFixOrientation;
 			WWWObject			= new WWW(_URL.URLString);
+			ScaleFactor			= 1f;
 		}
 
 		#endregion
 		
 		#region Overriden Methods
+		
+		protected override void DidFailStartRequestWithError (string _error)
+		{
+			if (OnCompletion != null)
+				OnCompletion(null, _error);
+		}
 
 		protected override void OnFetchingResponse ()
 		{
 			Texture2D _finalTexture	= null;
 
-			// Callbacks isnt set
-			if (OnCompletion == null)
-				return;
-
-			// Encountered error while downloading texture
 			if (!string.IsNullOrEmpty(WWWObject.error))
 			{
-				Debug.Log("[DownloadTexture] Error=" + WWWObject.error);
-				OnCompletion(null, WWWObject.error);
-				return;
+				Debug.Log("[DownloadTexture] Failed to download texture. Error = " + WWWObject.error + ".");
+
+				if (OnCompletion != null)
+				{
+					OnCompletion(null, WWWObject.error);
+					return;
+				}
 			}
 
+			Texture2D _tempTexture	= WWWObject.texture;
+
 			// Fix orientation to normal
-			#if !UNITY_WINRT
+		#if !UNITY_WINRT
 			if (AutoFixOrientation)
 			{
 				Stream  _textureStream 	= new MemoryStream(WWWObject.bytes);	
 
 				ExifFile _exifFile 		= ExifFile.Read(_textureStream);
+
+				// Scale texture first before rotating for performance.
+				_tempTexture	=	_tempTexture.Scale(ScaleFactor);
 				
 				if(_exifFile != null && _exifFile.Properties.ContainsKey(ExifTag.Orientation))
 				{
@@ -75,59 +92,61 @@ namespace VoxelBusters.Utility
 					{
 					case Orientation.Normal:
 						// Original image is used
-						_finalTexture	= WWWObject.texture;
+						_finalTexture	= _tempTexture;
 						break;
 
 					case Orientation.MirroredVertically:
 						// Invert horizontally
-						_finalTexture	= WWWObject.texture.MirrorTexture(true, false);
+						_finalTexture	= _tempTexture.MirrorTexture(true, false);
 						break;
 
 					case Orientation.Rotated180:
 						// Invert horizontally as well as vertically 
-						_finalTexture	= WWWObject.texture.MirrorTexture(true, true);
+						_finalTexture	= _tempTexture.MirrorTexture(true, true);
 						break;
 
 					case Orientation.MirroredHorizontally:
 						// Invert vertically 
-						_finalTexture	= WWWObject.texture.MirrorTexture(false, true);
+						_finalTexture	= _tempTexture.MirrorTexture(false, true);
 						break;
 
 					case Orientation.RotatedLeftAndMirroredVertically:
 						// Invert horizontally and rotate by -90
-						_finalTexture	= WWWObject.texture.MirrorTexture(true, false).Rotate(-90);
+						_finalTexture	= _tempTexture.MirrorTexture(true, false).Rotate(-90);
 						break;
 
 					case Orientation.RotatedRight:
 						// Rotate by 90
-						_finalTexture	= WWWObject.texture.Rotate(90);
+						_finalTexture	= _tempTexture.Rotate(90);
 						break;
 
 					case Orientation.RotatedLeft:
 						// Invert vertically and rotate by -90
-						_finalTexture	= WWWObject.texture.MirrorTexture(false, true).Rotate(-90);
+						_finalTexture	= _tempTexture.MirrorTexture(false, true).Rotate(-90);
 						break;
 
 					case Orientation.RotatedRightAndMirroredVertically:
 						// Rotate by -90
-						_finalTexture	= WWWObject.texture.Rotate(-90);
+						_finalTexture	= _tempTexture.Rotate(-90);
 						break;
 					}
 					
 				}
 				else
 				{
-					_finalTexture	= WWWObject.texture;
+					_finalTexture	= _tempTexture;
 				}
 			}
 			// Use original image 
 			else
-			#endif
+		#endif
 			{
-				_finalTexture	= WWWObject.texture;
+				_tempTexture	= _tempTexture.Scale(ScaleFactor);
+				_finalTexture	= _tempTexture;
 			}
 
-			OnCompletion(_finalTexture, null);
+			if (OnCompletion != null)
+				OnCompletion(_finalTexture, null);
 		}
 
 		#endregion

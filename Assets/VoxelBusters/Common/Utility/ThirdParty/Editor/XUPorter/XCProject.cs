@@ -4,25 +4,43 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using VoxelBusters.Utility;
 
 namespace VoxelBusters.ThirdParty.XUPorter
 {
 	public partial class XCProject : System.IDisposable
 	{
-		private PBXDictionary _datastore;
-		public PBXDictionary _objects;
-		//private PBXDictionary _configurations;
+		#region Fields
+
+		private PBXDictionary 	_datastore;
+		public 	PBXDictionary 	_objects;
+//		private PBXDictionary 	_configurations;
 		
-		private PBXGroup _rootGroup;
-		//private string _defaultConfigurationName;
-		private string _rootObjectKey;
-	
-		public string projectRootPath { get; private set; }
-		private FileInfo projectFileInfo;
+		private PBXGroup 		_rootGroup;
+//		private string 			_defaultConfigurationName;
+		private string 			_rootObjectKey;
+
+		private FileInfo 		projectFileInfo;
+//		private string 			sourcePathRoot;
+		private bool 			modified = false;
+
+		#endregion
+
+		#region Properties
+
+		public string projectRootPath 
+		{ 
+			get; 
+			private set; 
+		}
+
+		public string filePath 
+		{ 
+			get; 
+			private set; 
+		}
 		
-		public string filePath { get; private set; }
-		//private string sourcePathRoot;
-		private bool modified = false;
+		#endregion
 		
 		#region Data
 		
@@ -46,7 +64,6 @@ namespace VoxelBusters.ThirdParty.XUPorter
 		
 		#endregion
 
-
 		#region Constructor
 		
 		public XCProject()
@@ -56,7 +73,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 		
 		public XCProject( string filePath ) : this()
 		{
-			if( !System.IO.Directory.Exists( filePath ) ) {
+			if( !Directory.Exists( filePath ) ) {
 				Debug.LogWarning( "XCode project path does not exist: " + filePath );
 				return;
 			}
@@ -67,7 +84,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 				this.filePath = filePath;
 			} else {
 				Debug.Log( "Looking for xcodeproj files in " + filePath );
-				string[] projects = System.IO.Directory.GetDirectories( filePath, "*.xcodeproj" );
+				string[] projects = Directory.GetDirectories( filePath, "*.xcodeproj" );
 				if( projects.Length == 0 ) {
 					Debug.LogWarning( "Error: missing xcodeproj file" );
 					return;
@@ -75,7 +92,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 				
 				this.projectRootPath = filePath;
 				//if the path is relative to the project, we need to make it absolute
-				if (!System.IO.Path.IsPathRooted(projectRootPath))
+				if (!Path.IsPathRooted(projectRootPath))
 					projectRootPath = Application.dataPath.Replace("Assets", "") + projectRootPath;
 				//Debug.Log ("projectRootPath adjusted to " + projectRootPath);
 				this.filePath = projects[ 0 ];
@@ -112,7 +129,6 @@ namespace VoxelBusters.ThirdParty.XUPorter
 		}
 		
 		#endregion
-
 
 		#region Properties
 		
@@ -285,16 +301,16 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			return modified;
 		}
 
-		public bool AddHeaderSearchPaths( string path )
+		public bool AddHeaderSearchPaths( string path, bool recursive )
 		{
-			return AddHeaderSearchPaths( new PBXList( path ) );
+			return AddHeaderSearchPaths( new PBXList( path ), recursive );
 		}
 		
-		public bool AddHeaderSearchPaths( PBXList paths )
+		public bool AddHeaderSearchPaths( PBXList paths, bool recursive )
 		{
 			Debug.Log ("AddHeaderSearchPaths " + paths);
 			foreach( KeyValuePair<string, XCBuildConfiguration> buildConfig in buildConfigurations ) {
-				buildConfig.Value.AddHeaderSearchPaths( paths );
+				buildConfig.Value.AddHeaderSearchPaths( paths, recursive );
 			}
 			modified = true;
 			return modified;
@@ -366,7 +382,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			}
 			else if( tree.CompareTo("GROUP") == 0) {
 				Debug.Log( "Group File" );
-				filePath = System.IO.Path.GetFileName( filePath );
+				filePath = Path.GetFileName( filePath );
 			}
 
 			if( parent == null ) {
@@ -374,7 +390,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			}
 			
 			//Check if there is already a file
-			PBXFileReference fileReference = GetFile( System.IO.Path.GetFileName( filePath ) );	
+			PBXFileReference fileReference = GetFile( Path.GetFileName( filePath ) );	
 			if( fileReference != null ) 
 			{
 				//Updating internal data with this call.
@@ -583,7 +599,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 				}
 
 				// Add a variant group for the language as well
-				var variant = new PBXVariantGroup(System.IO.Path.GetFileName( file ), null, "GROUP");
+				var variant = new PBXVariantGroup(Path.GetFileName( file ), null, "GROUP");
 				variantGroups.Add(variant);
 
 				// The group gets a reference to the variant, not to the file itself
@@ -679,12 +695,14 @@ namespace VoxelBusters.ThirdParty.XUPorter
 		
 		public void ApplyMod( XCMod mod )
 		{	
-			PBXGroup modGroup = this.GetGroup( mod.group );
-			
+			PBXGroup modGroup 		= this.GetGroup( mod.group );
+#if !XCODE_PROJECT_USES_SOFT_LINKS
+			string groupFolderPath	= Path.Combine (Path.Combine (projectRootPath, "Plugins"), mod.group);	
+#endif
+
 			Debug.Log( "Adding libraries..." );
-			
 			foreach( XCModFile libRef in mod.libs ) {
-				string completeLibPath = System.IO.Path.Combine( "usr/lib", libRef.filePath );
+				string completeLibPath = Path.Combine( "usr/lib", libRef.filePath );
 				Debug.Log ("Adding library " + completeLibPath);
 				this.AddFile( completeLibPath, modGroup, "SDKROOT", true, libRef.isWeak );
 			}
@@ -694,37 +712,82 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			foreach( string framework in mod.frameworks ) {
 				string[] filename = framework.Split( ':' );
 				bool isWeak = ( filename.Length > 1 ) ? true : false;
-				string completePath = System.IO.Path.Combine( "System/Library/Frameworks", filename[0] );
+				string completePath = Path.Combine( "System/Library/Frameworks", filename[0] );
 				this.AddFile( completePath, frameworkGroup, "SDKROOT", true, isWeak );
 			}
 			
-			Debug.Log( "Adding files..." );
-			foreach( string file in mod.files ) {
-				string[] args			= file.Split( ':' );
-				string filePath			= args[0];
-				string compilerFlags	= (args.Length > 1) ? args[1] : null;
-				string absoluteFilePath = System.IO.Path.Combine( mod.path, filePath );
-				this.AddFile( absoluteFilePath, modGroup, compilerFlags: compilerFlags);
+			Debug.Log ( "Adding files..." );
+			foreach (string file in mod.files) {
+				string[] args				= file.Split (':');
+				string fileRelativePath		= args[0];
+				string compilerFlags		= (args.Length > 1) ? args[1] : null;
+				string fileAbsolutePath 	= Path.Combine (mod.path, fileRelativePath);
+
+#if XCODE_PROJECT_USES_SOFT_LINKS
+				// Will create reference to this file 
+				this.AddFile (fileAbsolutePath, modGroup, compilerFlags: compilerFlags);
+#else
+				// Create a hard copy of the file, placed at build folder
+				string finalFileAbsolutePath	= Path.Combine (groupFolderPath, fileRelativePath);
+
+				if (File.Exists (fileAbsolutePath))
+				{
+					CopyFileFrom (fileAbsolutePath, finalFileAbsolutePath);
+				}
+				else if (Directory.Exists (fileAbsolutePath))
+				{
+					IOExtensions.CopyFilesRecursively (fileAbsolutePath, finalFileAbsolutePath, true);
+				}
+				else
+				{
+					continue;
+				}
+
+				// Now add this new copy to xcode project
+				this.AddFile (finalFileAbsolutePath, modGroup, compilerFlags: compilerFlags);
+#endif
 			}
 			
-			Debug.Log( "Adding folders..." );
-			foreach( string folder in mod.folders ) {
-				string[] args			= folder.Split( ':' );
-				string folderPath		= args[0];
-				string compilerFlags	= (args.Length > 1) ? args[1] : null;
-				string absoluteFolderPath = System.IO.Path.Combine( mod.path, folderPath );
-				Debug.Log ("Adding folder " + absoluteFolderPath);
-				this.AddFolder( absoluteFolderPath, modGroup, (string[])mod.excludes.ToArray( typeof(string) ), compilerFlags:compilerFlags);
+			Debug.Log ( "Adding folders..." );
+			foreach (string folder in mod.folders) {
+				string[] args				= folder.Split (':');
+				string folderRelativePath	= args[0];
+				string compilerFlags		= (args.Length > 1) ? args[1] : null;
+				string folderAbsolutePath 	= Path.Combine (mod.path, folderRelativePath);
+
+#if XCODE_PROJECT_USES_SOFT_LINKS
+				// Will create reference to this folder
+				this.AddFolder (folderAbsolutePath, modGroup, (string[])mod.excludes.ToArray( typeof(string) ), compilerFlags:compilerFlags);
+#else
+				// Check if source folder exist
+				if (!Directory.Exists (folderAbsolutePath))
+					continue;
+
+				// Make a hard copy of this folder
+				string finalFolderAbsolutePath	= Path.Combine (groupFolderPath, folderRelativePath);
+
+				IOExtensions.CopyFilesRecursively (folderAbsolutePath, finalFolderAbsolutePath, true); 
+
+				// Now add this new copy to xcode project
+				this.AddFolder (finalFolderAbsolutePath, modGroup, (string[])mod.excludes.ToArray( typeof(string) ), compilerFlags:compilerFlags);
+#endif
 			}
 			
 			Debug.Log( "Adding headerpaths..." );
 			foreach( string headerpath in mod.headerpaths ) {
-				if (headerpath.Contains("$(inherited)")) {
-					Debug.Log ("not prepending a path to " + headerpath);
-					this.AddHeaderSearchPaths( headerpath );
+				string[] args			= headerpath.Split( ':' );
+				bool recursive			= args.Length > 1 ? args[1].Equals("recursive") : false;
+
+				if (args[0].Contains("$(inherited)")) {
+					Debug.Log ("not prepending a path to " + args[0]);
+					this.AddHeaderSearchPaths( args[0], recursive );
 				} else {
-					string absoluteHeaderPath = System.IO.Path.Combine( mod.path, headerpath );
-					this.AddHeaderSearchPaths( absoluteHeaderPath );
+#if XCODE_PROJECT_USES_SOFT_LINKS
+					string absoluteHeaderPath = Path.Combine (mod.path, args[0]);
+#else
+					string absoluteHeaderPath = Path.Combine (Path.Combine ("$(SRCROOT)/Plugins", mod.group), args[0] );
+#endif
+					this.AddHeaderSearchPaths (absoluteHeaderPath, recursive);
 				}
 			}
 
@@ -740,7 +803,37 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			
 			this.Consolidate();
 		}
-		
+
+		private void CopyFileFrom (string _sourceFilePath, string _destinationFilePath)
+		{
+			FileInfo _sourceFileInfo	= new FileInfo (_sourceFilePath);
+			
+			// Set file attributes to normal, to make sure i/o operations go well
+			_sourceFileInfo.Attributes	= FileAttributes.Normal;
+			
+			// Create folder structure
+			FileInfo _destinationFileInfo	= new FileInfo (_destinationFilePath);
+			
+			if (_destinationFileInfo.Exists)
+			{
+				// Set existing file attribute to normal, to avoid i/o exceptions
+				_destinationFileInfo.Attributes	= FileAttributes.Normal;
+				
+				// Delete existing file
+				File.Delete (_destinationFileInfo.FullName);
+			}
+			else
+			{
+				string _destinationFolderPath	= Path.GetDirectoryName (_destinationFilePath);
+				
+				if (!Directory.Exists (_destinationFolderPath))
+					Directory.CreateDirectory (_destinationFolderPath);
+			}
+			
+			// Copy file to build path
+			File.Copy (_sourceFilePath, _destinationFilePath, true);
+		}
+
 		#endregion
 
 		#region Savings	
@@ -773,7 +866,7 @@ namespace VoxelBusters.ThirdParty.XUPorter
 				File.Delete( backupPath );
 			
 			// Backup original pbxproj file first
-			File.Copy( System.IO.Path.Combine( this.filePath, "project.pbxproj" ), backupPath );
+			File.Copy( Path.Combine( this.filePath, "project.pbxproj" ), backupPath );
 		}
 
 		private void DeleteExisting(string path)

@@ -9,13 +9,7 @@ namespace VoxelBusters.NativePlugins.Internal
 		#region Constructors
 		
 		public EditorAddressBookContact (AddressBookContact _source) : base(_source)
-		{
-			// Change the Image path here
-			if (!string.IsNullOrEmpty(ImagePath))
-			{
-				ImagePath = Application.dataPath + "/" + ImagePath.TrimStart('/');
-			}
-		}
+		{}
 		
 		#endregion
 	}

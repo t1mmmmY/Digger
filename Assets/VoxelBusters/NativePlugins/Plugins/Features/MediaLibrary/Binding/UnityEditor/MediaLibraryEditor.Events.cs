@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_MEDIA_LIBRARY && UNITY_EDITOR
+using UnityEditor;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
-
-#if UNITY_EDITOR
-using UnityEditor;
 
 namespace VoxelBusters.NativePlugins
 {

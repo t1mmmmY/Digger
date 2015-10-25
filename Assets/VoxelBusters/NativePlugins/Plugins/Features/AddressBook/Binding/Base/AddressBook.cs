@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 using VoxelBusters.Utility;
+using VoxelBusters.DebugPRO;
 
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	/// <summary>
 	/// Address Book provides access to a centralized contacts database.
 	/// </summary>
@@ -12,7 +15,7 @@ namespace VoxelBusters.NativePlugins
 	///	</description> 
 	public partial class AddressBook : MonoBehaviour 
 	{
-		#region API's
+		#region Auth Methods
 
 		/// <summary>
 		/// Get status of the app's access to contact data.
@@ -23,14 +26,47 @@ namespace VoxelBusters.NativePlugins
 			return eABAuthorizationStatus.NOT_DETERMINED;
 		}
 
+		protected virtual void RequestAccess (RequestAccessCompletion _onCompletion)
+		{
+			// Cache callback
+			RequestAccessFinishedEvent		= _onCompletion;
+		}
+
+		#endregion
+
+		#region Read Methods
+
 		/// <summary>
 		/// Request to fetch the contacts.
 		/// </summary>
 		/// <param name="_onCompletion"> Callback triggered once reading contacts is finished.</param>
-		public virtual void ReadContacts (ReadContactsCompletion _onCompletion)
+		public void ReadContacts (ReadContactsCompletion _onCompletion)
+		{
+			eABAuthorizationStatus	_authStatus	= GetAuthorizationStatus();
+
+			if (_authStatus == eABAuthorizationStatus.NOT_DETERMINED)
+			{
+				RequestAccess((eABAuthorizationStatus _newAuthStatus, string _error)=>{
+
+					ReadContacts(_newAuthStatus, _onCompletion);
+				});
+			}
+			else
+			{
+				ReadContacts(_authStatus, _onCompletion);
+			}
+		}
+
+		protected virtual void ReadContacts (eABAuthorizationStatus _status, ReadContactsCompletion _onCompletion)
 		{
 			// Cache callback
-			OnReadContactsFinished		= _onCompletion;
+			ReadContactsFinishedEvent	= _onCompletion;
+
+			if (_status != eABAuthorizationStatus.AUTHORIZED)
+			{
+				ABReadContactsFinished(_status, null);
+				return;
+			}
 		}
 
 		#endregion

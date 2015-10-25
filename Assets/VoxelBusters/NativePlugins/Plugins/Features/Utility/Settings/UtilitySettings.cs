@@ -9,18 +9,23 @@ namespace VoxelBusters.NativePlugins
 	[System.Serializable]
 	public class UtilitySettings 
 	{
-		#region Properties
+		#region Fields
 
 		[SerializeField]
-		private RateMyApp.Settings		m_rateMyApp;
-		public RateMyApp.Settings		RateMyApp
+		private 	RateMyApp.Settings		m_rateMyApp;
+
+		#endregion
+
+		#region Properties
+
+		public RateMyApp.Settings RateMyApp
 		{
 			get
 			{
 				return m_rateMyApp;
 			}
 
-			set
+			private set
 			{
 				m_rateMyApp	= value;
 			}

@@ -219,7 +219,7 @@ public class EndGamePanel : MonoBehaviour
 		}
 		buyCharacterText.enabled = true;
 		buyCharacterCost.enabled = true;
-		buyCharacterCost.text = "USD " + CONST.CHARACTER_COSTS[characterNumber];
+		buyCharacterCost.text = InGameStore.Instance.GetProductPrice(characterNumber);// "USD " + CONST.CHARACTER_COSTS[characterNumber];
 
 		buyCharacterContainer.SetActive(true);
 

@@ -11,7 +11,10 @@ namespace VoxelBusters.Utility
 		
 		private EnumMaskFieldAttribute EnumMaskFieldAttribute 
 		{ 
-			get { return ((EnumMaskFieldAttribute)attribute); } 
+			get 
+			{ 
+				return ((EnumMaskFieldAttribute)attribute); 
+			} 
 		}
 		
 		#endregion

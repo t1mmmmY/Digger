@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_MEDIA_LIBRARY && UNITY_EDITOR
+using UnityEditor;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
-
-#if UNITY_EDITOR
-using UnityEditor;
 
 namespace VoxelBusters.NativePlugins
 {
@@ -30,11 +30,11 @@ namespace VoxelBusters.NativePlugins
 		
 		#endregion
 
-		#region Image
+		#region Image Methods
 
 		public override bool IsCameraSupported ()
 		{
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 			return base.IsCameraSupported();
 		}
 		
@@ -55,7 +55,7 @@ namespace VoxelBusters.NativePlugins
 			if (_imageByteArray != null)
 			{
 				// Feature isnt supported
-				Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+				Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 				
 				// Associated error event is raised
 				SaveImageToGalleryFinished(false);
@@ -64,18 +64,16 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Video
+		#region Video Methods
 		
 		public override void PlayYoutubeVideo (string _videoID, PlayVideoCompletion _onCompletion)
 		{
-			if(!string.IsNullOrEmpty(_videoID))
+			base.PlayYoutubeVideo(_videoID, _onCompletion);
+
+			if (!string.IsNullOrEmpty(_videoID))
 			{
 				Application.OpenURL("http://www.youtube.com/watch?v=" + _videoID);
 				PlayVideoFinished(ePlayVideoFinishReason.PLAYBACK_ENDED);
-			}
-			else
-			{
-				PlayVideoFinished(ePlayVideoFinishReason.PLAYBACK_ERROR);
 			}
 		}	
 

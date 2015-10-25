@@ -1,17 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_TWITTER && UNITY_IOS
 using System.Runtime.InteropServices;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
 	public partial class TwitterIOS : Twitter
 	{
-#if USES_TWITTER
 		#region Native Methods
 
 		[DllImport("__Internal")]
@@ -175,7 +175,6 @@ namespace VoxelBusters.NativePlugins
 		}
 		
 		#endregion
-#endif
 	}
 }
 #endif

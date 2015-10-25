@@ -83,6 +83,7 @@ namespace VoxelBusters.NativePlugins
 				// Download image from given path
 				URL _imagePathURL				= URL.FileURLWithPath(_imagePath);
 				DownloadTexture _newDownload	= new DownloadTexture(_imagePathURL, true, true);
+				_newDownload.ScaleFactor		= m_scaleFactor;
 				_newDownload.OnCompletion		= (Texture2D _texture, string _error)=>{
 					
 					if (string.IsNullOrEmpty(_error))

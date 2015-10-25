@@ -18,8 +18,15 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class AndroidSettings 
 		{
+			#region Fields
+
 			[SerializeField]
-			private string				m_youtubeAPIKey;
+			private 	string 			m_youtubeAPIKey;
+
+			#endregion
+
+			#region Properties
+
 			/// <summary>
 			/// Gets or sets the youtube API key.
 			/// </summary>
@@ -27,14 +34,14 @@ namespace VoxelBusters.NativePlugins
 			/// <description>
 			/// For more information, please check https://developers.google.com/youtube/v3/.
 			/// </description>
-			public string				YoutubeAPIKey
+			public string YoutubeAPIKey
 			{
 				get 
 				{ 
 					return m_youtubeAPIKey; 
 				}
 
-				set
+				private set
 				{
 					m_youtubeAPIKey	= value;
 				}
@@ -42,35 +49,42 @@ namespace VoxelBusters.NativePlugins
 		}
 
 		#endregion
+
+		#endregion
 		
-		#region Properties
+		#region Fields
 		
 		[SerializeField]
-		private AndroidSettings			m_android;
+		private 	AndroidSettings		m_android;
+
+		#endregion
+
+		#region Properties
+
 		/// <summary>
 		/// Gets or sets the Media Library Settings specific to Android platform.
 		/// </summary>
 		/// <value>The android.</value>
-		public	AndroidSettings			Android
+		public AndroidSettings Android
 		{
 			get 
 			{
 				return m_android; 
 			}
 			
-			set 
+			private set 
 			{ 
 				m_android = value; 
 			}
 		}
 		
 		#endregion
-		
-		#region Constructor
+
+		#region Constructors
 		
 		public MediaLibrarySettings ()
 		{
-			Android						= new AndroidSettings();
+			Android		= new AndroidSettings();
 		}
 		
 		#endregion

@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_WEBVIEW && UNITY_EDITOR
 using System.Collections.Generic;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins.Internal
 {
 	public partial class WebViewNativeEditor : WebViewNative 
@@ -15,7 +16,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.Create(_webview, _frame);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void Destroy (VoxelBusters.NativePlugins.WebView _webview)
@@ -23,7 +24,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.Destroy(_webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 			WebViewDidDestroy(_webview);
 		}
 		
@@ -32,7 +33,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.Show(_webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 			WebViewDidShow(_webview);
 		}
 		
@@ -41,7 +42,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.Hide(_webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 			WebViewDidHide(_webview);
 		}
 		
@@ -54,7 +55,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.LoadRequest(_URL, _webview);
 			
 			// Feature isnt supported
-			WebViewDidFailLoadWithError(_webview, Constants.kErrorMessage);
+			WebViewDidFailLoadWithError(_webview, Constants.kFeatureNotSupported);
 		}
 		
 		public override void LoadHTMLString (string _HTMLString, string _baseURL, VoxelBusters.NativePlugins.WebView _webview)
@@ -62,7 +63,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.LoadHTMLString(_HTMLString, _baseURL, _webview);
 			
 			// Feature isnt supported
-			WebViewDidFailLoadWithError(_webview, Constants.kErrorMessage);
+			WebViewDidFailLoadWithError(_webview, Constants.kFeatureNotSupported);
 		}
 		
 		public override void LoadData (byte[] _byteArray, string _MIMEType, string _textEncodingName, string _baseURL, WebView _webview)
@@ -70,7 +71,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.LoadData(_byteArray, _MIMEType, _textEncodingName, _baseURL, _webview);
 			
 			// Feature isnt supported
-			WebViewDidFailLoadWithError(_webview, Constants.kErrorMessage);
+			WebViewDidFailLoadWithError(_webview, Constants.kFeatureNotSupported);
 		}
 		
 		public override void EvaluateJavaScriptFromString (string _javaScript, VoxelBusters.NativePlugins.WebView _webview)
@@ -78,7 +79,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.EvaluateJavaScriptFromString(_javaScript, _webview);
 			
 			// Feature isnt supported
-			WebViewDidFinishEvaluatingJS(_webview, Constants.kErrorMessage);
+			WebViewDidFinishEvaluatingJS(_webview, Constants.kFeatureNotSupported);
 		}
 		
 		public override void Reload (WebView _webview)
@@ -86,7 +87,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.Reload(_webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void StopLoading (WebView _webview)
@@ -94,7 +95,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.StopLoading(_webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		#endregion
@@ -106,7 +107,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetCanHide(_canHide, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetCanBounce (bool _canBounce, WebView _webview)
@@ -114,7 +115,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetCanBounce(_canBounce, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetControlType (eWebviewControlType _type, WebView _webview) 
@@ -122,7 +123,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetControlType(_type, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetShowSpinnerOnLoad (bool _showSpinner, VoxelBusters.NativePlugins.WebView _webview)
@@ -130,7 +131,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetShowSpinnerOnLoad(_showSpinner, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetAutoShowOnLoadFinish (bool _autoShow, WebView _webview)
@@ -138,7 +139,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetAutoShowOnLoadFinish(_autoShow, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetScalesPageToFit (bool _scaleToFit, WebView _webview)
@@ -146,7 +147,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetScalesPageToFit(_scaleToFit, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetFrame (Rect _frame, WebView _webview)
@@ -154,7 +155,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetFrame(_frame, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		public override void SetBackgroundColor (Color _color, WebView _webview)
@@ -162,7 +163,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.SetBackgroundColor(_color, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		#endregion
@@ -174,7 +175,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.AddNewURLSchemeName(_newURLSchemeName, _webview);
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		#endregion
@@ -186,7 +187,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			base.ClearCache();
 			
 			// Feature isnt supported
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 		
 		#endregion

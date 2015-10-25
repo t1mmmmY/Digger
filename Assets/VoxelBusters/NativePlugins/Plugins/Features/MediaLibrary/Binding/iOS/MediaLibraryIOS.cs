@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_MEDIA_LIBRARY && UNITY_IOS
 using System.Runtime.InteropServices;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
@@ -31,9 +32,12 @@ namespace VoxelBusters.NativePlugins
 		[DllImport("__Internal")]
 		private static extern void playVideoFromGallery ();
 
+		[DllImport("__Internal")]
+		private static extern void stopPlayingVideo ();
+
 		#endregion
 
-		#region Image
+		#region Image Methods
 
 		public override bool IsCameraSupported ()
 		{
@@ -64,7 +68,21 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Video
+		#region Video Methods
+
+		public override void PlayYoutubeVideo (string _videoID, PlayVideoCompletion _onCompletion)
+		{
+			base.PlayYoutubeVideo(_videoID, _onCompletion);
+
+			if(!string.IsNullOrEmpty(_videoID))
+			{
+				// Get Embed String
+				string _embedHTMLString = GetYoutubeEmbedHTMLString(_videoID);
+				
+				// Play video
+				PlayEmbeddedVideo(_embedHTMLString, _onCompletion);
+			}
+		}	
 
 		public override void PlayEmbeddedVideo (string _embedHTMLString, PlayVideoCompletion _onCompletion)
 		{
@@ -83,7 +101,7 @@ namespace VoxelBusters.NativePlugins
 				// Check if this url is a youtube link
 				string _youtubeID = ExtractYoutubeVideoID(_URL.URLString);
 
-				if(_youtubeID != null)
+				if (_youtubeID != null)
 				{
 					PlayYoutubeVideo(_youtubeID, _onCompletion);
 				}
@@ -91,7 +109,6 @@ namespace VoxelBusters.NativePlugins
 				{
 					playVideoFromURL(_URL.URLString);
 				}
-
 			}
 		}
 		

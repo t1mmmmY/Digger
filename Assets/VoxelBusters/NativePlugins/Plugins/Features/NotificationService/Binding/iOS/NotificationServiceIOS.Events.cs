@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE && UNITY_IOS
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;

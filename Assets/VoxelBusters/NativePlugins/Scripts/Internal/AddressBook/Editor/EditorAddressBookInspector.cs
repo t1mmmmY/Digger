@@ -1,31 +1,44 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
+
+#if USES_ADDRESS_BOOK
+using UnityEditor;
 using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
 	[CustomEditor(typeof(EditorAddressBook))]
-	public class EditorAddressBookInspector : Editor 
+	public class EditorAddressBookInspector : AdvancedScriptableObjectInspector 
 	{
-		#region Unity Methods
+		#region Methods
 
-		public override void OnInspectorGUI ()
+		protected override void OnGUIWindow ()
 		{
-			// Update object
-			serializedObject.Update();
+			GUIStyle _subTitleStyle	= new GUIStyle("BoldLabel");
+			_subTitleStyle.wordWrap	= true;
 
-			// Make all EditorGUI look like regular controls
-			EditorGUIUtility.LookLikeControls();
+			GUILayout.BeginVertical(UnityEditorUtility.kOuterContainerStyle);
+			{
+				UnityEditorUtility.DrawLabel("Registration Status", _subTitleStyle, UnityEditorUtility.Alignment.Center);
+				GUILayout.Space(2f);
+				DrawProperty("m_authorizationStatus", GUIStyle.none);
+				GUILayout.Space(2f);
+			}
+			GUILayout.EndVertical();
+			GUILayout.Space(5f);
 
-			// Draw property
-			UnityEditorUtility.DrawSerializableObject(serializedObject);
-			
-			// Apply modifications
-			if (GUI.changed)
-				serializedObject.ApplyModifiedProperties();
+			GUILayout.BeginVertical(UnityEditorUtility.kOuterContainerStyle);
+			{
+				UnityEditorUtility.DrawLabel("Contacts", _subTitleStyle, UnityEditorUtility.Alignment.Center);
+				GUILayout.Space(2f);
+				DrawChildProperties("m_contactsList", GUIStyle.none);
+				GUILayout.Space(2f);
+			}
+			GUILayout.EndVertical();
 		}
 
 		#endregion
+
 	}
 }
+#endif

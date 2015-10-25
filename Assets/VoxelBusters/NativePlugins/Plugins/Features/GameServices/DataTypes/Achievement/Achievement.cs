@@ -11,20 +11,24 @@ namespace VoxelBusters.NativePlugins
 	/// <summary>
 	/// <see cref="VoxelBusters.NativePlugins.Achievement"/> object provides interface to communicate with game server about <see cref="VoxelBusters.NativePlugins.LocalUser"/> progress towards completing achievement.
 	/// </summary>
-	public abstract class Achievement
+	public abstract class Achievement : NPObject
 	{
-		#region Fields
-		
-		private static Dictionary<string,Action<bool>> m_reportProgressCallbackList = new Dictionary<string,Action<bool>>();
-		
-		#endregion
-
 		#region Properties
 
 		/// <summary>
-		/// Gets the identifier of <see cref="VoxelBusters.NativePlugins.Achievement"/>.
+		/// Gets the unique identifier of <see cref="VoxelBusters.NativePlugins.Achievement"/> which is common for all supported platforms.
 		/// </summary>
-		/// <value>A string used to uniquely identify the specific <see cref="VoxelBusters.NativePlugins.Achievement"/> object refers to.</value>
+		/// <value>A string used to uniquely identify <see cref="VoxelBusters.NativePlugins.Achievement"/> across all supported platforms.</value>
+		public string GlobalIdentifier
+		{
+			get;
+			protected set;
+		}
+
+		/// <summary>
+		/// Gets the identifier of <see cref="VoxelBusters.NativePlugins.Achievement"/> specific to current platform.
+		/// </summary>
+		/// <value>A string used to uniquely identify <see cref="VoxelBusters.NativePlugins.Achievement"/> specific to current platform.</value>
 		public abstract string Identifier
 		{
 			get;
@@ -45,13 +49,16 @@ namespace VoxelBusters.NativePlugins
 		/// Gets the value indicating <see cref="VoxelBusters.NativePlugins.Achievement"/> progress in terms of percentage.
 		/// </summary>
 		/// <value>Value indicates how far the player has progressed on this <see cref="VoxelBusters.NativePlugins.Achievement"/> in terms of percentage.</value>
-		public int PercentageCompleted
+		public double PercentageCompleted
 		{
 			get
 			{
-				int _percentageCompleted	= (int)((float)PointsScored * 100 / (float)Description.MaximumPoints);
+				if (Description == null)
+					return 0;
 
-				return Mathf.Min(100, _percentageCompleted);
+				double _percentageCompleted	= ((double)PointsScored * 100 / (double)Description.MaximumPoints);
+
+				return System.Math.Min(100.0, _percentageCompleted);
 			}
 		}
 
@@ -85,71 +92,89 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
+		#region Delegates
+
+		/// <summary>
+		/// The callback delegate used when load <see cref="VoxelBusters.NativePlugins.Achievement"/> request completes.
+		/// </summary>
+		/// <param name="_achievements">An array of <see cref="VoxelBusters.NativePlugins.Achievement"/> objects that represents all progress reported to Server for the local user.</param>
+		/// <param name="_error">If the operation was successful, this value is nil; otherwise, this parameter holds the description of the problem that occurred.</param>
+		public delegate void LoadAchievementsCompletion (Achievement[] _achievements, string _error);
+
+		/// <summary>
+		/// The callback delegate used when report see cref="VoxelBusters.NativePlugins.Achievement"/> progress request completes.
+		/// </summary>
+		/// <param name="_success">The operation completion status.</param>
+		/// <param name="_error">If the operation was successful, this value is nil; otherwise, this parameter holds the description of the problem that occurred.</param>
+		public delegate void ReportProgressCompletion (bool _success, string _error);
+
+		#endregion
+
+		#region Events
+
+		private event ReportProgressCompletion ReportProgressFinishedEvent;
+
+		#endregion
+
 		#region Constructor
 
-		protected Achievement ()
+		protected Achievement () : base (NPObjectManager.eCollectionType.GAME_SERVICES)
 		{}
 
-		protected Achievement (string _identifier) : this (_identifier, 0, false, DateTime.Now)
-		{}
-
-		protected Achievement (string _identifier, int _pointsScored, bool _completed, DateTime _reportedDate)
-		{
+		protected Achievement (string _globalIdentifier, string _identifier, int _pointsScored, bool _completed, DateTime _reportedDate) 
+			: base (NPObjectManager.eCollectionType.GAME_SERVICES)
+		{	
 			// Initialize properties
+			GlobalIdentifier	= _globalIdentifier;
 			Identifier			= _identifier;
 			PointsScored		= _pointsScored;
 			Completed			= _completed;
 			LastReportedDate	= _reportedDate;
 		}
 
+		protected Achievement (string _globalIdentifier, string _identifier, int _pointsScored = 0) 
+			: this (_globalIdentifier, _identifier, _pointsScored, false, DateTime.Now)
+		{}
+
 		#endregion
 
-		#region Abstract Methods
+		#region Methods
 
 		/// <summary>
 		/// Reports the player’s progress of this <see cref="VoxelBusters.NativePlugins.Achievement"/>.
 		/// </summary>
 		/// <param name="_onCompletion">Callback to be called when operation is completed.</param>
-		public virtual void ReportProgress (Action<bool> _onCompletion)
+		public virtual void ReportProgress (ReportProgressCompletion _onCompletion)
 		{
+			// Cache callback
+			ReportProgressFinishedEvent	= _onCompletion;
+
+			// Check if its valid request
 			if (Description == null)
 			{
 				DebugPRO.Console.LogError(Constants.kDebugTag, string.Format("[GameServices] Report progress failed. Achievement description with id={0} couldnt be found.", Identifier)); 
-
-				if (_onCompletion != null)
-					_onCompletion(false);
-
+				ReportProgressFinished(false, "The requested operation could not be completed because description for this achievement was not found.");
 				return;
 			}
-
-			m_reportProgressCallbackList.Remove(Identifier);
-			m_reportProgressCallbackList.Add(Identifier, _onCompletion);
 		}
-
-		#endregion
-		
-		#region Override Methods
 		
 		public override string ToString ()
 		{
-			return string.Format("[Achievement: Identifier={0}, PointsScored={1}, Completed={2}, LastReportedDate={3}]", Identifier, PointsScored, Completed, LastReportedDate);
+			return string.Format("[Achievement: Identifier={0}, PointsScored={1}, Completed={2}, LastReportedDate={3}]",
+			                     Identifier, PointsScored, Completed, LastReportedDate);
 		}
 		
 		#endregion
 
-		#region Callback Methods
+		#region Event Callback Methods
 
-		protected void OnReportProgressFinished (bool _status)
+		protected virtual void ReportProgressFinished (IDictionary _dataDict)
+		{}
+
+		protected void ReportProgressFinished (bool _success, string _error)
 		{
-			Action<bool> 	_requiredCallback;
-			m_reportProgressCallbackList.TryGetValue(Identifier, out _requiredCallback);
-
-			// Completion handler is called
-			if(_requiredCallback != null)
-			{
-				m_reportProgressCallbackList.Remove(Identifier);
-				_requiredCallback(_status);
-			}
+			if (ReportProgressFinishedEvent != null)
+				ReportProgressFinishedEvent(_success, _error);
 		}
 
 		#endregion

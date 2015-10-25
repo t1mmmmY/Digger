@@ -1,15 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_SHARING && UNITY_EDITOR
 using VoxelBusters.DebugPRO;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
 	public partial class SharingEditor : Sharing 
 	{
-		#region Overriden API's 
+		#region Methods
 
 		public override bool IsMailServiceAvailable ()
 		{	
@@ -19,6 +20,42 @@ namespace VoxelBusters.NativePlugins
 			return _canSendMail;
 		}
 
+		protected override void ShowMailShareComposer (MailShareComposer _composer)
+		{
+			base.ShowMailShareComposer(_composer);
+			
+			if (!IsMessagingServiceAvailable())
+				return;
+
+			if (_composer.AttachmentData != null)
+				Console.LogWarning(Constants.kDebugTag, "[Sharing:Mail] Attachments are not supported in editor");
+
+			string	_mailToAddress	= null;
+
+			if (_composer.ToRecipients != null)
+				_mailToAddress		= string.Join(",", _composer.ToRecipients);
+
+			string	_mailToSubject	= EscapingString(_composer.Subject);
+			string	_mailToBody		= EscapingString(_composer.Body);
+			string	_mailToString	= string.Format("mailto:{0}?subject={1}&body={2}", _mailToAddress, _mailToSubject, _mailToBody);
+
+			// Opens mail client
+			Application.OpenURL(_mailToString);
+
+			// Send event
+			MailShareFinished(null);
+		}
+
+		private string EscapingString (string _inputString)
+		{
+			return WWW.EscapeURL(_inputString).Replace("+","%20");
+		}
+
+		#endregion
+
+		#region Deprecated Methods
+		
+		[System.Obsolete(kSharingFeatureDeprecatedMethodInfo)]
 		public override void SendMail (string _subject, string _body, bool _isHTMLBody, byte[] _attachmentByteArray, 
 		                               string _mimeType, string _attachmentFileNameWithExtn, string[] _recipients, SharingCompletion _onCompletion)
 		{
@@ -29,29 +66,24 @@ namespace VoxelBusters.NativePlugins
 			{
 				if (_attachmentByteArray != null)
 					Console.LogWarning(Constants.kDebugTag, "[Sharing:Mail] Attachments are not supported in editor");
-
+				
 				string	_mailToAddress	= null;
-
+				
 				if (_recipients != null)
 					_mailToAddress		= string.Join(",", _recipients);
-
+				
 				string	_mailToSubject	= EscapingString(_subject);
 				string	_mailToBody		= EscapingString(_body);
 				string	_mailToString	= string.Format("mailto:{0}?subject={1}&body={2}", _mailToAddress, _mailToSubject, _mailToBody);
-
+				
 				// Opens mail client
 				Application.OpenURL(_mailToString);
-
+				
 				// Send event
 				MailShareFinished(null);
 			}
 		}
-
-		private string EscapingString (string _inputString)
-		{
-			return WWW.EscapeURL(_inputString).Replace("+","%20");
-		}
-
+		
 		#endregion
 	}
 }

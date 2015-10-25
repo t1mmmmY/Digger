@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
+using System.Globalization;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
@@ -15,7 +16,7 @@ namespace VoxelBusters.NativePlugins.Internal
 		"description":"54 units"
 	*/
 
-	public sealed class AndroidBillingProduct : BillingProduct 
+	public sealed class AndroidBillingProduct : MutableBillingProduct 
 	{
 		#region Constants
 
@@ -24,6 +25,7 @@ namespace VoxelBusters.NativePlugins.Internal
 		private const string	kLocalizedPrice			= "price";
 		private const string	kPriceAmount			= "price_amount_micros";
 		private const string	kPriceCurrencyCode		= "price_currency_code";
+		private const string	kPriceCurrencySymbol	= "price_currency_symbol";
 		private const string	kTitle					= "title";
 		private const string	kDescription			= "description";
 
@@ -33,25 +35,29 @@ namespace VoxelBusters.NativePlugins.Internal
 		
 		public AndroidBillingProduct (IDictionary _productJsonDict)
 		{
-			ProductIdentifier	= _productJsonDict[kProductID] as string;
+			AndroidProductID	= _productJsonDict[kProductID] as string;
 			Name				= _productJsonDict[kTitle] as string;
 			Description			= _productJsonDict[kDescription] as string;
 			Price				= _productJsonDict.GetIfAvailable<long>(kPriceAmount)/1000000.0f;//As the value is in microns
 			LocalizedPrice		= _productJsonDict.GetIfAvailable<string>(kLocalizedPrice);
+			CurrencyCode		= _productJsonDict.GetIfAvailable<string>(kPriceCurrencyCode);
+			CurrencySymbol		= _productJsonDict.GetIfAvailable<string>(kPriceCurrencySymbol);
 		}
-		
+
 		#endregion
 
 		#region Static Methods
 
 		public static IDictionary CreateJSONObject (BillingProduct _product)
 		{
-			IDictionary _productJsonDict		= new Dictionary<string, string>();
-			_productJsonDict[kProductID]		= _product.ProductIdentifier;
-			_productJsonDict[kTitle]			= _product.Name;
-			_productJsonDict[kDescription]		= _product.Description;
-			_productJsonDict[kPriceAmount]		= (_product.Price * 1000000).ToString();
-			_productJsonDict[kLocalizedPrice]	= _product.LocalizedPrice;
+			IDictionary _productJsonDict			= new Dictionary<string, string>();
+			_productJsonDict[kProductID]			= _product.ProductIdentifier;
+			_productJsonDict[kTitle]				= _product.Name;
+			_productJsonDict[kDescription]			= _product.Description;
+			_productJsonDict[kPriceAmount]			= (_product.Price * 1000000).ToString();
+			_productJsonDict[kLocalizedPrice]		= _product.LocalizedPrice;
+			_productJsonDict[kPriceCurrencyCode]	= _product.CurrencyCode;
+			_productJsonDict[kPriceCurrencySymbol]	= _product.CurrencySymbol;
 
 			return _productJsonDict;
 		}

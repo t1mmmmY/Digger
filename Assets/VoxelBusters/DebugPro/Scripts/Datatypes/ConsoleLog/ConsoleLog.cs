@@ -128,7 +128,7 @@ namespace VoxelBusters.DebugPRO.Internal
 			Message					= _message;
 			Type					= _type;
 			Context					= _context;
-
+#if !NETFX_CORE
 			// Collect information using stacktrace
 			// Using skipframes to reach out to the exact callers
 			StackTrace _stackTrace	= new StackTrace(++_skipFrames, true);
@@ -138,7 +138,9 @@ namespace VoxelBusters.DebugPRO.Internal
 
 			// Collect description
 			CollectStackTraceInfo(_stackTrace);
-
+#else
+			StackTrace				= "NOT_IMPLEMENTED_FOR_NETFX_CORE";//System.Environment.StackTrace;
+#endif
 			// Description
 			Description				= Message + "\n" + StackTrace;
 		}
@@ -146,7 +148,7 @@ namespace VoxelBusters.DebugPRO.Internal
 		#endregion
 
 		#region Methods
-
+#if !NETFX_CORE
 		private void CollectStackTraceInfo (System.Diagnostics.StackTrace _stackTrace)
 		{
 			// Gathering information related to stackoverflow
@@ -184,6 +186,7 @@ namespace VoxelBusters.DebugPRO.Internal
 			// Set value
 			StackTrace	= _desciptionBuilder.ToString();
 		}
+#endif
 
 		private string GetRelativePath (string _absolutePath)
 		{

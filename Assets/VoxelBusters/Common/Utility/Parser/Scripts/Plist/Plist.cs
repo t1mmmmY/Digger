@@ -149,7 +149,7 @@ namespace VoxelBusters.Utility
 			}
 			catch (KeyNotFoundException _exception)
 			{
-				Debug.LogError("[Plist] " + _exception.Message);
+				Debug.LogWarning("[Plist] " + _exception.Message);
 				return null;
 			}
 		}

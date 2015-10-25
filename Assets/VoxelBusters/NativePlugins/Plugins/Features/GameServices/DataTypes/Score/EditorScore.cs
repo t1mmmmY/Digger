@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
-#if UNITY_EDITOR
+#if USES_GAME_SERVICES && UNITY_EDITOR
+using System;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins.Internal
 {
-	internal sealed class EditorScore : Score
+	public sealed class EditorScore : Score
 	{
 		#region Properties
 
@@ -46,42 +48,54 @@ namespace VoxelBusters.NativePlugins.Internal
 		internal EditorScore ()
 		{}
 
-		internal EditorScore (string _leaderboardID, User _user, long _scoreValue = 0L) : base (_leaderboardID, _user, _scoreValue)
+		internal EditorScore (string _leaderboardGlobalID, string _leaderboardID, User _user, long _scoreValue = 0L) 
+			: base (_leaderboardGlobalID, _leaderboardID, _user, _scoreValue)
 		{}
 
-		internal EditorScore (EditorGameCenter.EGCScore _scoreInfo)
+		internal EditorScore (EGCScore _scoreInfo)
 		{
-			LeaderboardID	= _scoreInfo.LeaderboardID;
-			User			= _scoreInfo.User;
-			Value			= _scoreInfo.Value;
-			Date			= _scoreInfo.Date;
-			Rank			= _scoreInfo.Rank;
+			string	_leaderboardID	= _scoreInfo.LeaderboardID;
+
+			// Set properties
+			LeaderboardGlobalID		= GameServicesIDHandler.GetLeaderboardGID(_leaderboardID);
+			LeaderboardID			= _leaderboardID;
+			User					= new EditorUser(_scoreInfo.User);
+			Value					= _scoreInfo.Value;
+			Date					= _scoreInfo.Date;
+			Rank					= _scoreInfo.Rank;
 		}
 
 		#endregion
 
 		#region Methods
-
-		public override void ReportScore (Action<bool> _onCompletion)
+		
+		public override void ReportScore (ReportScoreCompletion _onCompletion)
 		{
-			EditorGameCenter.Instance.ReportScore(this, (EditorScore _newScoreInfo)=>{
-
-				if (_newScoreInfo == null)
-				{
-					if (_onCompletion != null)
-						_onCompletion(false);
-				}
-				else
-				{
-					// Update properties
-					this.Rank	= _newScoreInfo.Rank;
-
-					if (_onCompletion != null)
-						_onCompletion(true);
-				}
-			});
+			base.ReportScore (_onCompletion);
+			
+			EditorGameCenter.Instance.ReportScore(this);
 		}
-
+		
+		#endregion
+		
+		#region Event Callback Methods
+		
+		protected override void ReportScoreFinished (IDictionary _dataDict)
+		{
+			string		_error			= _dataDict.GetIfAvailable<string>(EditorGameCenter.kErrorKey);
+			EGCScore	_gcScoreInfo	= _dataDict.GetIfAvailable<EGCScore>(EditorGameCenter.kScoreInfoKey);
+			
+			if (_gcScoreInfo != null)
+			{
+				// Update properties
+				Value	= _gcScoreInfo.Value;
+				Date	= _gcScoreInfo.Date;
+				Rank	= _gcScoreInfo.Rank;
+			}
+			
+			ReportScoreFinished(_error == null, _error);
+		}
+		
 		#endregion
 	}
 }

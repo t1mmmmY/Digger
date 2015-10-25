@@ -3,31 +3,39 @@ using System.Collections;
 using VoxelBusters.NativePlugins;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
 	using Internal;
 
-	public class AddressBookDemo : DemoSubMenu
+#if !USES_ADDRESS_BOOK
+	public class AddressBookDemo : NPDisabledFeatureDemo 
+#else
+	public class AddressBookDemo : NPDemoBase
+#endif
 	{
 		#region Properties
 
-		//UI Settings
-		private float 					m_eachColumnWidth;
-		private float 					m_eachRowHeight 				= 150f;
-		private int 					m_maxContactsToRender 			= 100;
+#pragma warning disable
+		// UI Settings
+		private 	float 					m_eachColumnWidth;
+		private 	float 					m_eachRowHeight 				= 150f;
+		private 	int 					m_maxContactsToRender 			= 50;
 
-		//Data holders
-		private AddressBookContact[] 	m_contactsInfo = null;
-		private Texture[] 				m_contactPictures;
+		// Data holders
+		private 	AddressBookContact[] 	m_contactsInfo = null;
+		private 	Texture[] 				m_contactPictures;
 
-		//Misc
-		private GUIScrollView 			m_contactsScrollView;
+		// Misc
+		private 	GUIScrollView 			m_contactsScrollView;
+#pragma warning restore
 
 		#endregion
-	
+
+#if !USES_ADDRESS_BOOK
+	}
+#else
 		#region Unity Methods
 
 		protected override void Start()
@@ -36,157 +44,154 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			// Initialise
 			m_contactsScrollView = gameObject.AddComponent<GUIScrollView>();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"You can add dummy contact information to Editor AddressBook to simulate this feature in Unity Editor. It is accessible from Menu (Window->Voxel Busters->Native Plugins).");
 		}	
 
 		#endregion
 
-		#region API Requests
+		#region GUI Methods
 		
-		eABAuthorizationStatus GetAuthorizationStatus ()
+		protected override void DisplayFeatureFunctionalities ()
+		{		
+			base.DisplayFeatureFunctionalities();
+			
+			GUILayout.Label("Authorization Methods", kSubTitleStyle);
+			
+			if (GUILayout.Button("Get Authorization Status"))
+			{
+				AddNewResult("Authorization Status = " + GetAuthorizationStatus());
+			}
+			
+			GUILayout.Label("Contact Methods", kSubTitleStyle);
+			
+			if (GUILayout.Button("Read Contacts"))
+			{
+				ReadContacts();
+			}
+			
+			DrawContactsInfoList();	
+		}
+
+		private void DrawContactsInfoList ()
+		{
+			if (m_contactsInfo == null || m_contactsInfo.Length == 0)
+				return;
+
+			m_eachColumnWidth = (GetWindowWidth() - GetWindowWidth()*0.1f)/5;
+			GUILayoutOption _entryWidthOption 		= GUILayout.Width(m_eachColumnWidth);
+			GUILayoutOption _entryHeightOption 		= GUILayout.Height(m_eachRowHeight);
+			GUILayoutOption _entryHalfHeightOption 	= GUILayout.Height(m_eachRowHeight/2);
+			
+			GUILayout.BeginHorizontal();
+			{
+				GUILayout.Box("Picture"		, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
+				GUILayout.Box("First Name"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
+				GUILayout.Box("Last Name"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
+				GUILayout.Box("Phone #'s"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
+				GUILayout.Box("Email ID's"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
+			}					
+			GUILayout.EndHorizontal();
+			
+			m_contactsScrollView.BeginScrollView();
+			{
+				for(int _i = 0; _i < m_contactsInfo.Length ; _i++)
+				{
+					if (_i > m_maxContactsToRender) //This is just to limit drawing
+					{
+						break;
+					}
+					
+					AddressBookContact _eachContact = m_contactsInfo[_i];
+					GUILayout.BeginHorizontal();
+					{							
+						GUILayout.Label(m_contactPictures[_i]					, _entryWidthOption, _entryHeightOption);
+						GUILayout.Label(_eachContact.FirstName					, _entryWidthOption, _entryHeightOption);
+						GUILayout.Label(_eachContact.LastName					, _entryWidthOption, _entryHeightOption);
+						
+						int _oldFontSize = UISkin.label.fontSize;
+						UISkin.label.fontSize = (int)(_oldFontSize * 0.5);
+						
+						GUILayout.Label(_eachContact.PhoneNumberList.ToJSON()	, _entryWidthOption, _entryHeightOption);
+						GUILayout.Label(_eachContact.EmailIDList.ToJSON()		, _entryWidthOption, _entryHeightOption);
+						
+						UISkin.label.fontSize = _oldFontSize;
+					}
+					GUILayout.EndHorizontal();
+					
+				}
+			}
+			m_contactsScrollView.EndScrollView();
+		}
+		
+		#endregion
+
+		#region API Methods
+		
+		private eABAuthorizationStatus GetAuthorizationStatus ()
 		{
 			return NPBinding.AddressBook.GetAuthorizationStatus();
 		}
 
-		void ReadContacts()
+		private void ReadContacts()
 		{
+			AddNewResult("Started reading contacts in background. Please wait...");
 			NPBinding.AddressBook.ReadContacts(OnReceivingContacts);			
 		}
 		
 		#endregion
 	
-		#region API Callbacks
+		#region API Callback Methods
 
-		//Callback triggered after fetching contacts
-		void OnReceivingContacts(eABAuthorizationStatus _authorizationStatus, AddressBookContact[] _contactList)
+		private void OnReceivingContacts (eABAuthorizationStatus _authorizationStatus, AddressBookContact[] _contactList)
 		{
-			if (_authorizationStatus == eABAuthorizationStatus.AUTHORIZED)
+			AddNewResult(string.Format("Read contacts request finished. Authorization Status = {0}.", _authorizationStatus));
+
+			if (_contactList != null)
 			{
+				AppendResult(string.Format("Total no of contacts info fetched is {0}.", _contactList.Length));
 				m_contactsInfo = _contactList;
 					
-				//This loads textures into m_contactPictures
-				LoadContactPictures(m_contactsInfo);
+				// This loads textures into m_contactPictures
+				StartCoroutine(LoadContactPictures(m_contactsInfo));
 			}
-			else
-			{
-				Console.LogError(Constants.kDebugTag, "[AddressBook] " + _authorizationStatus);
-			}
+		}
 
-			AddNewResult("Received OnReceivingContacts Event. Authorization Status = " +_authorizationStatus);
+		private void AddNewContactFinished (bool _status, string _error)
+		{
+			AddNewResult(string.Format("Add new contact information request finished. Status = {0}. Error = {1}.", _status, _error.GetPrintableString()));
 		}
 
 		#endregion
 	
-		#region Helpers
+		#region Misc. Methods
 
-		//This will create texture from the pictue image path
-		void LoadContactPictures(AddressBookContact[] _contactList)
+		private IEnumerator LoadContactPictures (AddressBookContact[] _contactList)
 		{
 			m_contactPictures = new Texture[_contactList.Length];
 			
-			for(int _i = 0; _i < _contactList.Length ; _i++)
+			for (int _cIndex = 0; _cIndex < _contactList.Length ; _cIndex++)
 			{
-				AddressBookContact _each = _contactList[_i];
-				
-				if (!string.IsNullOrEmpty(_each.ImagePath))
-				{
-					//Create callback receiver and save the index to pass to completion block.
-					int _textureIndex = _i;
-					DownloadTexture.Completion _onCompletion = (Texture2D _texture, string _error)=>{
-						
-						if (!string.IsNullOrEmpty(_error))
-						{
-							Console.LogError(Constants.kDebugTag, "[AddressBook] Contact Picture download failed " + _error);
-							m_contactPictures[_textureIndex] = null;
-						}
-						else
-						{
-							m_contactPictures[_textureIndex] = _texture;
-						}
-					};
+				_contactList[_cIndex].GetImageAsync((Texture2D _texture, string _error)=>{
 					
-					//Start the texture fetching
-					_each.GetImageAsync(_onCompletion);
-				}
+					if (!string.IsNullOrEmpty(_error))
+					{
+						Console.LogError(Constants.kDebugTag, "[AddressBook] Contact Picture download failed " + _error);
+						m_contactPictures[_cIndex] = null;
+					}
+					else
+					{
+						m_contactPictures[_cIndex] = _texture;
+					}
+				});
+
+				yield return new WaitForEndOfFrame();
 			}
 		}
 	
 		#endregion
-
-		#region UI
-		
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
-
-			RootScrollView.BeginScrollView();
-			{
-				if (GUILayout.Button("Get Authorization Status"))
-				{
-					AddNewResult("Authorization Status = " + GetAuthorizationStatus());
-				}
-				
-				if (GUILayout.Button("Read Contacts"))
-				{
-					AddNewResult("Started reading contacts in background. Please wait...");
-
-					// Read contact info
-					ReadContacts();
-				}
-
-				if (m_contactsInfo != null)
-				{
-					m_eachColumnWidth = (GetWindowWidth() - GetWindowWidth()*0.1f)/5;
-					GUILayoutOption _entryWidthOption 		= GUILayout.Width(m_eachColumnWidth);
-					GUILayoutOption _entryHeightOption 		= GUILayout.Height(m_eachRowHeight);
-					GUILayoutOption _entryHalfHeightOption 	= GUILayout.Height(m_eachRowHeight/2);
-					
-					GUILayout.BeginHorizontal();
-					{
-						GUILayout.Box("Picture"		, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
-						GUILayout.Box("First Name"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
-						GUILayout.Box("Last Name"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
-						GUILayout.Box("Phone #'s"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
-						GUILayout.Box("Email ID's"	, kSubTitleStyle, _entryWidthOption, _entryHalfHeightOption);
-					}					
-					GUILayout.EndHorizontal();
-		
-					m_contactsScrollView.BeginScrollView();
-					{
-						for(int _i = 0; _i < m_contactsInfo.Length ; _i++)
-						{
-							if (_i > m_maxContactsToRender) //This is just to limit drawing
-							{
-								break;
-							}
-			
-							AddressBookContact _eachContact = m_contactsInfo[_i];
-							GUILayout.BeginHorizontal();
-							{							
-								GUILayout.Label(m_contactPictures[_i]					, _entryWidthOption, _entryHeightOption);
-								GUILayout.Label(_eachContact.FirstName					, _entryWidthOption, _entryHeightOption);
-								GUILayout.Label(_eachContact.LastName					, _entryWidthOption, _entryHeightOption);
-
-								int _oldFontSize = UISkin.label.fontSize;
-								UISkin.label.fontSize = (int)(_oldFontSize * 0.5);
-
-								GUILayout.Label(_eachContact.PhoneNumberList.ToJSON()	, _entryWidthOption, _entryHeightOption);
-								GUILayout.Label(_eachContact.EmailIDList.ToJSON()		, _entryWidthOption, _entryHeightOption);
-
-								UISkin.label.fontSize = _oldFontSize;
-							}
-							GUILayout.EndHorizontal();
-							
-						}
-					}
-					m_contactsScrollView.EndScrollView();
-				}
-			}
-			RootScrollView.EndScrollView();
-
-			DrawResults();
-			DrawPopButton();	
-		}
-
-		#endregion
 	}
+#endif
 }

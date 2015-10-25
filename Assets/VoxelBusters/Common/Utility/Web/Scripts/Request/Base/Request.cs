@@ -50,7 +50,8 @@ namespace VoxelBusters.Utility
 		{
 			if (WWWObject == null || string.IsNullOrEmpty(URL.URLString))
 			{
-				Debug.LogError("[WebRequest] Sending request is aborted");
+				Debug.LogError("[WebRequest] Request data is invalid.");
+				DidFailStartRequestWithError("The operation could not be completed because request data is invalid.");
 				return;
 			}
 
@@ -108,6 +109,8 @@ namespace VoxelBusters.Utility
 		#region Handling Response 
 
 		protected abstract void OnFetchingResponse ();
+
+		protected abstract void DidFailStartRequestWithError (string _error);
 
 		#endregion
 	}

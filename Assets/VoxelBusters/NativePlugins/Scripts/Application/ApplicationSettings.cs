@@ -9,68 +9,73 @@ namespace VoxelBusters.NativePlugins
 	[System.Serializable]
 	public partial class ApplicationSettings 
 	{
+		#region Fields
+
+		[SerializeField]
+		private		iOSSettings		m_iOS;
+		[SerializeField]
+		private 	AndroidSettings	m_android;
+		[SerializeField]
+		private		Features		m_supportedFeatures;
+
+		#endregion
+
 		#region Properties
 
 		/// <summary>
 		/// Gets a value indicating whether Native plugin is in debug mode.
 		/// </summary>
 		/// <value><c>true</c> if this instance is debug mode; otherwise, <c>false</c>.</value>
-		public bool					IsDebugMode
+		public bool	IsDebugMode
 		{
 			get
 			{
 				return Debug.isDebugBuild;
 			}
 		}
-		
-		[SerializeField]
-		private iOSSettings			m_iOS;
+
 		/// <summary>
 		/// Gets or sets the Application Settings specific to iOS platform.
 		/// </summary>
 		/// <value>The Application Settings specific to iOS platform.</value>
-		public iOSSettings			IOS
+		public iOSSettings IOS
 		{
 			get
 			{
 				return m_iOS;
 			}
 			
-			set
+			private set
 			{
 				m_iOS	= value;
 			}
 		}
 		
-		[SerializeField]
-		private AndroidSettings		m_android;
 		/// <summary>
 		/// Gets or sets the Application Settings specific to Android platform.
 		/// </summary>
 		/// <value>The Application Settings specific to Android platform.</value>
-		public AndroidSettings		Android
+		public AndroidSettings Android
 		{
 			get
 			{
 				return m_android;
 			}
 			
-			set
+			private set
 			{
 				m_android	= value;
 			}
 		}
 
-		[SerializeField]
-		private	Features			m_supportedFeatures;
-		public Features				SupportedFeatures
+		public Features SupportedFeatures
 		{
 			get
 			{
 				return m_supportedFeatures;
 			}
 			
-			set
+			private set
 			{
 				m_supportedFeatures	= value;
 			}

@@ -1,6 +1,6 @@
 //
 //  UIDeviceOrientationManager.m
-//  NativePluginIOSWorkspace
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 22/01/15.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -33,13 +33,14 @@
 
 - (void)dealloc
 {
-	// Remove notification observer
+	// Unregister from callbacks
 	UnityUnregisterLifeCycleListener(self);
 	[[NSNotificationCenter defaultCenter] removeObserver:self
 													name:UIDeviceOrientationDidChangeNotification
 												  object:[UIDevice currentDevice]];
-	// Release
+	// Release objects
 	self.observers	= NULL;
+	
 	[super dealloc];
 }
 

@@ -52,6 +52,16 @@ namespace VoxelBusters.Utility
 
 		#region Handling Response 
 
+		protected override void DidFailStartRequestWithError (string _error)
+		{
+			IDictionary _responseDict = new Dictionary<string, string>(){
+				{ "error", _error }
+			};
+			
+			if (OnFailure != null)
+				OnFailure(_responseDict);
+		}
+
 		protected override void OnFetchingResponse ()
 		{
 			// Create respone based on completion data
@@ -60,9 +70,7 @@ namespace VoxelBusters.Utility
 				IDictionary _responseDict = JSONUtility.FromJSON(WWWObject.text) as IDictionary;
 
 				if (OnSuccess != null)
-				{
 					OnSuccess(_responseDict);
-				}
 			}
 			else
 			{
@@ -71,9 +79,7 @@ namespace VoxelBusters.Utility
 				};
 
 				if (OnFailure != null)
-				{
 					OnFailure(_responseDict);
-				}
 			}
 		}
 

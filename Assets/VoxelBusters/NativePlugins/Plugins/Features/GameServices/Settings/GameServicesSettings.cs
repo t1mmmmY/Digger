@@ -4,101 +4,100 @@ using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	/// <summary>
 	/// Game Services Settings provides interface to configure properties related to Game Services.
 	/// </summary>
 	[System.Serializable]
-	public class GameServicesSettings
+	public partial class GameServicesSettings
 	{
-		#region Android Settings
-		
-		/// <summary>
-		/// Game Services Settings specific to Android platform.
-		/// </summary>
-		[System.Serializable]
-		public class AndroidSettings 
-		{
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			[Tooltip ("This will be the application id that will be listed in Google Play Dev Console.")]
-			private string	 		m_playServicesApplicationID;
-			
-			/// <summary>
-			/// Gets or sets the application ID.
-			/// </summary>
-			/// <value>	Contains Application ID used for accessing Google Play Game Services.
-			///</value>
-			public string PlayServicesApplicationID
-			{
-				get
-				{
-					return m_playServicesApplicationID;
-				}
-				
-				set
-				{
-					m_playServicesApplicationID = value;
-				}
-			}
-
-			[SerializeField]
-			[Tooltip ("# will be replaced with achievement title.")]
-			private string[]	 	m_achievedDescriptionFormats = new string[]{"Awesome! Achievement # completed."};
-			
-			/// <summary>
-			/// Gets or sets the achievement description format.
-			/// </summary>
-			/// <value>	Allows to set different formats for achieved description text.
-			///</value>
-			public string[] AchievedDescriptionFormats
-			{
-				get
-				{
-					return m_achievedDescriptionFormats;
-				}
-				
-				set
-				{
-					m_achievedDescriptionFormats = value;
-				}
-			}
-			
-		}
-		
-		#endregion
-		
 		#region Fields
 		
 		[SerializeField]
-		private AndroidSettings			m_android;
+		private 	AndroidSettings			m_android;
+		
+		[SerializeField]
+		private 	iOSSettings				m_iOS;
+
+		[SerializeField]
+		private		IDContainer[]			m_achievementIDCollection	= new IDContainer[0];	
+		
+		[SerializeField, InspectorButton("Refresh Editor Game Center", "RefreshEditorGameCenter", InspectorButtonAttribute.ePosition.BOTTOM)]
+		private		IDContainer[]			m_leaderboardIDCollection	= new IDContainer[0];			
 
 		#endregion
 
 		#region Properties
 
 		/// <summary>
-		/// Gets or sets the Game Services Settings specific to Android platform.
+		/// Gets Game Services Settings specific to Android platform.
 		/// </summary>
-		/// <value>The android.</value>
-		public	AndroidSettings	Android
+		public AndroidSettings Android
 		{
 			get 
 			{
 				return m_android; 
 			}
 			
-			set 
+			private set 
 			{ 
 				m_android = value; 
 			}
 		}
-		
+
+		/// <summary>
+		/// Gets Game Services Settings specific to iOS platform.
+		/// </summary>
+		public iOSSettings IOS
+		{
+			get 
+			{
+				return m_iOS; 
+			}
+			
+			private set 
+			{ 
+				m_iOS = value; 
+			}
+		}
+
+		public IDContainer[] AchievementIDCollection
+		{
+			get
+			{
+				return m_achievementIDCollection;
+			}
+
+			private set
+			{
+				m_achievementIDCollection	= value;
+			}
+		}
+
+		public IDContainer[] LeaderboardIDCollection
+		{
+			get
+			{
+				return m_leaderboardIDCollection;
+			}
+			
+			private set
+			{
+				m_leaderboardIDCollection	= value;
+			}
+		}
+
 		#endregion
 		
 		#region Constructor
 		
 		public GameServicesSettings ()
 		{
-			Android		= new AndroidSettings();
+			// Intialize
+			Android						= new AndroidSettings();
+			AchievementIDCollection		= new IDContainer[0];
+			LeaderboardIDCollection		= new IDContainer[0];
 		}
 		
 		#endregion

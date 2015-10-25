@@ -40,6 +40,7 @@ namespace VoxelBusters.Utility
 
 		private static void Update ()
 		{
+#if !NETFX_CORE
 			if (ScheduleUpdate == null)
 				return;
 
@@ -53,6 +54,7 @@ namespace VoxelBusters.Utility
 					_scheduledUpdates[_iter].Method.Invoke(null, null);
 				}
 			}
+#endif
 		}
 
 		#endregion

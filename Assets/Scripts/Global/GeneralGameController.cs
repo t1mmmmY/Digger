@@ -140,7 +140,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 			onLoadLobby();
 		}
 
-//		MultiplayerController.Instance.TrySilentSignIn();
+		MultiplayerController.Instance.TrySilentSignIn();
 	}
 
 

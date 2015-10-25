@@ -1,10 +1,9 @@
 using UnityEngine;
 using System.Collections;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class UtilityDemo : DemoSubMenu 
+	public class UtilityDemo : NPDemoBase 
 	{
 		#region Properties
 
@@ -13,7 +12,64 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#endregion
 
-		#region API Calls
+		#region Unity Methods
+		
+		protected override void Start ()
+		{
+			base.Start ();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"For using RateMyApp feature, you have to enable it in NPSettings->Utility Settings.");
+		}
+		
+		#endregion
+
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+			
+			if (GUILayout.Button("Get UUID"))
+			{
+				string _uuid = GetUUID();
+				
+				AddNewResult("New UUID = " + _uuid + ".");
+			}
+			
+			if (GUILayout.Button("Open Store Link"))
+			{
+				string _appIdentifier = NPSettings.Application.StoreIdentifier;
+				
+				AddNewResult ("Opening store link with application id = " + _appIdentifier + ".");
+				OpenStoreLink (_appIdentifier);
+			}
+			
+			if (GUILayout.Button("Ask For Review Now"))
+			{
+				AskForReviewNow ();
+			}	
+			
+			if (GUILayout.Button("Set Application Icon Badge Number"))
+			{
+				SetApplicationIconBadgeNumber ();
+			}
+			
+			if (GUILayout.Button("Get Bundle Version"))
+			{
+				AddNewResult ("Application's bundle version is " + NPBinding.Utility.GetBundleVersion () + ".");
+			}
+			
+			if (GUILayout.Button("Get Bundle Identifier"))
+			{
+				AddNewResult ("Application's bundle identifier is " + NPBinding.Utility.GetBundleIdentifier () + ".");
+			}
+		}
+		
+		#endregion
+
+		#region API Methods
 
 		private string GetUUID()
 		{
@@ -33,7 +89,7 @@ namespace VoxelBusters.NativePlugins.Demo
 			}
 			else
 			{
-				AddNewResult("Enable RateMyApp in NPSettings.");
+				AddNewResult("Enable RateMyApp feature in NPSettings.");
 			}
 		}
 
@@ -42,57 +98,6 @@ namespace VoxelBusters.NativePlugins.Demo
 			NPBinding.Utility.SetApplicationIconBadgeNumber(m_applicationBadgeNumber);
 		}
 
-		#endregion
-
-		#region UI
-		
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
-
-			RootScrollView.BeginScrollView();
-			{
-				if (GUILayout.Button("GetUUID"))
-				{
-					string _uuid = GetUUID();
-					
-					AddNewResult("New UUID = " + _uuid);
-				}
-				
-				if (GUILayout.Button("OpenStoreLink"))
-				{
-					string _appIdentifier = NPSettings.Application.StoreIdentifier;
-					
-					AddNewResult("Opening store link, ApplicationID = " + _appIdentifier);
-					OpenStoreLink(_appIdentifier);
-				}
-				
-				if (GUILayout.Button("Ask For Review Now"))
-				{
-					AskForReviewNow();
-				}	
-				
-				if (GUILayout.Button("SetApplicationIconBadgeNumber"))
-				{
-					SetApplicationIconBadgeNumber();
-				}
-				
-				if (GUILayout.Button("GetBundleVersion"))
-				{
-					AddNewResult("Bundle Version = " + NPBinding.Utility.GetBundleVersion());
-				}
-				
-				if (GUILayout.Button("GetBundleIdentifier"))
-				{
-					AddNewResult("Bundle Identifier = " + NPBinding.Utility.GetBundleIdentifier());
-				}
-			}
-			RootScrollView.EndScrollView();
-
-			DrawResults();
-			DrawPopButton();
-		}
-		
 		#endregion
 	}
 }

@@ -9,7 +9,7 @@ namespace VoxelBusters.NativePlugins
 
 	public partial class Sharing : MonoBehaviour 
 	{
-		#region API's
+		#region Methods
 
 		/// <summary>
 		/// Determines whether messaging service is available.
@@ -18,17 +18,25 @@ namespace VoxelBusters.NativePlugins
 		public virtual bool IsMessagingServiceAvailable ()
 		{
 			bool _isAvailable	= false;
-			Console.Log(Constants.kDebugTag, "[Sharing:Messaging] IsMessagingAvailable=" + _isAvailable);
+			Console.Log(Constants.kDebugTag, "[Sharing:Messaging] Is service available=" + _isAvailable);
 			
 			return _isAvailable;
 		}
-		
-		/// <summary>
-		/// Sends the text message.
-		/// </summary>
-		/// <param name="_body">Body of message.</param>
-		/// <param name="_recipients">List of receipients.</param>
-		/// <param name="_onCompletion">Callback to be triggered when sharing action completes.</param>
+
+		protected virtual void ShowMessageShareComposer (MessageShareComposer _composer)
+		{
+			if (!IsMessagingServiceAvailable())
+			{
+				MessagingShareFinished(MessagingShareFailedResponse());
+				return;
+			}
+		}
+
+		#endregion
+
+		#region Deprecated Methods
+
+		[System.Obsolete(kSharingFeatureDeprecatedMethodInfo)]
 		public virtual void SendTextMessage (string _body, string[] _recipients, SharingCompletion _onCompletion)
 		{
 			// Pause unity player
@@ -36,7 +44,7 @@ namespace VoxelBusters.NativePlugins
 			
 			// Cache callback
 			OnSharingFinished	= _onCompletion;
-
+			
 			// Messaging service isnt available
 			if (!IsMessagingServiceAvailable())
 			{

@@ -1,14 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE && UNITY_IOS
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using VoxelBusters.Utility;
-#if UNITY_IOS && UNITY_5
-using LocalNotification = UnityEngine.iOS.LocalNotification;
-using NotificationServices = UnityEngine.iOS.NotificationServices;
-#endif
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
@@ -24,6 +21,21 @@ namespace VoxelBusters.NativePlugins
 		private static extern void registerNotificationTypes (int notificationTypes);
 
 		[DllImport("__Internal")]
+		private static extern int enabledNotificationTypes ();
+
+		[DllImport("__Internal")]
+		private static extern void scheduleLocalNotification (string _payload);
+
+		[DllImport("__Internal")]
+		private static extern void cancelLocalNotification (string _notificationID);
+
+		[DllImport("__Internal")]
+		private static extern void cancelAllLocalNotifications ();
+
+		[DllImport("__Internal")]
+		private static extern void clearNotifications ();
+	
+		[DllImport("__Internal")]
 		private static extern void registerForRemoteNotifications ();
 
 		[DllImport("__Internal")]
@@ -31,7 +43,7 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Initialise
+		#region Initialise Methods 
 		
 		protected override void Initialise (NotificationServiceSettings _settings)
 		{
@@ -43,7 +55,7 @@ namespace VoxelBusters.NativePlugins
 		
 		#endregion
 
-		#region Local Notification API'S
+		#region Notification Methods
 
 		public override void RegisterNotificationTypes (NotificationType _notificationTypes)
 		{
@@ -53,79 +65,40 @@ namespace VoxelBusters.NativePlugins
 			registerNotificationTypes((int)_notificationTypes);
 		}
 
+		#endregion
+
+		#region Local Notification Methods
+
 		public override string ScheduleLocalNotification (CrossPlatformNotification _notification)
 		{
 			// Append notification id to user info
-			string _notificationID				= _notification.GenerateNotificationID();
-			
-			// Assign notification data
-			LocalNotification _newNotification	= new LocalNotification();
-			_newNotification.alertBody			= _notification.AlertBody;
-			_newNotification.fireDate			= _notification.FireDate;
-			_newNotification.repeatInterval		= iOSNotificationPayload.ConvertToCalendarUnit(_notification.RepeatInterval);
-			_newNotification.userInfo			= _notification.UserInfo;
-			
-			// iOS Notification additional data
-			CrossPlatformNotification.iOSSpecificProperties _iOSProperties	= _notification.iOSProperties;
-			
-			if (_iOSProperties != null)
-			{
-				_newNotification.hasAction					= _iOSProperties.HasAction;
-				_newNotification.applicationIconBadgeNumber	= _iOSProperties.BadgeCount;
-				
-				if (!string.IsNullOrEmpty(_iOSProperties.AlertAction))
-					_newNotification.alertAction		= _iOSProperties.AlertAction;
-				
-				if (!string.IsNullOrEmpty(_iOSProperties.LaunchImage))
-					_newNotification.alertLaunchImage	= _iOSProperties.LaunchImage;
-				
-				if (!string.IsNullOrEmpty(_iOSProperties.SoundName))
-					_newNotification.soundName			= _iOSProperties.SoundName;
-			}
+			string _notificationID	= _notification.GenerateNotificationID();
+			string _payload			= iOSNotificationPayload.CreateNotificationPayload(_notification).ToJSON();
 
 			// Schedule notification
-			NotificationServices.ScheduleLocalNotification(_newNotification);
+			scheduleLocalNotification(_payload);
+
 			return _notificationID;
 		}
 		
 		public override void CancelLocalNotification (string _notificationID)
 		{
-			foreach (LocalNotification _scheduledNotification in NotificationServices.scheduledLocalNotifications)
-			{
-				IDictionary _scheduledNotificationUserInfo	= _scheduledNotification.userInfo;
-				
-				if (_scheduledNotificationUserInfo != null)
-				{
-					string _scheduledNotificationID	= _scheduledNotificationUserInfo.GetIfAvailable<string>(CrossPlatformNotification.kNotificationID);
-					
-					// Cancel notification
-					if (!string.IsNullOrEmpty(_scheduledNotificationID) && _scheduledNotificationID.Equals(_notificationID))
-					{
-						NotificationServices.CancelLocalNotification(_scheduledNotification);
-						break;
-					}
-				}
-			}
+			cancelLocalNotification(_notificationID);
 		}
 		
 		public override void CancelAllLocalNotification ()
 		{
-			NotificationServices.CancelAllLocalNotifications();
+			cancelAllLocalNotifications();
 		}
 
 		public override void ClearNotifications ()
 		{
-			// Removing badge count
-			NPBinding.Utility.SetApplicationIconBadgeNumber(0);
-
-			// Clears notification
-			NotificationServices.ClearLocalNotifications();
-			NotificationServices.ClearRemoteNotifications();
+			clearNotifications();
 		}
 
 		#endregion
 		
-		#region Overriden Remote Notification API's
+		#region Remote Notification Methods
 
 		public override void RegisterForRemoteNotifications ()
 		{

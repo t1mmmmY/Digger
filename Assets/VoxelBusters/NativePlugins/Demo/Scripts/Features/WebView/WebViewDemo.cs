@@ -3,35 +3,52 @@ using System.Collections;
 using VoxelBusters.Utility.UnityGUI.MENU;
 using VoxelBusters.Utility;
 using VoxelBusters.NativePlugins;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class WebViewDemo : DemoSubMenu 
+#if !USES_WEBVIEW
+	public class WebViewDemo : NPDisabledFeatureDemo
+#else
+	public class WebViewDemo : NPDemoBase 
+#endif
 	{
 		#region Properties
 
+#pragma warning disable
 		[SerializeField]
-		private string 				m_url;
-
+		private 	string 		m_url;
 		[SerializeField, Multiline(6)]
-		private string				m_HTMLString;
-		
+		private 	string		m_HTMLString;
 		[SerializeField]
-		private string				m_javaScript;
-		
+		private 	string		m_javaScript;
 		[SerializeField]
-		private string				m_evalString;
-
+		private 	string		m_evalString;
 		[SerializeField]
-		private string				m_URLSchemeName	= "unity";
-
+		private 	string		m_URLSchemeName	= "unity";
 		[SerializeField]
-		private WebView				m_webview;
+		private 	WebView		m_webview;
+#pragma warning restore
 
 		#endregion
 
+#if !USES_WEBVIEW
+	}
+#else
 		#region Unity Methods
+
+		protected override void Start ()
+		{
+			base.Start ();
+
+			// Unset enable feature text
+			SetFeatureInterfaceInfoText("WebView works differently when compared to other features supported by our plugin. Here Native WebView is represented as a GameObject. " +
+				"So this means you can have multiple instances of WebView in a single view and customise its functionalities as per your preference.");
+
+			// Set info texts
+			AddExtraInfoTexts(
+				"Either you can create a GameObject with WebView component attached to it. Or else you can make use of WebView prefab provided along with this plugin (Path: Assets/VoxelBusters/NativePlugins/Prefab). "
+				);
+		}
 
 		protected override void OnEnable ()
 		{
@@ -68,7 +85,183 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#endregion
 
-		#region API Calls
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+			
+			if (m_webview == null)
+			{
+				GUILayout.Label("Create WebView", kSubTitleStyle);
+				
+				if (GUILayout.Button("Create"))
+				{
+					GameObject _newWebviewGO	= new GameObject("WebView");
+					m_webview					= _newWebviewGO.AddComponent<WebView>();
+					
+					AddNewResult("Successfully created new WebView.");
+				}
+				
+				return;
+			}
+
+			DrawLoadAPI ();
+			DrawLifeCycleAPI ();
+			DrawControlTypes ();
+			DrawPropertiesAPI ();
+			
+			// Misc
+			GUILayout.Label("Misc.", kSubTitleStyle);
+			
+			if (GUILayout.Button("Add New URL Scheme Name"))
+			{
+				AddNewURLSchemeName();
+			}
+
+			GUILayout.Box ("[NOTE] You will receive DidReceiveMessageEvent, when webview tries to load URL which starts with currently watched URL Scheme's.");
+
+			if (GUILayout.Button("Clear Cache"))
+			{		
+				ClearCache();
+			}
+		}
+		
+		private void DrawLoadAPI ()
+		{
+			GUILayout.Label("Load API's", kSubTitleStyle);
+			
+			if (GUILayout.Button("Load Request"))
+			{
+				LoadRequest();
+			}
+
+			if (GUILayout.Button("Load HTML String"))
+			{
+				LoadHTMLString();
+			}
+			
+			if (GUILayout.Button("Load HTML String With JavaScript"))
+			{
+				LoadHTMLStringWithJavaScript();
+			}
+			
+			if (GUILayout.Button("Load File"))
+			{
+				LoadFile();
+			}
+			
+			GUILayout.Box ("[NOTE] You will receive DidStartLoadEvent, when webview starts loading page.");
+			GUILayout.Box ("[NOTE] You will receive DidFinishLoadEvent, when webview finishes loading page.");
+			GUILayout.Box ("[NOTE] You will receive DidFailLoadWithErrorEvent, when webview fails to load page.");
+			
+			if (GUILayout.Button("Evaluate JavaScript"))
+			{
+				EvaluateJavaScriptFromString();
+			}
+
+			GUILayout.Box ("[NOTE] You will receive DidFinishEvaluatingJavaScriptEvent, when webview finishes evaluating javascript expression.");
+		}
+		
+		private void DrawLifeCycleAPI ()
+		{
+			GUILayout.Label("Lifecycle", kSubTitleStyle);
+			
+			if (GUILayout.Button("Show"))
+			{		
+				ShowWebView();
+			}
+
+			GUILayout.Box ("[NOTE] DidShowEvent is fired, when webview appears on the screen.");
+
+			if (GUILayout.Button("Hide"))
+			{		
+				HideWebView();
+			}
+
+			GUILayout.Box ("[NOTE] DidHideEvent is fired, when webview is removed from the screen.");
+
+			if (GUILayout.Button("Destroy"))
+			{		
+				DestroyWebView();
+			}
+
+			GUILayout.Box ("[NOTE] DidDestroyEvent is fired, when webview is destroyed.");
+		}
+		
+		private void DrawControlTypes ()
+		{
+			GUILayout.Label("Control Types", kSubTitleStyle);
+			
+			GUILayout.BeginHorizontal();
+			{
+				bool _usingNoControls	= m_webview.ControlType == eWebviewControlType.NO_CONTROLS;
+				bool _usingCloseButton	= m_webview.ControlType == eWebviewControlType.CLOSE_BUTTON;
+				bool _usingToolbar		= m_webview.ControlType == eWebviewControlType.TOOLBAR;
+				
+				if (_usingNoControls != GUILayout.Toggle(_usingNoControls, "No Controls"))
+					m_webview.ControlType	= eWebviewControlType.NO_CONTROLS;
+				
+				if (_usingCloseButton != GUILayout.Toggle(_usingCloseButton, "Close Button"))
+					m_webview.ControlType	= eWebviewControlType.CLOSE_BUTTON;
+				
+				if (_usingToolbar != GUILayout.Toggle(_usingToolbar, "Tool Bar"))
+					m_webview.ControlType	= eWebviewControlType.TOOLBAR;
+			}
+			GUILayout.EndHorizontal();
+		}
+		
+		private void DrawPropertiesAPI ()
+		{
+			GUILayout.Label("Properties", kSubTitleStyle);
+			
+			GUILayout.BeginVertical(UISkin.scrollView);
+			GUILayout.BeginHorizontal();
+			
+			bool _canHideNewValue				= GUILayout.Toggle(m_webview.CanHide, "CanHide");
+			bool _canBounceNewValue				= GUILayout.Toggle(m_webview.CanBounce, "CanBounce");
+			bool _showSpinnerOnLoadNewValue		= GUILayout.Toggle(m_webview.ShowSpinnerOnLoad, "ShowSpinnerOnLoad");
+			
+			GUILayout.EndHorizontal();
+			
+			GUILayout.BeginHorizontal();
+			
+			bool _autoShowOnLoadFinishNewValue	= GUILayout.Toggle(m_webview.AutoShowOnLoadFinish, "AutoShowOnLoadFinish");
+			bool _scalesPageToFitNewValue		= GUILayout.Toggle(m_webview.ScalesPageToFit, "ScalesPageToFit");
+			
+			GUILayout.EndHorizontal();
+			GUILayout.EndVertical();
+			
+			// Update the value only on value change
+			if (_canHideNewValue != m_webview.CanHide)
+				m_webview.CanHide				= _canHideNewValue;
+			
+			if (_canBounceNewValue != m_webview.CanBounce)
+				m_webview.CanBounce				= _canBounceNewValue;
+			
+			if (_showSpinnerOnLoadNewValue != m_webview.ShowSpinnerOnLoad)
+				m_webview.ShowSpinnerOnLoad		= _showSpinnerOnLoadNewValue;
+			
+			if (_autoShowOnLoadFinishNewValue != m_webview.AutoShowOnLoadFinish)
+				m_webview.AutoShowOnLoadFinish	= _autoShowOnLoadFinishNewValue;
+			
+			if (_scalesPageToFitNewValue != m_webview.ScalesPageToFit)
+				m_webview.ScalesPageToFit		= _scalesPageToFitNewValue;
+			
+			if (GUILayout.Button("Set Frame"))
+			{		
+				SetFrame();
+			}
+
+			if (GUILayout.Button("Set Full Screen Frame"))
+			{
+				SetFullScreenFrame();
+			}
+		}
+		
+		#endregion
+
+		#region API Methods
 
 		private void LoadRequest ()
 		{
@@ -125,194 +318,58 @@ namespace VoxelBusters.NativePlugins.Demo
 			m_webview.Frame	= new Rect(0f, Screen.height * 0.75f, Screen.width, Screen.height * 0.2f);
 		}
 
+		private void SetFullScreenFrame ()
+		{
+			m_webview.SetFullScreenFrame();
+		}
+
 		#endregion
 
-		#region API Callbacks
+		#region API Callback Methods
 		
 		private void DidShowEvent (WebView _webview)
 		{
-			AddNewResult("Received Did Show Webview Event");
+			AddNewResult(string.Format("Webview with name {0} is currently being shown.", _webview.name));
 		}
 		
 		private void DidHideEvent (WebView _webview)
 		{
-			AddNewResult("Received Did Hide Webview Event");
+			AddNewResult(string.Format("Webview with name {0} is removed from view.", _webview.name));
 		}
 		
 		private void DidDestroyEvent (WebView _webview)
 		{
-			AddNewResult("Received Did Destroy Webview Event");
+			AddNewResult(string.Format("Webview with name {0} was destroyed.", _webview.name));
 		}
 		
 		private void DidStartLoadEvent (WebView _webview)
 		{
-			AddNewResult("Received Did Start Load Event");
+			AddNewResult(string.Format("Webview with name {0} did start loading request.", _webview.name));
 		}
 		
 		private void DidFinishLoadEvent (WebView _webview)
 		{
-			AddNewResult("Received Did Finish Load Event");
+			AddNewResult(string.Format("Webview with name {0} finished loading requested page.", _webview.name));
 		}
 		
 		private void DidFailLoadWithErrorEvent (WebView _webview, string _error)
 		{
-			AddNewResult("Received Did Fail To Load Event");
-			AppendResult("Error= " + _error);
+			AddNewResult(string.Format("Webview with name {0} failed to load requested page. Error = {1}.", _webview.name, _error.GetPrintableString()));
 		}
 		
 		private void DidFinishEvaluatingJavaScriptEvent (WebView _webview, string _result)
 		{
-			AddNewResult("Received Did Finish Evaluating JS Event");
-			AppendResult("Result= " + _result);
+			AddNewResult(string.Format("Webview with name {0} finished evaluating script.", _webview.name));
+			AppendResult("Evaluation result is " + _result + ".");
 		}
 		
 		private void DidReceiveMessageEvent (WebView _webview,  WebViewMessage _message)
 		{
-			AddNewResult("Received Did Receive Message Event");
-			AppendResult("Message= " + _message);
-		}
-
-		#endregion
-
-		#region UI
-
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
-
-			if (m_webview == null)
-			{
-				GUILayout.Label("Create WebView", kSubTitleStyle);
-				
-				if (GUILayout.Button("Create"))
-				{
-					GameObject _newWebviewGO	= new GameObject("WebView");
-					m_webview					= _newWebviewGO.AddComponent<WebView>();
-					
-					AddNewResult("Successfully created new WebView.");
-				}
-				
-				return;
-			}
-
-			RootScrollView.BeginScrollView();
-			{
-				DrawLoadAPI();
-				DrawLifeCycleAPI();
-				DrawPropertiesAPI();
-
-				// Misc
-				GUILayout.Label("Misc.", kSubTitleStyle);
-				
-				if (GUILayout.Button("AddNewURLSchemeName"))
-				{
-					AddNewURLSchemeName();
-				}
-				
-				if (GUILayout.Button("ClearCache"))
-				{		
-					ClearCache();
-				}
-			}
-			RootScrollView.EndScrollView();
-			
-			DrawResults();
-			DrawPopButton();
-		}
-
-		private void DrawLoadAPI ()
-		{
-			GUILayout.Label("Load API's", kSubTitleStyle);
-			
-			if (GUILayout.Button("LoadRequest"))
-			{
-				LoadRequest();
-			}
-			
-			if (GUILayout.Button("LoadHTMLString"))
-			{
-				LoadHTMLString();
-			}
-			
-			if (GUILayout.Button("LoadHTMLStringWithJavaScript"))
-			{
-				LoadHTMLStringWithJavaScript();
-			}
-			
-			if (GUILayout.Button("EvaluateJavaScript"))
-			{
-				EvaluateJavaScriptFromString();
-			}
-			
-			if (GUILayout.Button("LoadFile"))
-			{
-				LoadFile();
-			}
-		}
-
-		private void DrawLifeCycleAPI ()
-		{
-			GUILayout.Label("Lifecycle", kSubTitleStyle);
-			
-			if (GUILayout.Button("Show"))
-			{		
-				ShowWebView();
-			}
-			
-			if (GUILayout.Button("Hide"))
-			{		
-				HideWebView();
-			}
-			
-			if (GUILayout.Button("Destroy"))
-			{		
-				DestroyWebView();
-			}
-		}
-
-		private void DrawPropertiesAPI ()
-		{
-			GUILayout.Label("Properties", kSubTitleStyle);
-			
-			GUILayout.BeginVertical(UISkin.scrollView);
-			GUILayout.BeginHorizontal();
-			
-			bool _canHideNewValue				= GUILayout.Toggle(m_webview.CanHide, "CanHide");
-			bool _canBounceNewValue				= GUILayout.Toggle(m_webview.CanBounce, "CanBounce");
-			bool _showSpinnerOnLoadNewValue		= GUILayout.Toggle(m_webview.ShowSpinnerOnLoad, "ShowSpinnerOnLoad");
-			
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-			
-			bool _autoShowOnLoadFinishNewValue	= GUILayout.Toggle(m_webview.AutoShowOnLoadFinish, "AutoShowOnLoadFinish");
-			bool _scalesPageToFitNewValue		= GUILayout.Toggle(m_webview.ScalesPageToFit, "ScalesPageToFit");
-			
-			GUILayout.EndHorizontal();
-			GUILayout.EndVertical();
-			
-			// Update the value only on value change
-			if (_canHideNewValue != m_webview.CanHide)
-				m_webview.CanHide				= _canHideNewValue;
-			
-			if (_canBounceNewValue != m_webview.CanBounce)
-				m_webview.CanBounce				= _canBounceNewValue;
-			
-			if (_showSpinnerOnLoadNewValue != m_webview.ShowSpinnerOnLoad)
-				m_webview.ShowSpinnerOnLoad		= _showSpinnerOnLoadNewValue;
-			
-			if (_autoShowOnLoadFinishNewValue != m_webview.AutoShowOnLoadFinish)
-				m_webview.AutoShowOnLoadFinish	= _autoShowOnLoadFinishNewValue;
-			
-			if (_scalesPageToFitNewValue != m_webview.ScalesPageToFit)
-				m_webview.ScalesPageToFit		= _scalesPageToFitNewValue;
-			
-			if (GUILayout.Button("SetFrame"))
-			{		
-				SetFrame();
-			}
+			AddNewResult(string.Format("Webview with name {0} received message from URL scheme {1}.", _webview.name, _message.SchemeName));
+			AppendResult("Received message is " + _message + ".");
 		}
 
 		#endregion
 	}
+#endif
 }

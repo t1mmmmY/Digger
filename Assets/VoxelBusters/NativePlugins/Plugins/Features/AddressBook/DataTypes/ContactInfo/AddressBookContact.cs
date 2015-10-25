@@ -6,72 +6,106 @@ using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	/// <summary>
 	/// Data container for each contact detail.
 	/// </summary>
 	[System.Serializable]
 	public class AddressBookContact
 	{
+		#region Static Fields
+
+		private static Texture2D		defaultImage;
+
+		#endregion
+
+		#region Fields
+
+		[SerializeField]
+		private 		string 			m_firstName;
+		[SerializeField]
+		private 		string 			m_lastName;
+		[SerializeField]
+		private			Texture2D		m_image;
+		private			string			m_imageDownloadError;
+		[SerializeField]
+		private 		string[]		m_phoneNumberList;
+		[SerializeField]
+		private 		string[]		m_emailIDList;
+
+		#endregion
+
 		#region Properties
 		
-		[SerializeField]
-		private string 				m_firstName;
-
 		/// <summary>
-		///First Name of the contact.
+		/// First Name of the contact.
 		///	</summary>
-		public string 				FirstName
+		public string FirstName
 		{
-			get { return m_firstName; }
-			protected set { m_firstName = value; }
+			get 
+			{ 
+				return m_firstName; 
+			}
+
+			protected set 
+			{ 
+				m_firstName = value; 
+			}
 		}
 
-		[SerializeField]
-		private string 				m_lastName;
-
 		/// <summary>
-		///Last Name of the contact.
+		/// Last Name of the contact.
 		///	</summary>
-		public string 				LastName
+		public string LastName
 		{
-			get { return m_lastName; }
-			protected set { m_lastName = value; }
+			get 
+			{ 
+				return m_lastName; 
+			}
+
+			protected set 
+			{ 
+				m_lastName = value; 
+			}
 		}
 
-		[SerializeField]
-		private string				m_imagePath;
-
-		/// <summary>
-		///Absolute image path of the contact.
-		///	</summary>
-		public string 				ImagePath
+		protected string ImagePath
 		{
-			get { return m_imagePath; }
-			protected set { m_imagePath = value; }
+			get;
+			set;
 		}
-
-		[SerializeField]
-		private List<string>		m_phoneNumberList;
-
+	
 		/// <summary>
 		/// List of phone numbers in this contact.
 		/// </summary>
-		public List<string> 		PhoneNumberList
+		public string[] PhoneNumberList
 		{
-			get { return m_phoneNumberList; }
-			protected set { m_phoneNumberList = value; }
-		}
+			get 
+			{ 
+				return m_phoneNumberList; 
+			}
 
-		[SerializeField]
-		private List<string>		m_emailIDList;
+			protected set 
+			{ 
+				m_phoneNumberList = value; 
+			}
+		}
 
 		/// <summary>
 		/// List of Email ID's in this contact.
 		/// </summary>
-		public List<string> 		EmailIDList
+		public string[] EmailIDList
 		{
-			get { return m_emailIDList; }
-			protected set { m_emailIDList = value; }
+			get 
+			{ 
+				return m_emailIDList; 
+			}
+
+			protected set 
+			{ 
+				m_emailIDList = value; 
+			}
 		}
 
 		#endregion
@@ -83,11 +117,13 @@ namespace VoxelBusters.NativePlugins
 		/// </summary>
 		public AddressBookContact ()
 		{
-			FirstName		= string.Empty;
-			LastName		= string.Empty;
-			ImagePath		= string.Empty;
-			PhoneNumberList	= new List<string>();
-			EmailIDList		= new List<string>();
+			this.FirstName				= null;
+			this.LastName				= null;
+			this.ImagePath				= null;
+			this.m_image				= null;
+			this.m_imageDownloadError	= null;
+			this.PhoneNumberList		= new string[0];
+			this.EmailIDList			= new string[0];
 		}
 
 		/// <summary>
@@ -96,11 +132,25 @@ namespace VoxelBusters.NativePlugins
 		/// <param name="_source">Source to copy from.</param>
 		public AddressBookContact (AddressBookContact _source)
 		{
-			FirstName		= _source.FirstName;
-			LastName		= _source.LastName;
-			ImagePath		= _source.ImagePath;
-			PhoneNumberList	= _source.PhoneNumberList;
-			EmailIDList		= _source.EmailIDList;
+			this.FirstName				= _source.FirstName;
+			this.LastName				= _source.LastName;
+			this.ImagePath				= _source.ImagePath;
+			this.m_image				= _source.m_image;
+			this.m_imageDownloadError	= _source.m_imageDownloadError;
+			this.PhoneNumberList		= _source.PhoneNumberList;
+			this.EmailIDList			= _source.EmailIDList;
+		}
+
+		#endregion
+
+		#region Static Methods
+		
+		public static Texture2D GetDefaultImage ()
+		{
+			if (defaultImage == null)
+				defaultImage	= Resources.Load(Constants.kDefaultContactImagePath) as Texture2D;
+
+			return defaultImage;
 		}
 
 		#endregion
@@ -113,11 +163,32 @@ namespace VoxelBusters.NativePlugins
 		/// <param name="_onCompletion">Callback to be triggered after downloading the image.</param>
 		public void GetImageAsync (DownloadTexture.Completion _onCompletion)
 		{
-			URL _imagePathURL				= URL.FileURLWithPath(ImagePath);
+			// Use cached information
+			if (m_image != null || m_imageDownloadError != null)
+			{
+				_onCompletion(m_image, m_imageDownloadError);
+				return;
+			}
+			else if (string.IsNullOrEmpty(ImagePath))
+			{
+				_onCompletion(GetDefaultImage(), null);
+				return;
+			}
 
 			// Download image from given path
+			URL 			_imagePathURL	= URL.FileURLWithPath(ImagePath);
+
 			DownloadTexture _newDownload	= new DownloadTexture(_imagePathURL, true, true);
-			_newDownload.OnCompletion		= _onCompletion;
+			_newDownload.OnCompletion		= (Texture2D _newTexture, string _error)=>{
+
+				// Set properties
+				m_image 				= _newTexture;
+				m_imageDownloadError	= _error;
+
+				// Send callback
+				if (_onCompletion != null)
+					_onCompletion(_newTexture, _error);
+			};
 
 			// Start download
 			_newDownload.StartRequest();
@@ -128,18 +199,7 @@ namespace VoxelBusters.NativePlugins
 		/// </summary>
 		public override string ToString ()
 		{
-			System.Text.StringBuilder _builder	= new System.Text.StringBuilder();
-
-			// Append first name, last name and icon
-			_builder.AppendFormat("[AddressBookContact: FirstName={0}, LastName={1}, ImagePath={2}, ", FirstName, LastName, ImagePath);
-
-			// Append mobile numbers
-			_builder.AppendFormat("PhoneNumberList={0}", PhoneNumberList.ToJSON());
-
-			// Append email id's
-			_builder.AppendFormat("EmailIdList={0}]", EmailIDList.ToJSON());
-
-			return _builder.ToString();
+			return string.Format("[AddressBookContact: FirstName={0}, LastName={1}]", FirstName, LastName);
 		}
 
 		#endregion

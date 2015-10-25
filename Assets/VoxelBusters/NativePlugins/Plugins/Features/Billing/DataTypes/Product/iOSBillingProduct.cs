@@ -5,7 +5,7 @@ using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
-	public sealed class iOSBillingProduct : BillingProduct 
+	public sealed class iOSBillingProduct : MutableBillingProduct 
 	{
 //		{
 //			"localized-title": "54units",
@@ -22,6 +22,8 @@ namespace VoxelBusters.NativePlugins.Internal
 		private const string kDescription		= "localized-description";
 		private const string kPrice				= "price";
 		private const string kLocalizedPrice	= "localized-price";
+		private const string kCurrencyCode		= "currency-code";
+		private const string kCurrencySymbol	= "currency-symbol";
 
 		#endregion
 
@@ -30,10 +32,12 @@ namespace VoxelBusters.NativePlugins.Internal
 		public iOSBillingProduct (IDictionary _productJsonDict)
 		{
 			Name				= _productJsonDict.GetIfAvailable<string>(kTitle);
-			ProductIdentifier	= _productJsonDict.GetIfAvailable<string>(kProductID);
+			IOSProductID		= _productJsonDict.GetIfAvailable<string>(kProductID);
 			Description			= _productJsonDict.GetIfAvailable<string>(kDescription);
 			Price				= _productJsonDict.GetIfAvailable<float>(kPrice);
 			LocalizedPrice		= _productJsonDict.GetIfAvailable<string>(kLocalizedPrice);
+			CurrencyCode		= _productJsonDict.GetIfAvailable<string>(kCurrencyCode);
+			CurrencySymbol		= _productJsonDict.GetIfAvailable<string>(kCurrencySymbol);
 		}
 		
 		#endregion
@@ -48,6 +52,8 @@ namespace VoxelBusters.NativePlugins.Internal
 			_productJsonDict[kDescription]		= _product.Description;
 			_productJsonDict[kPrice]			= _product.Price.ToString();
 			_productJsonDict[kLocalizedPrice]	= _product.LocalizedPrice;
+			_productJsonDict[kCurrencyCode]		= _product.CurrencyCode;
+			_productJsonDict[kCurrencySymbol]	= _product.CurrencySymbol;
 			
 			return _productJsonDict;
 		}

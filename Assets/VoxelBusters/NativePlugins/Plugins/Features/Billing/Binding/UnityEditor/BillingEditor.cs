@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_BILLING && UNITY_EDITOR
 using System.Collections.Generic;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {	
 	using Internal;
@@ -17,7 +18,7 @@ namespace VoxelBusters.NativePlugins
 			EditorStore.Initialise();
 		}
 
-		public override void RequestForBillingProducts (List<BillingProduct> _billingProducts)
+		public override void RequestForBillingProducts (BillingProduct[] _billingProducts)
 		{
 			// Cache requested products
 			RequestedProducts	= _billingProducts;
@@ -29,8 +30,8 @@ namespace VoxelBusters.NativePlugins
 		public override bool IsProductPurchased (string _productID)
 		{
 			bool _isPurchased	= EditorStore.IsProductPurchased(_productID);
-			Console.Log(Constants.kDebugTag, "[Billing] Product=" + _productID + " IsPurchased=" + _isPurchased);
-			
+			Console.Log(Constants.kDebugTag, string.Format("[Billing] Product= {0} IsPurchased= {1}.", _productID, _isPurchased));
+
 			return _isPurchased;
 		}
 		

@@ -265,7 +265,11 @@ namespace ExifLibrary
                         }
                     }
                 }
+#if !NETFX_CORE
                 stream.Close();
+#else
+				stream.Dispose();
+#endif
             }
 			return true;
         }

@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE && UNITY_IOS
 using System.Collections.Generic;
 using VoxelBusters.Utility;
-#if UNITY_IOS && UNITY_5
+
+#if UNITY_5
 using CalendarUnit = UnityEngine.iOS.CalendarUnit;
 #endif
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins.Internal
 {
 	public sealed class iOSNotificationPayload : CrossPlatformNotification 
@@ -17,6 +19,7 @@ namespace VoxelBusters.NativePlugins.Internal
 		private 	const 	string 		kAlert				= "alert";
 		private 	const 	string 		kBody				= "body";
 		private 	const 	string 		kAction				= "action-loc-key";
+		private 	const 	string 		kHasAction			= "has-action";
 		private 	const 	string 		kLaunchImage		= "launch-image";
 		private 	const 	string 		kFireDate			= "fire-date";
 		private 	const 	string 		kRepeatIntervalKey	= "repeat-interval";
@@ -29,11 +32,11 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		public iOSNotificationPayload (IDictionary _payloadDict)
 		{
-			IDictionary _apsDict			= _payloadDict[kAPS] as IDictionary;
-			string 		_userInfoKey		= NPSettings.Notification.iOS.UserInfoKey;
 			iOSProperties					= new iOSSpecificProperties();
+			string 		_userInfoKey		= NPSettings.Notification.iOS.UserInfoKey;
+			IDictionary _apsDict			= _payloadDict[kAPS] as IDictionary;
 
-			// Read alert info
+			// Read alert info from aps dictionary
 			if (_apsDict.Contains(kAlert))
 			{
 				object 	_alertUnknownType	= _apsDict[kAlert] as object;
@@ -49,40 +52,36 @@ namespace VoxelBusters.NativePlugins.Internal
 					else
 					{
 						IDictionary _alertDict			= _alertUnknownType as IDictionary;
-						AlertBody						= _alertDict.GetIfAvailable<string>(kBody);
-						string 		_alertAction		= _alertDict.GetIfAvailable<string>(kAction);
+						string		_alertAction		= _alertDict.GetIfAvailable<string>(kAction);
+						bool		_hasAction			= false;
 
-						if (string.IsNullOrEmpty(_alertAction))
-						{
-							iOSProperties.AlertAction	= null;
-							iOSProperties.HasAction		= false;
-						}
+						if (_alertDict.Contains(kHasAction))
+							_hasAction					= System.Convert.ToBoolean(_alertDict[kHasAction]);
 						else
-						{
-							iOSProperties.AlertAction	= _alertAction;
-							iOSProperties.HasAction		= true;
-						}
+							_hasAction					= (_alertAction != null);
 
-						// Launch image
+						// Set properties
+						AlertBody						= _alertDict.GetIfAvailable<string>(kBody);
+						iOSProperties.AlertAction		= _alertAction;
+						iOSProperties.HasAction			= _hasAction;
 						iOSProperties.LaunchImage		= _alertDict.GetIfAvailable<string>(kLaunchImage);
 					}
 				}
 			}
 
-			// Read sound, badge info
-			iOSProperties.SoundName		=  _apsDict.GetIfAvailable<string>(kSound);
+			// Read sound, badge info from aps dictionary
+			SoundName					=  _apsDict.GetIfAvailable<string>(kSound);
 			iOSProperties.BadgeCount	=  _apsDict.GetIfAvailable<int>(kBadge);
 
-			// Read user info
-			if (_apsDict.Contains(_userInfoKey))
-				UserInfo				= _payloadDict[_userInfoKey] as IDictionary;
-			
-			// Read fire date, repeat interval
+			// Read user info from payload dictionary
+			UserInfo					= _payloadDict.GetIfAvailable<IDictionary>(_userInfoKey);
+
+			// Read fire date, repeat interval from payload dictionary
 			string 	_fireDateStr		= _payloadDict.GetIfAvailable<string>(kFireDate);
-
-			if (!string.IsNullOrEmpty(_fireDateStr))
-				FireDate				= _fireDateStr.ToDateTimeLocalUsingZuluFormat();
-
+			
+			if (_fireDateStr != null)
+				FireDate				= _fireDateStr.ToZuluFormatDateTimeLocal();
+			
 			RepeatInterval				= ConvertToRepeatInterval(_payloadDict.GetIfAvailable<CalendarUnit>(kRepeatIntervalKey));
 		}
 
@@ -95,22 +94,32 @@ namespace VoxelBusters.NativePlugins.Internal
 			IDictionary 			_payloadDict	= new Dictionary<string, object>();
 			IDictionary 			_apsDict		= new Dictionary<string, object>();
 			iOSSpecificProperties 	_iosProperties	= _notification.iOSProperties;
-			string 					_keyForUserInfo	= NPSettings.Notification.iOS.UserInfoKey;
+			string 					_userInfoKey	= NPSettings.Notification.iOS.UserInfoKey;
 
 			// Add alert info
-			IDictionary 			_alertDict		= new Dictionary<string, string>();
-			_alertDict[kBody]						= _notification.AlertBody;
-			_alertDict[kAction]						= _iosProperties.AlertAction;
-			_alertDict[kLaunchImage]				= _iosProperties.LaunchImage;
+			IDictionary 			_alertDict		= new Dictionary<string, object>();
+
+			if (_notification.AlertBody != null)
+				_alertDict[kBody]					= _notification.AlertBody;
+
+			if (_iosProperties.AlertAction != null)
+				_alertDict[kAction]					= _iosProperties.AlertAction;
+
+			if (_iosProperties.LaunchImage != null)
+				_alertDict[kLaunchImage]			= _iosProperties.LaunchImage;
+
+			_alertDict[kHasAction]					= System.Convert.ToInt32(_iosProperties.HasAction);
 
 			// Add alert, badge, sound to "aps" dictionary
 			_apsDict[kAlert]						= _alertDict;
 			_apsDict[kBadge]						= _iosProperties.BadgeCount;
-			_apsDict[kSound]						= _iosProperties.SoundName;
+
+			if (_notification.SoundName != null)
+				_apsDict[kSound]					= _notification.SoundName;
 
 			// Add aps, user info, fire date, repeat interval to "payload" dictionary
 			_payloadDict[kAPS]						= _apsDict;
-			_payloadDict[_keyForUserInfo]			= _notification.UserInfo;
+			_payloadDict[_userInfoKey]				= _notification.UserInfo;
 			_payloadDict[kFireDate]					= _notification.FireDate.ToStringUsingZuluFormat();
 			_payloadDict[kRepeatIntervalKey]		= (int)ConvertToCalendarUnit(_notification.RepeatInterval);
 

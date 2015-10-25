@@ -1,95 +1,97 @@
 using UnityEngine;
 using System.Collections;
-using VoxelBusters.Utility.UnityGUI.MENU;
 using VoxelBusters.Utility;
 using VoxelBusters.NativePlugins;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class NetworkConnectivityDemo : DemoSubMenu 
+#if !USES_NETWORK_CONNECTIVITY
+	public class NetworkConnectivityDemo : NPDisabledFeatureDemo 
+	{}
+#else
+	public class NetworkConnectivityDemo : NPDemoBase 
 	{
-		#region API Calls
-		
-		private void Initialise()
+		#region Unity Methods
+
+		protected override void Start ()
 		{
-			NPBinding.NetworkConnectivity.Initialise();			
+			base.Start ();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"You can configure this feature in NPSettings->Network Connectivity Settings.");
 		}
-
-		private bool IsConnected()
-		{
-			return  NPBinding.NetworkConnectivity.IsConnected;
-		}
-		
-		#endregion
-
-		#region API Callbacks
-
-		private void NetworkConnectivityChangedEvent (bool _isConnected)
-		{
-			AddNewResult("Received NetworkConnectivityChangedEvent");
-			AppendResult("IsConnected = " + _isConnected);
-		}
-
-		#endregion
-
-		#region Enable/Disable Callbacks
 		
 		protected override void OnEnable ()
 		{
 			base.OnEnable();
-
-			// Register to event
-			NetworkConnectivity.NetworkConnectivityChangedEvent	+= NetworkConnectivityChangedEvent;
 			
-			// Info text
-			AddNewResult("Callbacks" +
-			             "\nNetworkConnectivityChangedEvent: Triggered when connectivity state changes");
-		}
+			// Register to event
+			NetworkConnectivity.NetworkConnectivityChangedEvent	+= NetworkConnectivityChangedEvent;}
 		
 		protected override void OnDisable ()
 		{
 			base.OnDisable();
-
+			
 			// Deregister to event
 			NetworkConnectivity.NetworkConnectivityChangedEvent	-= NetworkConnectivityChangedEvent;
 		}
 		
 		#endregion
-
-		#region UI
-
-		protected override void OnGUIWindow()
+		
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
 		{
-			base.OnGUIWindow();
-			
-			RootScrollView.BeginScrollView();
+			base.DisplayFeatureFunctionalities ();
+
+			if (GUILayout.Button ("Initialise"))
 			{
-				if (GUILayout.Button("Initialise"))
-				{
-					Initialise();
-				}
-
-				if (GUILayout.Button("Is Network Reachable?"))
-				{
-					bool _isConnected = IsConnected();
-
-					if(_isConnected)
-					{
-						AddNewResult("Network is Reachable.");
-					}
-					else
-					{
-						AddNewResult("Network is Unreachable.");
-					}
-				}				
+				Initialise ();
 			}
-			RootScrollView.EndScrollView();
 
-			DrawResults();
-			DrawPopButton();
+			GUILayout.Box ("[NOTE] NetworkConnectivityChangedEvent is fired whenever there is a change in connectivity state.");
+
+			if (GUILayout.Button ("Is Network Reachable?"))
+			{
+				bool _isConnected = IsConnected ();
+				
+				if (_isConnected)
+				{
+					AddNewResult ("Network is Reachable.");
+				}
+				else
+				{
+					AddNewResult ("Network is Unreachable.");
+				}
+			}	
+		}
+		
+		#endregion
+
+		#region API Methods
+		
+		private void Initialise ()
+		{
+			NPBinding.NetworkConnectivity.Initialise ();			
+		}
+
+		private bool IsConnected ()
+		{
+			return NPBinding.NetworkConnectivity.IsConnected;
+		}
+		
+		#endregion
+
+		#region API Callback Methods
+
+		private void NetworkConnectivityChangedEvent (bool _isConnected)
+		{
+			AddNewResult ("Received connectivity changed event.");
+			AppendResult (_isConnected ? "Yeah! Now we are online." : "Oh no! We lost connectivity.");
 		}
 
 		#endregion
 	}
+#endif
 }

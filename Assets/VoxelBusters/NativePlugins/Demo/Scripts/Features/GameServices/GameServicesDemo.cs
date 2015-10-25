@@ -1,259 +1,220 @@
 ﻿using UnityEngine;
 using System.Collections;
-using VoxelBusters.AssetStoreProductUtility.Demo;
+using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
 	using Internal;
 
-	public class GameServicesDemo : DemoSubMenu 
+#if !USES_GAME_SERVICES
+	public class GameServicesDemo : NPDisabledFeatureDemo 
+#else
+	public class GameServicesDemo : NPDemoBase 
+#endif
 	{
 		#region Fields
 
-		// Related to leaderboard
-		[Header("Leaderboard Properties")]
-		[SerializeField]
-		private						eLeaderboardTimeScope		m_timeScope;
-
-#pragma warning disable		
-		[SerializeField]
-		private						string[]					m_iOSLeaderboardIDList		= new string[0];
-
-		[SerializeField]
-		private						string[]					m_androidLeaderboardIDList	= new string[0];
-
-		private						string[]					m_editorLeaderboardIDList;
-#pragma warning restore
-
-		[SerializeField]
-		private						int							m_maxScoreResults			= 20;
-		
-		private						Leaderboard					m_curLeaderboard;
-
-		private						string						m_curLeaderboardID;
-		
-		private						int							m_curLeaderboardIDIndex		= -1;
-
-		// Related to achievements
 #pragma warning disable
-		[Header("Achievement Properties")]
+		[SerializeField, Header("Leaderboard Properties")]
+		private		eLeaderboardTimeScope	m_timeScope;
 		[SerializeField]
-		private						string[]					m_iOSAchievementIDList		= new string[0];
-		
-		[SerializeField]
-		private						string[]					m_androidAchievementIDList	= new string[0];
+		private		int					m_maxScoreResults			= 20;
+		private		Leaderboard			m_curLeaderboard;
+		private		string				m_curLeaderboardGID;
+		private		int					m_curLeaderboardGIDIndex	= -1;
+		private		string[] 			m_leaderboardGIDList		= new string[0];
 
-		private						string[]					m_editorAchievementIDList;
+		private		string				m_curAchievementGID;
+		private		int					m_curAchievementGIDIndex	= -1;
+		private		string[] 			m_achievementGIDList		= new string[0];
 #pragma warning restore
 
-		private						string						m_curAchievementID;
-		
-		private						int							m_curAchievementIDIndex		= -1;
-
 		#endregion
 
-		#region Properties
-
-		public string[] LeaderboardIDList
-		{
-			get
-			{
-#if !UNITY_EDITOR && UNITY_ANDROID
-				return m_androidLeaderboardIDList;
-#elif !UNITY_EDITOR && UNITY_IOS
-				return m_iOSLeaderboardIDList;
+#if !USES_GAME_SERVICES
+	}
 #else
-				return m_editorLeaderboardIDList;
-#endif
-			}
+		#region Unity Methods
+
+		protected override void Start ()
+		{
+			base.Start ();
+
+			// Extract gid information
+			ExtractGID ();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"You can configure this feature in NPSettings->Game Services Settings.",
+				"Using platform specific identifier to access Achievements/Leaderboard object is very troublesome. " +
+					"\nInstead, make use of global identifier for unified access of Achievements/Leaderboard irrespective of platform. " +
+					"\nThis can be done by either adding identifier info in Game Services Settings or else manually set it at runtime using SetLeaderboardIDCollection & SetAchievementIDCollection API.",
+				"For testing iOS build, set Game Center to Sandox mode in your device settings and then log in to Game Center application using sandbox test accounts. Once you are done with it, you can try testing this feature.", 
+				"In Unity Editor, we are simulating this feature to help developers test funtionality in Editor itself. You can manually fill info by opening Editor Game Center from Menu (Window->Voxel Busters->Native Plugins) or use Game Services Settings to auto fill values.");
 		}
 
-		public string[] AchievementIDList
-		{
-			get
-			{
-#if !UNITY_EDITOR && UNITY_ANDROID
-				return m_androidAchievementIDList;
-#elif !UNITY_EDITOR && UNITY_IOS
-				return m_iOSAchievementIDList;
-#else
-				return m_editorAchievementIDList;
-#endif
-			}
-		}
-	
-		#endregion
-
-		#region Menu Methods
-		
 		protected override void OnEnable ()
 		{
 			base.OnEnable ();
 
 #if UNITY_EDITOR
-			AddNewResult("Using Game Service simulation.");
-
-			// Set editor properties
-			m_editorLeaderboardIDList	= EditorGameCenter.Instance.GetLeaderboardIDList();
-			m_editorAchievementIDList	= EditorGameCenter.Instance.GetAchievementIDList();
+			AddNewResult ("[NOTE] Simulating feature on Editor.");
 #elif UNITY_ANDROID
-			AddNewResult("Game Service will use Google Play Service.");
+			AddNewResult ("[NOTE] Google Play Service is being used.");
 #elif UNITY_IOS
-			AddNewResult("Game Service will use Game Center.");
+			AddNewResult ("[NOTE] Game Center is being used.");
 #else 
-			AddNewResult("Not supported.");
+			AddNewResult ("[NOTE] Feature is not supported.");
 #endif
 
 			// Leaderboard
-			if (LeaderboardIDList == null || LeaderboardIDList.Length == 0)
-				AppendResult("Leaderboard identifiers not configured in inspector.");
-			else if (m_curLeaderboardIDIndex == -1)
-				ChangeLeaderboardID(true);
+			if (m_leaderboardGIDList.Length == 0)
+				AppendResult ("Could not find leaderboard id information. Please configure it.");
+			else if (m_curLeaderboardGIDIndex == -1)
+				ChangeLeaderboardGID (true);
 
 			// Achievement
-			if (AchievementIDList == null || AchievementIDList.Length == 0)
-				AppendResult("Achievement identifiers not configured in inspector.");
-			else if (m_curAchievementIDIndex == -1)
-				ChangeAchievementID(true);
+			if (m_achievementGIDList.Length == 0)
+				AppendResult ("Could not find achievement id information. Please configure it.");
+			else if (m_curAchievementGIDIndex == -1)
+				ChangeAchievementGID (true);
 		}
-		
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
-			
-			RootScrollView.BeginScrollView();
+
+		#endregion
+
+		#region GUI Methods
+
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+
+			if (!NPSettings.Application.SupportedFeatures.UsesGameServices)
 			{
-				if(NPSettings.Application.SupportedFeatures.UsesGameServices)
+				GUILayout.Box ("If you want to access Game-Services feature, then please enable this feature in NPSettings->Application Settings->Supported Features.");
+			}
+			else
+			{
+				if (GUILayout.Button ("Is Game Service Available"))
 				{
-					if (GUILayout.Button("Is Game Service Available"))
-					{
-						IsAvailable();
-					}
-	
-					if (GUILayout.Button("Is User Authenticated"))
-					{
-						if (IsAuthenticated())
-							AddNewResult("Local user is authenticated.");
-						else
-							AddNewResult("Local user is not authenticated.");
-					}
-	
-					if (IsAuthenticated())
-					{
-						DrawUsersInformationSection();
-						DrawLeaderboardSection();
-						DrawAchievementSection();
-						DrawUISection();
-					}
+					IsAvailable ();
+				}
+				
+				if (GUILayout.Button ("Is User Authenticated"))
+				{
+					if (IsAuthenticated ())
+						AddNewResult ("Local user is authenticated.");
 					else
-					{
-						if (GUILayout.Button("Authenticate User"))
-							AuthenticateUser();
-					}
+						AddNewResult ("Local user is not yet authenticated!");
+				}
+				
+				if (IsAuthenticated())
+				{
+					DrawUserSection ();
+					DrawLeaderboardSection ();
+					DrawAchievementSection ();
+					DrawUISection ();
 				}
 				else
 				{
-					AddNewResult("Enable Game services feature in NPSettings.");
+					if (GUILayout.Button ("Authenticate User"))
+						AuthenticateUser ();
 				}
 			}
-			RootScrollView.EndScrollView();
-			
-			DrawResults();
-			DrawPopButton();
 		}
 
-		private void DrawUsersInformationSection()
+		private void DrawUserSection ()
 		{
-			GUILayout.Label("Users Information", kSubTitleStyle);
-			
-			if (GUILayout.Button("Load Local Player Friends"))
+			GUILayout.Label("Local User", kSubTitleStyle);
+
+			if (GUILayout.Button("Sign Out"))
 			{
-				LoadLocalUserFriends();
+				SignOut();
 			}
-			if(GUILayout.Button("Load Users"))
+			
+			if (GUILayout.Button("Load Friends"))
 			{
-				string[] _userIDList = new string[]{NPBinding.GameServices.LocalUser.Identifier};
+				LoadFriends();
+			}
+
+			if (GUILayout.Button("Load Users"))
+			{
+				string[] _userIDList = new string[] {
+					NPBinding.GameServices.LocalUser.Identifier
+				};
+
 				LoadUsers(_userIDList);
 			}
 		}
 
 		private void DrawLeaderboardSection ()
 		{
-			if (LeaderboardIDList.Length == 0)
+			GUILayout.Label("Leaderboard", kSubTitleStyle);
+
+			if (m_leaderboardGIDList.Length == 0)
 			{
-				GUILayout.Box("Couldnt find Leaderboard Identifiers in inspector. Please configure if you want to use Leaderboard feature.");
+				GUILayout.Box("Could not find Leaderboard configuration in GameServices. If you want to access Leaderboard feature, then please configure it.");
 			}
 			else
 			{
-				GUILayout.Label("Leaderboard", kSubTitleStyle);
-				
 				GUILayout.BeginHorizontal();
 				{
-					if (GUILayout.Button("Goto Next Leaderboard ID"))
-						ChangeLeaderboardID(true);
-					
-					if (GUILayout.Button("Goto Previous Leaderboard ID"))
-						ChangeLeaderboardID(false);
+					if (GUILayout.Button("Previous Leaderboard"))
+						ChangeLeaderboardGID(false);
+
+					if (GUILayout.Button("Next Leaderboard"))
+						ChangeLeaderboardGID(true);
 				}
 				GUILayout.EndHorizontal();
-				
+
+				GUILayout.Box(string.Format("Current Leaderboard GID= {0}.", m_curLeaderboardGID));
+
 				if (GUILayout.Button("Create Leaderboard"))
 				{
-					Leaderboard _leaderboard = CreateLeaderboard(m_curLeaderboardID);
-					AddNewResult("Created a platform specific instance of Leaderboard" + "[" + _leaderboard.Identifier +"].");	
+					Leaderboard	_leaderboard = CreateLeaderboardWithGlobalID(m_curLeaderboardGID);
+					AddNewResult(string.Format("Leaderboard with global identifier {0} is created.", _leaderboard.GlobalIdentifier));	
+				}
+				
+				if (GUILayout.Button("Report Score"))
+				{
+					ReportScoreWithGlobalID(m_curLeaderboardGID);
 				}
 				
 				if (GUILayout.Button("Load Top Scores"))
 				{
-					LoadTopScores(m_curLeaderboardID);
+					LoadTopScores();
 				}
 				
 				if (GUILayout.Button("Load Player Centered Scores"))
 				{
-					LoadPlayerCenteredScores(m_curLeaderboardID);
+					LoadPlayerCenteredScores();
 				}
 				
 				GUILayout.BeginHorizontal();
 				{
-					if (GUILayout.Button("Load Next Scores"))
-					{
-						LoadMoreScores(m_curLeaderboardID, eLeaderboardPageDirection.NEXT);
-					}
-
 					if (GUILayout.Button("Load Previous Scores"))
 					{
-						LoadMoreScores(m_curLeaderboardID, eLeaderboardPageDirection.PREVIOUS);
+						LoadMoreScores(eLeaderboardPageDirection.PREVIOUS);
+					}
+
+					if (GUILayout.Button("Load Next Scores"))
+					{
+						LoadMoreScores(eLeaderboardPageDirection.NEXT);
 					}
 				}
 				GUILayout.EndHorizontal();
-
-				if (GUILayout.Button("Report Score"))
-				{
-					ReportScore(m_curLeaderboardID);
-				}
 			}
 		}
 
 		private void DrawAchievementSection ()
 		{
-			if (AchievementIDList.Length == 0)
+			GUILayout.Label("Achievement", kSubTitleStyle);
+
+			if (m_achievementGIDList.Length == 0)
 			{
-				GUILayout.Box("Couldnt find Achievement configuration in GameServices. Please configure if you want to use Achievement feature.");
+				GUILayout.Box("Could not find Achievement configuration in GameServices. If you want to access Achievement feature, then please configure it.");
 			}
 			else
 			{
-				GUILayout.Label("Achievement", kSubTitleStyle);
-				
-				GUILayout.BeginHorizontal();
-				{
-					if (GUILayout.Button("Goto Next Achievement ID"))
-						ChangeAchievementID(true);
-					
-					if (GUILayout.Button("Goto Previous Achievement ID"))
-						ChangeAchievementID(false);
-				}
-				GUILayout.EndHorizontal();
-				
 				if (GUILayout.Button("Load Achievement Descriptions"))
 				{
 					LoadAchievementDescriptions();
@@ -263,51 +224,68 @@ namespace VoxelBusters.NativePlugins.Demo
 				{
 					LoadAchievements();
 				}
-				
+
+				GUILayout.BeginHorizontal();
+				{
+					if (GUILayout.Button("Previous Achievement"))
+						ChangeAchievementGID(false);
+					
+					if (GUILayout.Button("Next Achievement"))
+						ChangeAchievementGID(true);
+				}
+				GUILayout.EndHorizontal();
+
+				GUILayout.Box(string.Format("Current achievement GID= {0}.", m_curAchievementGID));
+
 				if (GUILayout.Button("Create Achievement"))
 				{
-					Achievement _achievement = CreateAchievement(m_curAchievementID);
-					AddNewResult("Created a platform specific instance of Achievement" + "[" + _achievement.Identifier +"].");	
+					Achievement _achievement = CreateAchievementWithGlobalID(m_curAchievementGID);
+					AddNewResult(string.Format("Achievement with global identifier {0} is created.", _achievement.GlobalIdentifier));	
 				}
 				
 				if (GUILayout.Button("Report Progress"))
 				{
-					ReportProgress(m_curAchievementID);
+					ReportProgressWithGlobalID(m_curAchievementGID);
 				}
 			}
 		}
 
 		private void DrawUISection ()
 		{
-			bool 	_canShowLeaderboarAPI	= (LeaderboardIDList.Length != 0);
-			bool	_canShowAchievementAPI	= (AchievementIDList.Length != 0);
+			bool 	_canShowLeaderboarAPI	= (m_leaderboardGIDList.Length != 0);
+			bool	_canShowAchievementAPI	= (m_achievementGIDList.Length != 0);
 
 			if (_canShowLeaderboarAPI || _canShowAchievementAPI)
 				GUILayout.Label("UI", kSubTitleStyle);
-			
-			if (_canShowLeaderboarAPI && GUILayout.Button("Show Leaderboard UI"))
+
+			if (_canShowLeaderboarAPI)
 			{
-				ShowLeaderboardUI();
+				if (GUILayout.Button("Show Leaderboard UI"))
+					ShowLeaderboardUIWithGlobalID(m_curLeaderboardGID);
 			}
 			
-			if (_canShowAchievementAPI && GUILayout.Button("Show Achievements UI"))
+			if (_canShowAchievementAPI)
 			{
-				ShowAchievementsUI();
+				if (GUILayout.Button("Show Achievements UI"))
+					ShowAchievementsUI();
 			}
 		}
 		
 		#endregion
 		
-		#region Service Methods
+		#region API Methods
 		
 		private void IsAvailable ()
 		{
-			AddNewResult(string.Format("GameService is available={0}.", NPBinding.GameServices.IsAvailable()));
+			if (NPBinding.GameServices.IsAvailable())
+				AddNewResult("Game-Service feature is available.");
+			else
+				AddNewResult("Game-Service feature is not available.");
 		}
 
 		#endregion
 
-		#region Auth Methods
+		#region Local User API Methods
 
 		private bool IsAuthenticated ()
 		{
@@ -316,79 +294,89 @@ namespace VoxelBusters.NativePlugins.Demo
 		
 		private void AuthenticateUser ()
 		{
-			NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>{
-				
+			NPBinding.GameServices.LocalUser.Authenticate((bool _success, string _error)=>{
+
+				AddNewResult("Local user authentication finished.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
 				if (_success)
 				{
-					AddNewResult("Sign-In Successfully");
-					AppendResult("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
-				}
-				else
-				{
-					AddNewResult("Sign-In Failed");
+					AppendResult(string.Format("Local user details= {0}.", NPBinding.GameServices.LocalUser));
 				}
 			});
 		}
 
-		#endregion
-
-		#region User Methods
-
-		private void LoadLocalUserFriends()
+		private void SignOut ()
 		{
-			NPBinding.GameServices.LocalUser.LoadFriends((User[] _friendsList) =>{
-				if(_friendsList != null)
+			NPBinding.GameServices.LocalUser.SignOut((bool _success, string _error)=>{
+
+				if (_success)
 				{
-					AddNewResult("Succesfully loaded user friends.");
-					foreach(User _eachFriend in _friendsList)
-					{
-						AppendResult(string.Format("Name : {0}, Id : {1}", _eachFriend.Name, _eachFriend.Identifier));
-					}
+					AddNewResult("Local user is signed out successfully!");
 				}
 				else
 				{
-					AddNewResult("Failed to load user friends.");
+					AddNewResult("Request to signout local user failed.");
+					AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
 				}
-		
+			});
+		}
+
+		private void LoadFriends ()
+		{
+			NPBinding.GameServices.LocalUser.LoadFriends((User[] _friends, string _error) =>{
+
+				AddNewResult("Load friends info request finished.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
+				if (_friends != null)
+				{
+					foreach (User _curFriend in _friends)
+					{
+						AppendResult(_curFriend.ToString());
+					}
+				}
 			}); 
 		}
 
-		private void LoadUsers(string[] _userIDList)
+		#endregion
+
+		#region User API Methods
+
+		private void LoadUsers (string[] _userIDList)
 		{
-			NPBinding.GameServices.LoadUsers(_userIDList, (User[] _users) =>{
-				if(_users != null)
+			NPBinding.GameServices.LoadUsers(_userIDList, (User[] _users, string _error) =>{
+
+				AddNewResult("Load users info request finished.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
+				if (_users != null)
 				{
-					AddNewResult("Succesfully loaded users info.");
-					foreach(User _eachUser in _users)
+					foreach (User _curUser in _users)
 					{
-						AppendResult(string.Format("Name : {0}, Id : {1}", _eachUser.Name, _eachUser.Identifier));
+						AppendResult(_curUser.ToString());
 					}
 				}
-				else
-				{
-					AddNewResult("Failed to load users info.");
-				}
-	
 			});
 		}
 
 		#endregion
 
-		#region Leaderboard Methods
+		#region Leaderboard API Methods
 
-		private Leaderboard CreateLeaderboard (string _leaderboardID)
+		private Leaderboard CreateLeaderboardWithGlobalID (string _leaderboardGID)
 		{
-			m_curLeaderboard			= NPBinding.GameServices.CreateLeaderboard(_leaderboardID);
+			m_curLeaderboard			= NPBinding.GameServices.CreateLeaderboardWithGlobalID(_leaderboardGID);
 			m_curLeaderboard.MaxResults	= m_maxScoreResults;
 
 			return m_curLeaderboard;
 		}
 
-		private void LoadPlayerCenteredScores(string _leaderboardID)
+		private void LoadPlayerCenteredScores ()
 		{
 			if (m_curLeaderboard == null)
 			{
-				AddNewResult("Failed to load scores. Create leaderboard instance before requesting score load.");
+				AddNewResult("The requested operation could not be completed because leaderboard instance is null. Please create new leaderboard instance.");
 				return;
 			}
 			
@@ -396,11 +384,11 @@ namespace VoxelBusters.NativePlugins.Demo
 			m_curLeaderboard.LoadPlayerCenteredScores(OnLoadScoresFinished);
 		}
 		
-		private void LoadTopScores(string _leaderboardID)
+		private void LoadTopScores ()
 		{
 			if (m_curLeaderboard == null)
 			{
-				AddNewResult("Failed to load scores. Create leaderboard instance before requesting score load.");
+				AddNewResult("The requested operation could not be completed because leaderboard instance is null. Please create new leaderboard instance.");
 				return;
 			}
 			
@@ -408,11 +396,11 @@ namespace VoxelBusters.NativePlugins.Demo
 			m_curLeaderboard.LoadTopScores(OnLoadScoresFinished);
 		}
 		
-		private void LoadMoreScores(string _leaderboardID, eLeaderboardPageDirection _direction)
+		private void LoadMoreScores (eLeaderboardPageDirection _direction)
 		{
 			if (m_curLeaderboard == null)
 			{
-				AddNewResult("Failed to load scores. Create leaderboard instance before requesting score load.");
+				AddNewResult("The requested operation could not be completed because leaderboard instance is null. Please create new leaderboard instance.");
 				return;
 			}
 			
@@ -420,191 +408,214 @@ namespace VoxelBusters.NativePlugins.Demo
 			m_curLeaderboard.LoadMoreScores(_direction, OnLoadScoresFinished);
 		}
 		
-		private void OnLoadScoresFinished (Score[] _scores, Score _localUserScore)
+		private void ReportScoreWithGlobalID (string _leaderboardGID)
 		{
-			if (_scores != null)
-			{
-				int		_scoresCount	= _scores.Length;
-				
-				AddNewResult(string.Format("Successfully loaded scores. Count={0}.", _scoresCount));
-				AppendResult(string.Format("Local User: {0}.", _localUserScore));
-				
-				for (int _iter = 0; _iter < _scoresCount; _iter++)
-				{
-					AppendResult(string.Format("[Index {0}]: {1}.", _iter, _scores[_iter]));
-				}
-			}
-			else
-			{
-				AddNewResult("Failed to load scores.");
-			}
-		}
-		
-		private void ReportScore (string _leaderboardID)
-		{
-			int			_randomScore	= Random.Range(0, 100);
+			int		_randomScore	= Random.Range(0, 100);
 			
-			NPBinding.GameServices.ReportScore(_leaderboardID, _randomScore, (bool _status)=>{
+			NPBinding.GameServices.ReportScoreWithGlobalID(_leaderboardGID, _randomScore, (bool _success, string _error)=>{
 				
-				if (_status)
-					AddNewResult(string.Format("Successfully reported score={0} to leaderboard with ID={1}.", _randomScore, m_curLeaderboardID));
+				if (_success)
+				{
+					AddNewResult(string.Format("Request to report score to leaderboard with GID= {0} finished successfully.", _leaderboardGID));
+					AppendResult(string.Format("New score= {0}.", _randomScore));
+				}
 				else
-					AddNewResult(string.Format("Failed to report score to leaderboard with ID={0}.", m_curLeaderboardID));
+				{
+					AddNewResult(string.Format("Request to report score to leaderboard with GID= {0} failed.", _leaderboardGID));
+					AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+				}
 			});
 		}
 
 		#endregion
 
-		#region Achievement Methods
+		#region Achievement API Methods
 
-		private Achievement CreateAchievement (string _achievementID)
+		private Achievement CreateAchievementWithGlobalID (string _achievementGID)
 		{
-			Achievement _newAchievement	= NPBinding.GameServices.CreateAchievement(_achievementID);
-			return _newAchievement;
+			return NPBinding.GameServices.CreateAchievementWithGlobalID(_achievementGID);
 		}
 
 		private void LoadAchievementDescriptions ()
 		{
-			NPBinding.GameServices.LoadAchievementDescriptions((AchievementDescription[] _descriptions)=>{
+			NPBinding.GameServices.LoadAchievementDescriptions((AchievementDescription[] _descriptions, string _error)=>{
 
-				if (_descriptions == null)
+				AddNewResult("Request to load achievement descriptions finished.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
+				if (_descriptions != null)
 				{
-					AddNewResult("Couldnt load achievement description list.");
-					return;
-				}
+					int		_descriptionCount	= _descriptions.Length;
 
-				int		_descriptionCount	= _descriptions.Length;
-				AddNewResult(string.Format("Successfully loaded achievement description list. Count={0}.", _descriptionCount));
+					AppendResult(string.Format("Total loaded descriptions= {0}.", _descriptionCount));
 
-				for (int _iter = 0; _iter < _descriptionCount; _iter++)
-				{
-					AppendResult(string.Format("[Index {0}]: {1}", _iter, _descriptions[_iter]));
+					for (int _iter = 0; _iter < _descriptionCount; _iter++)
+					{
+						AppendResult(string.Format("[Index {0}]: {1}", _iter, _descriptions[_iter]));
+					}
 				}
 			});
 		}
 
 		private void LoadAchievements ()
 		{
-			NPBinding.GameServices.LoadAchievements((Achievement[] _achievements)=>{
-				
-				if (_achievements == null)
+			NPBinding.GameServices.LoadAchievements((Achievement[] _achievements, string _error)=>{
+
+				AddNewResult("Request to load achievements finished.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
+				if (_achievements != null)
 				{
-					AddNewResult("Couldnt load achievement list.");
-					return;
-				}
-				
-				int		_achievementCount	= _achievements.Length;
-				AddNewResult(string.Format("Successfully loaded achievement list. Count={0}.", _achievementCount));
-				
-				for (int _iter = 0; _iter < _achievementCount; _iter++)
-				{
-					AppendResult(string.Format("[Index {0}]: {1}", _iter, _achievements[_iter]));
+					int		_achievementCount	= _achievements.Length;
+
+					AppendResult(string.Format("Total loaded achievements= {0}.", _achievementCount));
+
+					for (int _iter = 0; _iter < _achievementCount; _iter++)
+					{
+						AppendResult(string.Format("[Index {0}]: {1}", _iter, _achievements[_iter]));
+					}
 				}
 			});
 		}
 
-		private void ReportProgress (string _achievementID)
+		private void ReportProgressWithGlobalID (string _achievementGID)
 		{
-			//If its an incremental achievement, make sure you send a incremented cumulative value everytime you call this method
-			int			_randomPoints	= Random.Range(0, 100);
+			// If its an incremental achievement, make sure you send a incremented cumulative value everytime you call this method
+			int		_randomPoints	= Random.Range(0, 100);
 
-			NPBinding.GameServices.ReportProgress(_achievementID, _randomPoints, (bool _status)=>{
+			NPBinding.GameServices.ReportProgressWithGlobalID(_achievementGID, _randomPoints, (bool _status, string _error)=>{
 
 				if (_status)
-					AddNewResult(string.Format("Successfully reported points={0} to achievement with ID={1}.", _randomPoints, m_curAchievementID));
+				{
+					AddNewResult(string.Format("Request to report progress of achievement with GID= {0} finished successfully.", _achievementGID));
+					AppendResult(string.Format("New points= {0}.", _randomPoints));
+				}
 				else
-					AddNewResult(string.Format("Failed to report progress of achievement with ID={0}.", m_curAchievementID));
+				{
+					AddNewResult(string.Format("Request to report progress of achievement with GID= {0} failed.", _achievementGID));
+					AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+				}
 			});
 		}
 
 		#endregion
 
-		#region UI Methods
+		#region UI API Methods
 
 		private void ShowAchievementsUI ()
 		{
-			AddNewResult("Showing achievements UI.");
-			NPBinding.GameServices.ShowAchievementsUI(()=>{
-				AppendResult("Closed achievements UI.");
+			AddNewResult("Sending request to show achievements view.");
+
+			NPBinding.GameServices.ShowAchievementsUI((string _error)=>{
+				AddNewResult("Achievements view dismissed.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
 			});
 		}
 
-		private void ShowLeaderboardUI ()
+		private void ShowLeaderboardUIWithGlobalID (string _leaderboadGID)
 		{
-			AddNewResult("Showing leaderboard UI.");
-			NPBinding.GameServices.ShowLeaderboardUI(m_curLeaderboardID, m_timeScope, ()=>{
-				AppendResult("Closed leaderboard UI.");
+			AddNewResult("Sending request to show leaderboard view.");
+
+			NPBinding.GameServices.ShowLeaderboardUIWithGlobalID(_leaderboadGID, m_timeScope, (string _error)=>{
+				AddNewResult("Leaderboard view dismissed.");
+				AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
 			});
+		}
+
+		#endregion
+
+		#region API Callback Methods
+		
+		private void OnLoadScoresFinished (Score[] _scores, Score _localUserScore, string _error)
+		{
+			AddNewResult("Load leaderboard scores request finished.");
+			AppendResult(string.Format("Error= {0}.", _error.GetPrintableString()));
+
+			if (_scores != null)
+			{
+				int		_scoresCount	= _scores.Length;
+				
+				AppendResult(string.Format("Totally {0} score entries were loaded.", _scoresCount));
+				AppendResult(string.Format("Local user score= {0}.", _localUserScore == null ? "NULL" : _localUserScore.ToString()));
+				
+				for (int _iter = 0; _iter < _scoresCount; _iter++)
+				{
+					AppendResult(string.Format("[Index {0}]: {1}.", _iter, _scores[_iter]));
+				}
+			}
 		}
 
 		#endregion
 
 		#region Misc Methods
-
-		private void ChangeLeaderboardID (bool _gotoNext)
-		{
-			int		 _identifierCount	= LeaderboardIDList.Length;
-
-			if (_gotoNext)
-			{
-				if ( _identifierCount == 0)
-					return;
-				
-				// Move to next index
-				m_curLeaderboardIDIndex++;
-				
-				if (m_curLeaderboardIDIndex >=  _identifierCount)
-					m_curLeaderboardIDIndex	= 0;
-			}
-			else
-			{
-				if ( _identifierCount == 0)
-					return;
-				
-				// Move to previous index
-				m_curLeaderboardIDIndex--;
-				
-				if (m_curLeaderboardIDIndex < 0)
-					m_curLeaderboardIDIndex	=  _identifierCount - 1;
-			}
-
-			// Set id
-			m_curLeaderboardID			= LeaderboardIDList[m_curLeaderboardIDIndex];
-			AddNewResult(string.Format("Current Leaderboard ID={0}", m_curLeaderboardID));
+		
+		private void ExtractGID ()
+		{			
+			IDContainer[] _leaderboardGIDCollection	= NPSettings.GameServicesSettings.LeaderboardIDCollection;
+			IDContainer[] _achievementGIDCollection	= NPSettings.GameServicesSettings.AchievementIDCollection;
+			
+			// Extract id infomation
+			m_leaderboardGIDList				= new string[_leaderboardGIDCollection.Length];
+			m_achievementGIDList				= new string[_achievementGIDCollection.Length];
+			
+			for (int _iter = 0; _iter < _leaderboardGIDCollection.Length; _iter++)
+				m_leaderboardGIDList[_iter]		= _leaderboardGIDCollection[_iter].GetGlobalID();
+			
+			for (int _iter = 0; _iter < _achievementGIDCollection.Length; _iter++)
+				m_achievementGIDList[_iter]		= _achievementGIDCollection[_iter].GetGlobalID();
 		}
 
-		private void ChangeAchievementID (bool _gotoNext)
+		private void ChangeLeaderboardGID (bool _gotoNext)
 		{
-			int		 _identifierCount	= AchievementIDList.Length;
-			
+			int		 _identifierCount	= m_leaderboardGIDList.Length;
+
 			if (_gotoNext)
 			{
-				if ( _identifierCount == 0)
-					return;
-				
 				// Move to next index
-				m_curAchievementIDIndex++;
+				m_curLeaderboardGIDIndex++;
 				
-				if (m_curAchievementIDIndex >=  _identifierCount)
-					m_curAchievementIDIndex	= 0;
+				if (m_curLeaderboardGIDIndex >=  _identifierCount)
+					m_curLeaderboardGIDIndex	= 0;
 			}
 			else
 			{
-				if ( _identifierCount == 0)
-					return;
-				
 				// Move to previous index
-				m_curAchievementIDIndex--;
+				m_curLeaderboardGIDIndex--;
 				
-				if (m_curAchievementIDIndex < 0)
-					m_curAchievementIDIndex	=  _identifierCount - 1;
+				if (m_curLeaderboardGIDIndex < 0)
+					m_curLeaderboardGIDIndex	=  _identifierCount - 1;
+			}
+
+			// Set id
+			m_curLeaderboardGID			= m_leaderboardGIDList[m_curLeaderboardGIDIndex];
+		}
+
+		private void ChangeAchievementGID (bool _gotoNext)
+		{
+			int		 _identifierCount	= m_achievementGIDList.Length;
+			
+			if (_gotoNext)
+			{
+				// Move to next index
+				m_curAchievementGIDIndex++;
+				
+				if (m_curAchievementGIDIndex >=  _identifierCount)
+					m_curAchievementGIDIndex	= 0;
+			}
+			else
+			{
+				// Move to previous index
+				m_curAchievementGIDIndex--;
+				
+				if (m_curAchievementGIDIndex < 0)
+					m_curAchievementGIDIndex	=  _identifierCount - 1;
 			}
 			
 			// Set id
-			m_curAchievementID	= AchievementIDList[m_curAchievementIDIndex];
-			AddNewResult(string.Format("Current Achievement ID={0}", m_curAchievementID));
+			m_curAchievementGID	= m_achievementGIDList[m_curAchievementGIDIndex];
 		}
 
 		#endregion
 	}
+#endif
 }

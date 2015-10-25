@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_BILLING
 using System.Collections.Generic;
 using VoxelBusters.DebugPRO;
 
@@ -17,19 +19,10 @@ namespace VoxelBusters.NativePlugins
 	{
 		#region Properties
 
-		private List<BillingProduct>		m_requestedProducts;
-
-		protected List<BillingProduct>		RequestedProducts
+		protected BillingProduct[] RequestedProducts
 		{
-			get 
-			{ 
-				return m_requestedProducts; 
-			}
-
-			set 
-			{ 
-				m_requestedProducts	= value; 
-			}
+			get;
+			set;
 		}
 
 		#endregion
@@ -53,42 +46,48 @@ namespace VoxelBusters.NativePlugins
 		{}
 
 		/// <summary>
-		/// Request details for given list of billing products.
-		/// \warning Details of billing products needs to be fetched first with this method before purchasing any product.
+		/// Request details for given list of billing products.		
 		/// </summary>
+		///	<remarks> 
+		/// Details of billing products needs to be fetched first with this method before purchasing any product. 
+		/// </remarks>
 		/// <param name="_billingProducts">List of billing products which needs details.</param>
-		public virtual void RequestForBillingProducts (List<BillingProduct> _billingProducts)
+		public virtual void RequestForBillingProducts (BillingProduct[] _billingProducts)
 		{
-			if(_billingProducts == null || _billingProducts.Count == 0)
+			if (_billingProducts == null || _billingProducts.Length == 0)
 			{
-				Console.LogWarning(Constants.kDebugTag, "[Billing] products list is empty");
+				Console.LogWarning(Constants.kDebugTag, "[Billing] products list is empty.");
+				DidReceiveBillingProducts(null, "The operation could not be completed because product list is null or empty.");
+				return;
 			}
 
-			List<string> _consumableProductIDs, _nonConsumableProductIDs;
-			
 			// Cache requested products details
 			RequestedProducts	= _billingProducts;
 
 			// Get consumable and non consumable product ids
-			ExtractProductIDs(_billingProducts, out _consumableProductIDs, 
-			                  out _nonConsumableProductIDs);
+			string[] _consumableProductIDs, _nonConsumableProductIDs;
 
+			ExtractProductIDs(_billingProducts, out _consumableProductIDs, out _nonConsumableProductIDs);
+
+			// Request for billing products
 			RequestForBillingProducts(_consumableProductIDs, _nonConsumableProductIDs);
 		}
 
-		protected virtual void RequestForBillingProducts (List<string> _consumableProductIDs, List<string> _nonConsumableProductIDs)
+		protected virtual void RequestForBillingProducts (string[] _consumableProductIDs, string[] _nonConsumableProductIDs)
 		{}
 
 		/// <summary>
 		/// Check purchase status of specified billing product.
 		/// </summary>
-		/// <remarks> This works only for non-consumable/Managed billing products. For consumable, this always returns false. </remarks>
+		/// <remarks> 
+		/// This works only for non-consumable/Managed billing products. For consumable, this always returns false. 
+		/// </remarks>
 		/// <returns><c>true</c> if the specified _productID is already purchased; otherwise, <c>false</c>.</returns>
 		/// <param name="_productID">Product ID to check for purchase status.</param>
 		public virtual bool IsProductPurchased (string _productID)
 		{
 			bool _isPurchased	= false;
-			Console.Log(Constants.kDebugTag, "[Billing] Product=" + _productID + " IsPurchased=" + _isPurchased);
+			Console.Log(Constants.kDebugTag, string.Format("[Billing] Product= {0} IsPurchased= {1}.", _productID, _isPurchased));
 
 			return _isPurchased;
 		}
@@ -96,17 +95,20 @@ namespace VoxelBusters.NativePlugins
 		/// <summary>
 		/// Buy the specified billing product.
 		/// </summary>
-		///	<remarks>
-		///	\note	_productID should already have billing product details ahead. see <see cref="RequestForBillingProducts"/> for getting the details.
-		///	</remarks>
+		///	<remarks> 
+		/// Product ID should already have billing product details ahead. see <see cref="RequestForBillingProducts"/> for getting the details. 
+		/// </remarks>
 		/// <param name="_productID">product identifier that needs to be purchased.</param>
 		public virtual void BuyProduct (string _productID)
 		{}
 		
 		/// <summary>
 		/// Restores the previous non-consumable/Managed billing products that were purchased previously, if any.
-		/// \note On Android, It internally sends consumable list at the start of Billing initialisation, but if you are initializing your products runtime(not form NPSettings), make sure you call RequestBillingProdicts prior to this call. As, billing internally needs consumable list to be updated first for proper functionality.
 		/// </summary>
+		///	<remarks> 
+		/// On Android, It internally sends consumable list at the start of Billing initialisation, but if you are initializing your products runtime(not form NPSettings), make sure you call RequestBillingProdicts prior to this call. 
+		/// As, billing internally needs consumable list to be updated first for proper functionality.
+		/// </remarks>
 		public virtual void RestoreCompletedTransactions ()
 		{}
 
@@ -114,7 +116,7 @@ namespace VoxelBusters.NativePlugins
 		/// This adds the specified billing transaction to the inventory of purchased products.
 		/// </summary>
 		///	<remarks>
-		///	\note	iOS has external validation option. So once external validation is done, this should be called with the transaction details.
+		///	On iOS, custom validation option is available. So once custom validation is finished, this method should be called along with the transaction details.
 		///	On Android this call has no effect as the products are internally verified and products will be updated internally right after the purchase.
 		///	</remarks>
 		/// <param name="_transaction">Transaction instance thats updated with verification state after custom verification.</param>
@@ -125,30 +127,39 @@ namespace VoxelBusters.NativePlugins
 
 		#region Filter Products
 
-		protected void ExtractProductIDs (List<BillingProduct> _products, out List<string> _consumableProductIDs,
-		                                  out List<string> _nonConsumableProductIDs)
+		protected void ExtractProductIDs (BillingProduct[] _products, out string[] _consumableProductIDs, out string[] _nonConsumableProductIDs)
 		{
-			// Initialise array
-			_consumableProductIDs		= new List<string>();
-			_nonConsumableProductIDs	= new List<string>();
-			
-			// Total product count
-			int _totalProducts			= _products.Count;
-			
-			for (int _iter = 0; _iter < _totalProducts; _iter++)
+			// Initialise
+			List<string> _consumableProductIDList		= new List<string>();
+			List<string> _nonConsumableProductIDList	= new List<string>();
+
+			foreach (BillingProduct _curProduct in _products)
 			{
-				BillingProduct _product	= _products[_iter];
-				string _productID		= _product.ProductIdentifier;
-				bool _isConsumable		= _product.IsConsumable;
+				string	_curProductID	= _curProduct.ProductIdentifier;
 
 				// Add products based on flag "IsConsumable" value
-				if (_isConsumable)
-					_consumableProductIDs.Add(_productID);
+				if (_curProduct.IsConsumable)
+					_consumableProductIDList.Add(_curProductID);
 				else
-					_nonConsumableProductIDs.Add(_productID);
+					_nonConsumableProductIDList.Add(_curProductID);
 			}
+
+			// Set value
+			_consumableProductIDs		= _consumableProductIDList.ToArray();
+			_nonConsumableProductIDs	= _nonConsumableProductIDList.ToArray();
+		}
+
+		#endregion
+
+		#region Deprecated Methods
+
+		[System.Obsolete("This delegate is deprecated. Instead use RequestForBillingProducts (BillingProduct[] _billingProducts).")]
+		public void RequestForBillingProducts (List<BillingProduct> _billingProducts)
+		{
+			RequestForBillingProducts(_billingProducts == null ? null : _billingProducts.ToArray());
 		}
 
 		#endregion
 	}
 }
+#endif

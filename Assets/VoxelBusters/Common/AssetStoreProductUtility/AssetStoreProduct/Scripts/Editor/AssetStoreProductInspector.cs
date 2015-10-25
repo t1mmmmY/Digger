@@ -7,45 +7,28 @@ namespace VoxelBusters.AssetStoreProductUtility
 {
 	using Internal;
 
-	public class AssetStoreProductInspector : Editor
+	public class AssetStoreProductInspector : AdvancedScriptableObjectInspector
 	{
-		#region Properties
+		#region GUI Methods
 
-		private		string				m_copyrightsText;
-
-		// Related to GUI 
-		private 	GUIStyle			m_guiStyle;
-
-		#endregion
-
-		#region Unity Methods
-
-		protected virtual void OnEnable ()
-		{
-			m_copyrightsText	= "<i>" + Constants.kCopyrights + "</i>";
-		}
-
-		protected virtual void OnDisable ()
-		{}
-
-		public override void OnInspectorGUI ()
+		protected override void OnGUIWindow ()
 		{
 			AssetStoreProduct _product	= (target as IAssetStoreProduct).AssetStoreProduct;
-
+			
 			if (_product == null || _product.LogoTexture == null)
 				return;
-		
+
 			// GUI style
-			m_guiStyle			= new GUIStyle("label");
-			m_guiStyle.richText	= true;
+			GUIStyle 	_guiStyle		= new GUIStyle("label");
+			_guiStyle.richText			= true;
+			_guiStyle.wordWrap			= true;
 
 			GUILayout.BeginHorizontal();
 			{
+				// Logo
 				GUILayout.BeginVertical();
 				{
 					GUILayout.Space(10f);
-
-					// Logo
 					GUILayout.Label(_product.LogoTexture);
 				}
 				GUILayout.EndVertical();
@@ -53,28 +36,18 @@ namespace VoxelBusters.AssetStoreProductUtility
 				// Product details and copyrights
 				GUILayout.BeginVertical();
 				{
-					// Product name
-					m_guiStyle.fontSize	= 32;
-					GUILayout.Label(_product.ProductName, m_guiStyle, GUILayout.Height(40f));
+					string _pName		= "<size=30>" + _product.ProductName + "</size>";
+					string _pVersion	= "<size=12>Version " + _product.ProductVersion + "</size>";
+					string _pCopyRights	= "<i><size=10>" + Constants.kCopyrights + "</size></i>";
 
-					// Product version info
-					string _pVersion	= "Version " + _product.ProductVersion;
-					m_guiStyle.fontSize	= 10;
-					GUILayout.Label(_pVersion, m_guiStyle);
-
-					// Copyrights info
-					m_guiStyle.fontSize	= 10;
-					GUILayout.Label(m_copyrightsText, m_guiStyle);
+					GUILayout.Label(_pName, _guiStyle, GUILayout.Height(38f));
+					GUILayout.Label(_pVersion, _guiStyle);
+					GUILayout.Label(_pCopyRights, _guiStyle);
 				}
 				GUILayout.EndVertical();
-
-				// To keep above GUI elements left aligned
 				GUILayout.FlexibleSpace();
 			}
 			GUILayout.EndHorizontal();
-
-			// Extra spacing
-			GUILayout.Space(10f);
 		}
 
 		#endregion

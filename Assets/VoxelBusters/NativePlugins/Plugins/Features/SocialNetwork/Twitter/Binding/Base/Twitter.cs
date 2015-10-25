@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_TWITTER
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
@@ -284,3 +286,4 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 	}
 }
+#endif

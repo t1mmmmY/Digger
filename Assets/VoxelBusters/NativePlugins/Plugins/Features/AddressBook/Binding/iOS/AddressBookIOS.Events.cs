@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
-#if UNITY_IOS
+#if USES_ADDRESS_BOOK && UNITY_IOS
+using System;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
@@ -17,20 +19,53 @@ namespace VoxelBusters.NativePlugins
 			kABAuthorizationStatusAuthorized
 		};
 
-		#region Parsing Methods
+		#region Constants
 
-		protected override void ParseContactData (IDictionary _contactInfoDict, out AddressBookContact _contact)
+		private		const		string 		kContactsListKey	= "contacts-list";
+		private		const		string 		kAuthStatusKey		= "auth-status";
+		private		const		string 		kErrorKey			= "error";
+
+		#endregion
+
+		#region Methods
+
+		protected override void ABRequestAccessFinished (string _dataStr)
 		{
-			_contact								= new iOSAddressBookContact(_contactInfoDict);
+			IDictionary		_dataDict			= (IDictionary)JSONUtility.FromJSON(_dataStr);
+			string			_error				=  _dataDict.GetIfAvailable<string>(kErrorKey);
+			eABAuthorizationStatus _authStatus	= ConvertFromNativeAuthorizationStatus(_dataDict.GetIfAvailable<iOSABAuthorizationStatus>(kAuthStatusKey));
+
+			// Invoke handler
+			ABRequestAccessFinished(_authStatus, _error);
 		}
 
-		protected override void ParseAuthorizationStatusData (string _statusStr, out eABAuthorizationStatus _authStatus)
+		protected override void ParseReadContactsResponseData (IDictionary _dataDict, out eABAuthorizationStatus _authStatus, out AddressBookContact[] _contactsList)
 		{
-			iOSABAuthorizationStatus _iOSAuthStatus	= ((iOSABAuthorizationStatus)int.Parse(_statusStr));
+			IList 			_contactsJSONList	= _dataDict.GetIfAvailable<IList>(kContactsListKey);
 
-			// Set status
-			_authStatus								= ConvertFromNativeAuthorizationStatus(_iOSAuthStatus);
+			if (_contactsJSONList != null)
+			{
+				int						_count				= _contactsJSONList.Count;
+				AddressBookContact[]	_newContactsList	= new iOSAddressBookContact[_count];
+
+				for (int _iter = 0; _iter < _count; _iter++)
+					_newContactsList[_iter]					= new iOSAddressBookContact((IDictionary)_contactsJSONList[_iter]);
+
+				// Set properties
+				_authStatus		= eABAuthorizationStatus.AUTHORIZED;
+				_contactsList	= _newContactsList;		
+			}
+			else
+			{
+				// Set properties
+				_authStatus		= ConvertFromNativeAuthorizationStatus(_dataDict.GetIfAvailable<iOSABAuthorizationStatus>(kAuthStatusKey));
+				_contactsList	= null;	
+			}
 		}
+
+		#endregion
+
+		#region Misc. Methods
 
 		private eABAuthorizationStatus ConvertFromNativeAuthorizationStatus (iOSABAuthorizationStatus _iOSAuthStatus)
 		{

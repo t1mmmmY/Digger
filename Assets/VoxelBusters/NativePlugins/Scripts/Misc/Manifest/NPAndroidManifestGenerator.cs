@@ -195,18 +195,14 @@ namespace VoxelBusters.NativePlugins
 
 		private void WriteMetaInfo (XmlWriter _xmlWriter)
 		{
-			#if !NATIVE_PLUGINS_LITE_VERSION
-			if (m_supportedFeatures.UsesGameServices)
+#if USES_GAME_SERVICES
+			_xmlWriter.WriteStartElement("meta-data");
 			{
-				_xmlWriter.WriteStartElement("meta-data");
-				{
-					_xmlWriter.WriteAttributeString("android:name", 	"com.google.android.gms.games.APP_ID");
-					_xmlWriter.WriteAttributeString("android:value", string.Format("\\ {0}", NPSettings.GameServicesSettings.Android.PlayServicesApplicationID));// \ added because its getting considered as integer when added from xml instead of string.
-				}
-				_xmlWriter.WriteEndElement();
-
+				_xmlWriter.WriteAttributeString("android:name", 	"com.google.android.gms.games.APP_ID");
+				_xmlWriter.WriteAttributeString("android:value", string.Format("\\ {0}", NPSettings.GameServicesSettings.Android.PlayServicesApplicationID));// \ added because its getting considered as integer when added from xml instead of string.
 			}
-			#endif
+			_xmlWriter.WriteEndElement();
+#endif
 		}
 
 		#endregion
@@ -239,7 +235,6 @@ namespace VoxelBusters.NativePlugins
 				                    _comment: 	"Billing");
 			}
 
-			
 			if (m_supportedFeatures.UsesMediaLibrary)
 			{
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 
@@ -252,6 +247,9 @@ namespace VoxelBusters.NativePlugins
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
 				                    _name: 		"com.google.android.apps.photos.permission.GOOGLE_PHOTOS");
 
+				
+				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+				                    _name: 		"android.permission.MANAGE_DOCUMENTS");
 			}
 
 			if (m_supportedFeatures.UsesNotificationService)
@@ -272,10 +270,14 @@ namespace VoxelBusters.NativePlugins
 
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
 				                    _name: 		"com.google.android.c2dm.permission.RECEIVE");
-
-				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
-				                    _name: 		"android.permission.VIBRATE", 	
-				                    _comment: 	"Notifications : If vibration is required for notification");
+#if USES_NOTIFICATION_SERVICE
+				if(NPSettings.Notification.Android.AllowVibration)
+				{
+					WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
+					                    _name: 		"android.permission.VIBRATE", 	
+					                    _comment: 	"Notifications : If vibration is required for notification");
+				}
+#endif
 			}
 
 			if(m_supportedFeatures.UsesGameServices)
@@ -316,9 +318,6 @@ namespace VoxelBusters.NativePlugins
 				WriteUsesPermission(_xmlWriter:	_xmlWriter, 	
 				                    _name: 		"android.permission.READ_EXTERNAL_STORAGE");
 			}
-
-			
-		
 
 		}
 

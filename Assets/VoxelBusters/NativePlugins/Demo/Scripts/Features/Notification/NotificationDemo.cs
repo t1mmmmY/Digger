@@ -3,100 +3,288 @@ using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 using VoxelBusters.NativePlugins;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class NotificationDemo : DemoSubMenu 
+#if !USES_NOTIFICATION_SERVICE
+	public class NotificationDemo : NPDisabledFeatureDemo 
+#else
+	public class NotificationDemo : NPDemoBase 
+#endif
 	{
 		#region Properties
 
+#pragma warning disable
 		[SerializeField, EnumMaskField(typeof(NotificationType))]
-		private NotificationType	m_notificationType;
+		private 	NotificationType	m_notificationType;
+		private 	ArrayList 			m_scheduledNotificationIDList	= new ArrayList();
+#pragma warning restore
 
-		private ArrayList 			m_scheduledNotificationIDList	= new ArrayList();
-			
 		#endregion
 
-		#region API Calls
+#if !USES_NOTIFICATION_SERVICE
+	}
+#else
+		#region Unity Methods
 
-		private void RegisterNotificationTypes(NotificationType _notificationTypes)
+		protected override void Start ()
 		{
-			NPBinding.NotificationService.RegisterNotificationTypes(_notificationTypes);
+			base.Start ();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"You can configure this feature in NPSettings->Notification Settings.",
+				"For Android platform notification, complete customisation of payload keys is allowed. You can modify these keys in Notification Settings.",
+				"Notification workflow is straight forward." +
+					"\n1. Register for notification types that your application needs." +
+					"\n2. Register for remote notifications, only in case your application needs remote notification support.",
+				"You can also validate your payload string in Unity Editor itself. Just select Editor Notification Center from Menu (Window->Voxel Busters->Native Plugins) and try push notification.");
 		}
 		
-		private void RegisterForRemoteNotifications()
+		protected override void OnEnable ()
+		{
+			base.OnEnable ();
+
+			// Register for callbacks
+			NotificationService.DidFinishRegisterForRemoteNotificationEvent	+= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidLaunchWithLocalNotificationEvent			+= DidLaunchWithLocalNotificationEvent;
+			NotificationService.DidLaunchWithRemoteNotificationEvent		+= DidLaunchWithRemoteNotificationEvent;
+			NotificationService.DidReceiveLocalNotificationEvent 			+= DidReceiveLocalNotificationEvent;
+			NotificationService.DidReceiveRemoteNotificationEvent			+= DidReceiveRemoteNotificationEvent;
+		}
+		
+		protected override void OnDisable ()
+		{
+			base.OnDisable ();
+			
+			// Un-Register from callbacks
+			NotificationService.DidFinishRegisterForRemoteNotificationEvent	-= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidLaunchWithLocalNotificationEvent 		-= DidLaunchWithLocalNotificationEvent;
+			NotificationService.DidLaunchWithRemoteNotificationEvent 		-= DidLaunchWithRemoteNotificationEvent;
+			NotificationService.DidReceiveLocalNotificationEvent 			-= DidReceiveLocalNotificationEvent;
+			NotificationService.DidReceiveRemoteNotificationEvent			-= DidReceiveRemoteNotificationEvent;
+		}
+		
+		#endregion
+		
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+
+			DrawRegisterAPI ();
+			DrawScheduleNotificationAPI ();
+			DrawCancelNotificationAPI ();
+		}
+		
+		private void DrawRegisterAPI ()
+		{
+			GUILayout.Label ("Register/Unregister", kSubTitleStyle);
+
+			GUILayout.Box ("[NOTE] Launch notification events: DidLaunchWithLocalNotificationEvent/DidLaunchWithRemoteNotificationEvent are fired only if application was launched using notification.");
+			GUILayout.Box ("[NOTE] DidReceiveLocalNotificationEvent is fired when application receives local notification.");
+			GUILayout.Box ("[NOTE] DidReceiveRemoteNotificationEvent is fired when application receives remote notification.");
+
+			if (GUILayout.Button ("Register Notification Types [None, Alert, Badge and Sound]"))
+			{
+				RegisterNotificationTypes (m_notificationType);
+			}
+			
+			if (GUILayout.Button ("Register For Remote Notifications"))
+			{
+				RegisterForRemoteNotifications ();
+			}
+
+			GUILayout.Box ("[NOTE] When register for remote notification request completes, DidFinishRegisterForRemoteNotificationEvent is fired.");
+
+			if (GUILayout.Button ("Unregister For Remote Notifications"))
+			{
+				UnregisterForRemoteNotifications ();
+				AddNewResult ("Unregistered for remote notifications");
+			}
+		}
+		
+		private void DrawScheduleNotificationAPI ()
+		{
+			GUILayout.Label("Schedule Notifications", kSubTitleStyle);
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Disabled)"))
+			{
+				// Schedules a local notification after 1 min
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.NONE));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Minute)"))
+			{
+				// Schedules a local notification after 1 min and it keeps rescheduling for every minute
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.MINUTE));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+			
+			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Hour)"))
+			{
+				// Schedules a local notification after 1 min and it keeps rescheduling for every hour
+				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.HOUR));
+				
+				// Add notification id to list
+				m_scheduledNotificationIDList.Add(_nID);
+				
+				// Update info
+				AddNewResult("Newly scheduled notification ID = " + _nID);
+			}
+		}
+		
+		private void DrawCancelNotificationAPI ()
+		{
+			GUILayout.Label("Cancel Notifications", kSubTitleStyle);
+			
+			if (GUILayout.Button("Cancel Local Notification"))
+			{
+				if (m_scheduledNotificationIDList.Count > 0)
+				{
+					string _nID		= m_scheduledNotificationIDList[0] as string;
+					
+					AddNewResult("Cancelling notification with ID=" + _nID);
+					
+					CancelLocalNotification(_nID);
+					
+					// Remove notification id
+					m_scheduledNotificationIDList.RemoveAt(0);
+				}
+				else
+				{
+					AddNewResult("No Scheduled Local Notifications");
+				}
+			}
+			
+			if (GUILayout.Button("Cancel All Local Notifications"))
+			{
+				// Clearing list
+				m_scheduledNotificationIDList.Clear();
+				
+				// Cancelling all notifications
+				CancelAllLocalNotifications();
+				
+				// Update info
+				AddNewResult("Scheduled notifications are invalidated");
+			}
+			
+			if (GUILayout.Button("Clear Notifications"))
+			{
+				ClearNotifications();
+				
+				// Update info
+				AddNewResult("Cleared notifications from notification bar.");
+			}
+		}
+		
+		#endregion
+
+		#region API Methods
+
+		private void RegisterNotificationTypes (NotificationType _notificationTypes)
+		{
+			NPBinding.NotificationService.RegisterNotificationTypes(_notificationTypes);
+
+			if ((int)_notificationTypes == 0)
+			{
+				AddNewResult("Registered for none of the notification types.");
+				return;
+			}
+			else
+			{
+				AddNewResult("Registering for notification types:");
+				
+				if ((_notificationTypes & NotificationType.Badge) != 0)
+					AppendResult("Badge");
+				
+				if ((_notificationTypes & NotificationType.Sound) != 0)
+					AppendResult("Sound");
+				
+				if ((_notificationTypes & NotificationType.Alert) != 0)
+					AppendResult("Alert");
+			}
+		}
+		
+		private void RegisterForRemoteNotifications ()
 		{
 			NPBinding.NotificationService.RegisterForRemoteNotifications();
 		}
 
-		private void UnregisterForRemoteNotifications()
+		private void UnregisterForRemoteNotifications ()
 		{
 			NPBinding.NotificationService.UnregisterForRemoteNotifications();
 		}
 
-		private string ScheduleLocalNotification(CrossPlatformNotification _notification)
+		private string ScheduleLocalNotification (CrossPlatformNotification _notification)
 		{
 			return NPBinding.NotificationService.ScheduleLocalNotification(_notification);
 		}
 
-		private void CancelLocalNotification(string _notificationID)
+		private void CancelLocalNotification (string _notificationID)
 		{
 			NPBinding.NotificationService.CancelLocalNotification(_notificationID);
 		}
 		
-		private void CancelAllLocalNotifications()
+		private void CancelAllLocalNotifications ()
 		{
 			NPBinding.NotificationService.CancelAllLocalNotification();
 		}
 		
-		private void ClearNotifications()
+		private void ClearNotifications ()
 		{
 			NPBinding.NotificationService.ClearNotifications();
 		}
 
 		#endregion
 
-
-		#region API Callbacks
+		#region API Callback Methods
 		
 		private void DidLaunchWithLocalNotificationEvent (CrossPlatformNotification _notification)
 		{
-			AddNewResult("Received DidLaunchWithLocalNotificationEvent");
+			AddNewResult("Application did launch with local notification.");
 			AppendNotificationResult(_notification);
 		}
 		
 		private void DidLaunchWithRemoteNotificationEvent (CrossPlatformNotification _notification)
 		{
-			AddNewResult("Received DidLaunchWithRemoteNotificationEvent");
+			AddNewResult("Application did launch with remote notification.");
 			AppendNotificationResult(_notification);
 		}
 
 		private void DidReceiveLocalNotificationEvent (CrossPlatformNotification _notification)
 		{
-			AddNewResult("Received DidReceiveLocalNotificationEvent");
+			AddNewResult("Application received local notification.");
 			AppendNotificationResult(_notification);
 		}
 		
 		private void DidReceiveRemoteNotificationEvent (CrossPlatformNotification _notification)
 		{
-			AddNewResult("Received DidReceiveRemoteNotificationEvent");
+			AddNewResult("Application received remote notification.");
 			AppendNotificationResult(_notification);
 		}
 		
 		private void DidFinishRegisterForRemoteNotificationEvent (string _deviceToken, string _error)
 		{
-			AddNewResult("Received DidFinishRegisterForRemoteNotificationEvent");
+			AddNewResult(string.Format("Request to register for remote notification finished. Error = {0}.", _error.GetPrintableString()));
 			AppendResult("DeviceToken = " + _deviceToken);
-			
-			if(!string.IsNullOrEmpty(_error))
-			{
-				AppendResult("Error = " + _error);
-			}
-			
 		}
+
+		#endregion
 		
-		#region Helpers for Callbacks
+		#region Misc. Methods
 		
 		void AppendNotificationResult (CrossPlatformNotification _notification)
 		{
@@ -144,181 +332,12 @@ namespace VoxelBusters.NativePlugins.Demo
 
 			AppendResult("UserInfo = " + _userInfoDetails);	
 		}
-		
-		#endregion
-		
-		#endregion
-
-		#region Enabling/Disabling Events
-
-		protected override void OnEnable ()
-		{
-			base.OnEnable ();
-
-			// Note for developers
-			AddNewResult("Callbacks" +
-			             "\nDidFinishRegisterForRemoteNotificationEvent: Triggered when registering for remote notification finished." +
-			             "\nDidLaunchWithLocalNotificationEvent: Triggered when application is launched from local notification." +
-			             "\nDidLaunchWithRemoteNotificationEvent: Triggered when application is launched from remote notification." +
-			             "\nDidReceiveLocalNotificationEvent: Triggered when local notification is received." +
-			             "\nDidReceiveRemoteNotificationEvent: Triggered when remote notification is received.");
-
-			// Register for callbacks
-			NotificationService.DidFinishRegisterForRemoteNotificationEvent	+= DidFinishRegisterForRemoteNotificationEvent;
-			NotificationService.DidLaunchWithLocalNotificationEvent			+= DidLaunchWithLocalNotificationEvent;
-			NotificationService.DidLaunchWithRemoteNotificationEvent		+= DidLaunchWithRemoteNotificationEvent;
-			NotificationService.DidReceiveLocalNotificationEvent 			+= DidReceiveLocalNotificationEvent;
-			NotificationService.DidReceiveRemoteNotificationEvent			+= DidReceiveRemoteNotificationEvent;
-		}
-
-		protected override void OnDisable ()
-		{
-			base.OnDisable ();
-
-			// Un-Register from callbacks
-			NotificationService.DidFinishRegisterForRemoteNotificationEvent	-= DidFinishRegisterForRemoteNotificationEvent;
-			NotificationService.DidLaunchWithLocalNotificationEvent 		-= DidLaunchWithLocalNotificationEvent;
-			NotificationService.DidLaunchWithRemoteNotificationEvent 		-= DidLaunchWithRemoteNotificationEvent;
-			NotificationService.DidReceiveLocalNotificationEvent 			-= DidReceiveLocalNotificationEvent;
-			NotificationService.DidReceiveRemoteNotificationEvent			-= DidReceiveRemoteNotificationEvent;
-		}
-
-		#endregion
-
-		#region UI
-
-		protected override void OnGUIWindow ()
-		{
-			base.OnGUIWindow();
-
-			RootScrollView.BeginScrollView();
-			{
-				DrawRegisterAPI();
-				DrawScheduleNotificationAPI();
-				DrawCancelNotificationAPI();
-			}
-			RootScrollView.EndScrollView();
-						
-			DrawResults();
-			DrawPopButton();
-		}
-
-		private void DrawRegisterAPI ()
-		{
-			GUILayout.Label("Register/Unregister", kSubTitleStyle);
-			
-			if (GUILayout.Button("Register Notification Types [None, Alert, Badge and Sound]"))
-			{
-				RegisterNotificationTypes(m_notificationType);
-				AddNewResult("Registered Types : " + m_notificationType.GetValue());
-			}
-			
-			if (GUILayout.Button("Register For Remote Notifications"))
-			{
-				RegisterForRemoteNotifications();
-			}
-			
-			if (GUILayout.Button("Unregister For Remote Notifications"))
-			{
-				UnregisterForRemoteNotifications();
-				AddNewResult("Unregistered for remote notifications");
-			}
-		}
-
-		private void DrawScheduleNotificationAPI ()
-		{
-			GUILayout.Label("Schedule Notifications", kSubTitleStyle);
-			
-			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Disabled)"))
-			{
-				// Schedules a local notification after 1 min
-				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.NONE));
-				
-				// Add notification id to list
-				m_scheduledNotificationIDList.Add(_nID);
-				
-				// Update info
-				AddNewResult("Newly scheduled notification ID = " + _nID);
-			}
-			
-			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Minute)"))
-			{
-				// Schedules a local notification after 1 min and it keeps rescheduling for every minute
-				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.MINUTE));
-				
-				// Add notification id to list
-				m_scheduledNotificationIDList.Add(_nID);
-				
-				// Update info
-				AddNewResult("Newly scheduled notification ID = " + _nID);
-			}
-			
-			if (GUILayout.Button("Schedule Local Notification (After 1min, Repeat: Every Hour)"))
-			{
-				// Schedules a local notification after 1 min and it keeps rescheduling for every hour
-				string _nID = ScheduleLocalNotification(CreateNotification(60, eNotificationRepeatInterval.HOUR));
-				
-				// Add notification id to list
-				m_scheduledNotificationIDList.Add(_nID);
-				
-				// Update info
-				AddNewResult("Newly scheduled notification ID = " + _nID);
-			}
-		}
-
-		private void DrawCancelNotificationAPI ()
-		{
-			GUILayout.Label("Cancel Notifications", kSubTitleStyle);
-			
-			if (GUILayout.Button("Cancel Local Notification"))
-			{
-				if (m_scheduledNotificationIDList.Count > 0)
-				{
-					string _nID		= m_scheduledNotificationIDList[0] as string;
-					
-					AddNewResult("Cancelling notification with ID=" + _nID);
-					
-					CancelLocalNotification(_nID);
-					
-					// Remove notification id
-					m_scheduledNotificationIDList.RemoveAt(0);
-				}
-				else
-				{
-					AddNewResult("No Scheduled Local Notifications");
-				}
-			}
-			
-			if (GUILayout.Button("Cancel All Local Notifications"))
-			{
-				// Clearing list
-				m_scheduledNotificationIDList.Clear();
-				
-				// Cancelling all notifications
-				CancelAllLocalNotifications();
-				
-				// Update info
-				AddNewResult("Scheduled notifications are invalidated");
-			}
-			
-			if (GUILayout.Button("Clear Notifications"))
-			{
-				ClearNotifications();
-				
-				// Update info
-				AddNewResult("Cleared notifications from notification bar.");
-			}
-		}
-
-		#endregion
-
-		#region Misc. Methods
  
 		private CrossPlatformNotification CreateNotification (long _fireAfterSec, eNotificationRepeatInterval _repeatInterval)
 		{
 			// User info
 			IDictionary _userInfo			= new Dictionary<string, string>();
-			_userInfo["data"]				= "add what is required";
+			_userInfo["data"]				= "custom data";
 			
 			CrossPlatformNotification.iOSSpecificProperties _iosProperties			= new CrossPlatformNotification.iOSSpecificProperties();
 			_iosProperties.HasAction		= true;
@@ -327,13 +346,13 @@ namespace VoxelBusters.NativePlugins.Demo
 			CrossPlatformNotification.AndroidSpecificProperties _androidProperties	= new CrossPlatformNotification.AndroidSpecificProperties();
 			_androidProperties.ContentTitle	= "content title";
 			_androidProperties.TickerText	= "ticker ticks over here";
-			_androidProperties.CustomSound	= "Notification.mp3"; //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
-			_androidProperties.LargeIcon	= "NativePlugins.png"; //Keep the files in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
+			_androidProperties.LargeIcon	= "NativePlugins.png"; //Keep the files in Assets/PluginResources/Android or Common folder.
 			
 			CrossPlatformNotification _notification	= new CrossPlatformNotification();
 			_notification.AlertBody			= "alert body"; //On Android, this is considered as ContentText
 			_notification.FireDate			= System.DateTime.Now.AddSeconds(_fireAfterSec);
 			_notification.RepeatInterval	= _repeatInterval;
+			_notification.SoundName			= "Notification.mp3"; //Keep the files in Assets/PluginResources/Android or iOS or Common folder.
 			_notification.UserInfo			= _userInfo;
 			_notification.iOSProperties		= _iosProperties;
 			_notification.AndroidProperties	= _androidProperties;
@@ -343,4 +362,5 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		#endregion
 	}
+#endif
 }

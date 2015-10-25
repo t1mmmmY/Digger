@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_BILLING && UNITY_IOS
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
+#if !USES_BILLING
+	public partial class BillingIOS : Billing
+	{}
+#else
 	public partial class BillingIOS : Billing
 	{
 		#region Native Methods
@@ -38,28 +43,19 @@ namespace VoxelBusters.NativePlugins
 
 		protected override void Initialise (BillingSettings _settings)
 		{
-			BillingSettings.iOSSettings _iOSSettings	= _settings.iOS;
-			string _validateUsingServerURL				= null;
+			BillingSettings.iOSSettings _iOSSettings			= _settings.iOS;
+			string 						_validateUsingServerURL	= null;
 
 			if (_iOSSettings.SupportsReceiptValidation)
 			{
-				// We are using our own server for receipt validation
-				if (!_iOSSettings.ValidateUsingAppleServer)
-				{
-					// But user has forgot to set it, safe case we will use apple server
-					if (string.IsNullOrEmpty(_iOSSettings.ValidateUsingServerURL))
-					{
-						_validateUsingServerURL	= null;
-					}
-					else
-					{
-						_validateUsingServerURL	= _iOSSettings.ValidateUsingServerURL;
-					}
-				}
-				// We are using apple server for receipt validation
-				else
+				// But user has forgot to set it, safe case we will use apple server
+				if (string.IsNullOrEmpty(_iOSSettings.ValidateUsingServerURL))
 				{
 					_validateUsingServerURL	= null;
+				}
+				else
+				{
+					_validateUsingServerURL	= _iOSSettings.ValidateUsingServerURL;
 				}
 			}
 
@@ -67,7 +63,7 @@ namespace VoxelBusters.NativePlugins
 			init(_iOSSettings.SupportsReceiptValidation, _validateUsingServerURL, null);
 		}
 
-		protected override void RequestForBillingProducts (List<string> _consumableProductIDs, List<string> _nonConsumableProductIDs)
+		protected override void RequestForBillingProducts (string[] _consumableProductIDs, string[] _nonConsumableProductIDs)
 		{
 			// Send request to native store
 			requestForBillingProducts(_consumableProductIDs.ToJSON(), _nonConsumableProductIDs.ToJSON());
@@ -98,5 +94,6 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 	}
+#endif
 }
 #endif	

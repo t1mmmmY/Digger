@@ -85,6 +85,11 @@ namespace VoxelBusters.Utility
 			return URLString.StartsWith(kFileProtocol);
 		}
 
+		public override string ToString ()
+		{
+			return string.Format("[URL: {0}]", URLString);
+		}
+
 		#endregion
 	}
 }

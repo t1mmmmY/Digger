@@ -37,7 +37,12 @@
 		player = new YT.Player('player', {
 	  	videoId: '%@',
 	  	origin: 'https://www.google.com',
-	  	playerVars: {'enablejsapi': 1, 'playsinline':1 },
+	  	playerVars: {
+	  		'enablejsapi': 1, 
+	  		'playsinline': 1, 
+	  		'fs': 0, 
+	  		'showinfo': 0 
+	  	},
 	  	events: {
 			'onReady': onPlayerReady,
 			'onStateChange': onPlayerStateChange,
@@ -62,56 +67,66 @@
 
 	// API calls this function when the player's state changes.
 	function onPlayerStateChange(event) {
-		var state;
-		
-		if (event.data == YT.PlayerState.ENDED)
-			state	= 'ENDED';
-		else if (event.data == YT.PlayerState.PLAYING)
-			state	= 'PLAYING';
-		else if (event.data == YT.PlayerState.PAUSED)
-			state	= 'PAUSED';
-		else if (event.data == YT.PlayerState.BUFFERING)
-			state	= 'BUFFERING';
-		else if (event.data == YT.PlayerState.CUED)
-			state	= 'CUED';
-		else
-			 state	= 'UNSTARTED';
+		var stateCode = GetPlayerInternalStateCode(event.data);
 			 
 		// Send callback
-		window.location = 'embeddedplayer://OnStateChange?value=' + state; 
+		window.location = 'embeddedplayer://OnStateChange?value=' + stateCode; 
+	}
+	
+	function playVideo () {
+		if (player)
+			player.playVideo();
+	}
+	
+	function pauseVideo () {
+		if (player)
+			player.pauseVideo();
+	}
+			
+	function stopVideo () {
+		if (player)
+			player.stopVideo();
+	}
+	
+	function getPlayerState ()
+	{
+		if (player)
+			return GetPlayerInternalStateCode(player.getPlayerState());
+		
+		return GetPlayerInternalStateCode(999);
+	}
+	
+	function GetPlayerInternalStateCode (ytPlayerState)
+	{
+		var state;
+		
+		if (ytPlayerState == YT.PlayerState.UNSTARTED)
+			state	= 'UNSTARTED';
+		else if (ytPlayerState == YT.PlayerState.ENDED)
+			state	= 'ENDED';
+		else if (ytPlayerState == YT.PlayerState.PLAYING)
+			state	= 'PLAYING';
+		else if (ytPlayerState == YT.PlayerState.PAUSED)
+			state	= 'PAUSED';
+		else if (ytPlayerState == YT.PlayerState.BUFFERING)
+			state	= 'BUFFERING';
+		else if (ytPlayerState == YT.PlayerState.CUED)
+			state	= 'CUED';
+		else
+			state	= 'UNKNOWN';
+			
+		return state;
+	}
+	
+	function resizePlayer () {
+		if (player)
+			player.setSize(window.innerWidth, window.innerHeight);
 	}
 
 	// API calls this function when the player's throws error
 	function onPlayerError(event) {
-		var error;
-		
-		if (event.data == 2)
-			error	= 'INVALID_PARAMETER';
-		else if (event.data == 5)
-			error	= 'CANT_BE_PLAYED';
-		else if (event.data == 100)
-			error	= 'VIDEO_NOT_FOUND';
-		else
-			error	= 'PLAY_NOT_ALLOWED';		
-	
 		// Send callback
-		window.location = 'embeddedplayer://OnError?value=' + error; 
-	}
-	
-	function playVideo ()
-	{
-		if (player)
-			player.playVideo();
-	}
-
-	function stopPlayer () {
-		if (player)
-			player.stopVideo();
-	}
-
-	function pausePlayer () {
-		if (player)
-			player.pauseVideo();
+		window.location = 'embeddedplayer://OnError?value=' + event.data; 
 	}
 
 	window.onresize = function() {

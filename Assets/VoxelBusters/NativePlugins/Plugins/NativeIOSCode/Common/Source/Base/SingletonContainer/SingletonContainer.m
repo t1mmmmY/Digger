@@ -1,6 +1,6 @@
 //
 //  SingletonContainer.m
-//  NativePluginIOSWorkspace
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 23/01/15.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -37,6 +37,7 @@ static SingletonContainer* sharedInstance = nil;
     {
         NSAssert(sharedInstance == nil, @"Attempted to allocate a second instance of a singleton.");
         sharedInstance = [super alloc];
+		
         return sharedInstance;
     }
 	
@@ -49,10 +50,18 @@ static SingletonContainer* sharedInstance = nil;
 	
 	if (self)
 	{
-		[self setInstanceContainer:[NSMutableDictionary dictionary]];
+		self.instanceContainer	= [NSMutableDictionary dictionary];
 	}
 	
 	return self;
+}
+
+- (void)dealloc
+{
+	// Release
+	self.instanceContainer		= nil;
+	
+	[super dealloc];
 }
 
 #pragma mark - Container Methods

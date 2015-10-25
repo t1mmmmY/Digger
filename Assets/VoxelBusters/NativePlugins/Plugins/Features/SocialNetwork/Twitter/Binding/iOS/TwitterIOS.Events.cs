@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-#if UNITY_IOS
+#if USES_TWITTER && UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;

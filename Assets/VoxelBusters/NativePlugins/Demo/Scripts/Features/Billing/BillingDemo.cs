@@ -3,16 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 using VoxelBusters.NativePlugins;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class BillingDemo : DemoSubMenu 
+#if !USES_BILLING
+	public class BillingDemo : NPDisabledFeatureDemo 
+	{}
+#else
+	public class BillingDemo : NPDemoBase 
 	{
 		#region Properties
 
-		private int						m_productIter;
-		private List<BillingProduct> 	m_products;
+		private 	int					m_productIter;
+		private 	BillingProduct[] 	m_products;
+		private		bool				m_productRequestFinished;
 
 		#endregion
 
@@ -20,207 +24,192 @@ namespace VoxelBusters.NativePlugins.Demo
 
 		protected override void Start ()
 		{
-			base.Start();
-			m_products	= NPSettings.Billing.Products;
-		}
+			base.Start ();
 
+			// Intialise
+			m_products					= NPSettings.Billing.Products;
+			m_productRequestFinished	= false;
+
+			// Set info texts
+			AddExtraInfoTexts(
+				"You can configure this feature in NPSettings->Billing Settings.",
+				"In Billing Settings you can also store all the Product information and access it at runtime using getter NPSettings.Billing.Products.",
+				"Billing workflow is pretty much simple. " +
+					"\n1. Request for product infomation." +
+					"\n2. If your product list includes non consummable products, then restore old purchases." +
+					"\n3. Initiate purchase using BuyProduct API. Also use IsPurchased API to check if product is already purchase or not.");
+		}
 
 		protected override void OnEnable ()
 		{
-			base.OnEnable();
+			base.OnEnable ();
 
-			#if UNITY_ANDROID
+#if UNITY_ANDROID
 			if (string.IsNullOrEmpty(NPSettings.Billing.Android.PublicKey))
 			{
-				AddNewResult("Alert : Add public key in NPSettings for billing on Android. Else purchase process will be aborted.");
+				AddNewResult ("[NOTE] Add public key in NPSettings for billing on Android. Else purchase process will be aborted.");
 			}
-			#endif
-
+#endif
 			// Register for callbacks
-			Billing.BillingProductsRequestFinishedEvent	+= BillingProductsRequestFinishedEvent;
-			Billing.TransactionFinishedEvent			+= TransactionFinishedEvent;
+			Billing.DidFinishProductsRequestEvent	+= DidFinishProductsRequestEvent;
+			Billing.DidReceiveTransactionInfoEvent	+= DidReceiveTransactionInfoEvent;
 		}
 
 		protected override void OnDisable ()
 		{
-			base.OnDisable();
+			base.OnDisable ();
 
 			// Deregister for callbacks
-			Billing.BillingProductsRequestFinishedEvent	-= BillingProductsRequestFinishedEvent;
-			Billing.TransactionFinishedEvent			-= TransactionFinishedEvent;
+			Billing.DidFinishProductsRequestEvent	-= DidFinishProductsRequestEvent;
+			Billing.DidReceiveTransactionInfoEvent	-= DidReceiveTransactionInfoEvent;
 		}
 		
 		#endregion
 
-		#region API Calls
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+
+			if (m_products.Length == 0)
+			{
+				GUILayout.Box ("We couldn't find any product information. Please configure.");
+				return;
+			}
 			
-		private void RequestBillingProducts(List<BillingProduct>  _products)
-		{
-			NPBinding.Billing.RequestForBillingProducts(_products);
-		}
-
-		private void RestoreCompletedTransactions()
-		{
-			NPBinding.Billing.RestoreCompletedTransactions();
-		}
-
-		private void BuyProduct(string _productIdentifier)
-		{
-			NPBinding.Billing.BuyProduct(_productIdentifier);
-		}
-
-		private bool IsProductPurchased(string _productIdentifier)
-		{
-			return NPBinding.Billing.IsProductPurchased(_productIdentifier);
-		}
-
-		#endregion
-
-
-		#region API Callbacks
-
-		private void BillingProductsRequestFinishedEvent (IList _regProductsList, string _error)
-		{
-			AddNewResult("Received Billing Products Request Event");
-
-			if(string.IsNullOrEmpty(_error))
+			GUILayout.Label ("Product Requests", kSubTitleStyle);
+			
+			if (GUILayout.Button ("Request For Billing Products"))
 			{
-				AppendResult("Received products count : " + _regProductsList.Count);
-				foreach(BillingProduct _eachProduct in _regProductsList)
-				{
-					AppendResult(_eachProduct.ToString());
-				}
+				AddNewResult ("Sending request to load product information from store.");
+				RequestBillingProducts (m_products);
 			}
-			else
+			
+			GUILayout.Box ("[NOTE] On finishing product request, DidFinishProductsRequestEvent is triggered.");
+			
+			if (m_productRequestFinished)
 			{
-				AppendResult("Error = "+_error);
-			}
-		}
-
-		private void TransactionFinishedEvent (IList _finishedTransactions)
-		{
-			AddNewResult("New Transaction Event Received. Transactions Received = " + _finishedTransactions.Count);
-
-			//Getting the results of each transaction status.
-			foreach(BillingTransaction _eachTransaction in _finishedTransactions)
-			{
-
-				//Product ID for which this transaction happened
-				string _productIdentifier  						= _eachTransaction.ProductIdentifier;
-
-				//Time of purchase details
-				System.DateTime _transactionDateUTC 			= _eachTransaction.TransactionDateUTC;	
-				System.DateTime _transactionDateLocal 			= _eachTransaction.TransactionDateLocal;
-
-				//Transaction unique identifier
-				string _transactionIdentifier					= _eachTransaction.TransactionIdentifier;
-
-				//Receipt and original json data - Required for external Transaction validation
-				string _transactionReceipt						= _eachTransaction.TransactionReceipt;
-
-				//Fetching Transaction State and Verirification States
-				eBillingTransactionState _transactionState				= _eachTransaction.TransactionState;	
-				eBillingTransactionVerificationState _verificationState = _eachTransaction.VerificationState; 
-
-				//Error description if any
-				string _error									= _eachTransaction.Error;
-
-				// Raw purchase data
-				string _rawPurchaseData							= _eachTransaction.RawPurchaseData;
-
-
-				if(!string.IsNullOrEmpty(_error))
+				if (GUILayout.Button ("Restore Purchases"))
 				{
-					AppendResult("Error Description = "				+ _error);
+					AddNewResult ("Sending request to restore old purchases.");
+					RestoreCompletedTransactions ();
 				}
-
-				AppendResult("Product Identifier = " 			+ _productIdentifier);
-				AppendResult("Transaction State "				+ _transactionState);
-				AppendResult("Transaction Verification State "	+ _verificationState);
-				AppendResult("Transaction Date[UTC] = "			+ _transactionDateUTC);
-				AppendResult("Transaction Date[Local] = "		+ _transactionDateLocal);
-				AppendResult("Transaction Identifier = "		+ _transactionIdentifier);
-				AppendResult("Transaction Receipt = "			+ _transactionReceipt);
-				AppendResult("Raw Purchase Data = "				+ _rawPurchaseData);
 				
+				GUILayout.Box ("[NOTE] On finishing restore request, DidReceiveTransactionInfoEvent is triggered.");
+				
+				GUILayout.Label ("Product Purchases", kSubTitleStyle);
+				GUILayout.Box ("Current billing product = " + GetCurrentProduct ().Name);
+				
+				GUILayout.BeginHorizontal ();
+				{
+					if (GUILayout.Button ("Previous Product"))
+					{ 
+						GotoPreviousProduct ();
+					}
+					
+					if (GUILayout.Button ("Next Product"))
+					{
+						GotoNextProduct ();
+					}
+				}
+				GUILayout.EndHorizontal ();
+				
+				if (GUILayout.Button ("Buy Product"))
+				{
+					AddNewResult (string.Format ("Requesting to buy product = {0}.", GetCurrentProduct().Name));
+					BuyProduct (GetCurrentProduct ().ProductIdentifier);
+				}
+				
+				GUILayout.Box ("[NOTE] On finishing product purchase request, DidReceiveTransactionInfoEvent is triggered.");
+				
+				if (GUILayout.Button ("Is Product Purchased"))
+				{
+					BillingProduct	 _product		= GetCurrentProduct ();
+					bool 			_isPurchased 	= IsProductPurchased (_product.ProductIdentifier);
+					
+					AddNewResult (string.Format ("{0} {1}", _product.Name, _isPurchased ? "is already purchased." : "is not yet purchased!"));
+				}
+				
+				GUILayout.Box ("[NOTE] Purchase history is tracked only for non-consumable products.");
+				
+				if (GUILayout.Button ("Is Consumable Product"))
+				{
+					BillingProduct	 _product		= GetCurrentProduct ();
+					bool 			_isConsumable 	= _product.IsConsumable;
+					
+					AddNewResult (string.Format ("{0} {1}", _product.Name, _isConsumable ? "is consumable product." : "is non-consumable product."));
+				}
 			}
 		}
 		
 		#endregion
 
-		#region UI
-		
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
+		#region API Methods
+			
+		private void RequestBillingProducts (BillingProduct[]  _products)
+		{
+			NPBinding.Billing.RequestForBillingProducts (_products);
+		}
 
-			RootScrollView.BeginScrollView();
+		private void RestoreCompletedTransactions ()
+		{
+			NPBinding.Billing.RestoreCompletedTransactions ();
+		}
+
+		private void BuyProduct (string _productIdentifier)
+		{
+			NPBinding.Billing.BuyProduct (_productIdentifier);
+		}
+
+		private bool IsProductPurchased (string _productIdentifier)
+		{
+			return NPBinding.Billing.IsProductPurchased (_productIdentifier);
+		}
+
+		#endregion
+
+		#region API Callback Methods
+
+		private void DidFinishProductsRequestEvent (BillingProduct[] _regProductsList, string _error)
+		{
+			AddNewResult(string.Format("Billing products request finished. Error = {0}.", _error.GetPrintableString()));
+
+			if (_regProductsList != null)
 			{
-				GUILayout.Label("Product Requests", kSubTitleStyle);
-				
-				if (GUILayout.Button("RequestForBillingProducts"))
+				m_productRequestFinished	= true;
+				AppendResult (string.Format ("Totally {0} billing products information were received.", _regProductsList.Length));
+
+				foreach (BillingProduct _eachProduct in _regProductsList)
+					AppendResult (_eachProduct.ToString());
+			}
+		}
+
+		private void DidReceiveTransactionInfoEvent (BillingTransaction[] _transactionList, string _error)
+		{
+			AddNewResult(string.Format("Billing transaction finished. Error = {0}.", _error.GetPrintableString()));
+
+			if (_transactionList != null)
+			{				
+				AppendResult (string.Format ("Count of transaction information received = {0}.", _transactionList.Length));
+
+				foreach (BillingTransaction _eachTransaction in _transactionList)
 				{
-					RequestBillingProducts(m_products);
-				}
-				
-				if (GUILayout.Button("RestorePurchases"))
-				{
-					RestoreCompletedTransactions();
-				}
-				
-				if (m_products.Count == 0)
-				{
-					GUILayout.Box("There are no billing products. Add products in NPSettings");
-				}
-				else
-				{
-					GUILayout.Label("Product Purchases", kSubTitleStyle);
-					GUILayout.Box("Current Product = " + GetCurrentProduct().Name + " " + "[Products Available = " + GetProductsCount() + "]");
-					
-					GUILayout.BeginHorizontal();
-					{
-						if (GUILayout.Button("Next Product"))
-						{
-							GotoNextProduct();
-						}
-						
-						if (GUILayout.Button("Previous Product"))
-						{ 
-							GotoPreviousProduct();
-						}
-					}
-					GUILayout.EndHorizontal();
-					
-					if (GUILayout.Button("Buy"))
-					{
-						AddNewResult("Requesting to buy product = " + GetCurrentProduct().Name);
-						BuyProduct(GetCurrentProduct().ProductIdentifier);
-					}
-					
-					if (GUILayout.Button("IsProductPurchased"))
-					{
-						bool _isPurchased = IsProductPurchased(GetCurrentProduct().ProductIdentifier);
-						
-						AddNewResult("Is " + GetCurrentProduct().Name +  "Purchased ? " + _isPurchased);
-					}
-					
-					if (GUILayout.Button("IsConsumableProduct"))
-					{
-						bool _isConsumable = GetCurrentProduct().IsConsumable;
-						
-						AddNewResult("Is " + GetCurrentProduct().Name +  "Consumable ? " + _isConsumable);
-					}
+					AppendResult ("Product Identifier = " 		+ _eachTransaction.ProductIdentifier);
+					AppendResult ("Transaction State = "		+ _eachTransaction.TransactionState);
+					AppendResult ("Verification State = "		+ _eachTransaction.VerificationState);
+					AppendResult ("Transaction Date[UTC] = "	+ _eachTransaction.TransactionDateUTC);
+					AppendResult ("Transaction Date[Local] = "	+ _eachTransaction.TransactionDateLocal);
+					AppendResult ("Transaction Identifier = "	+ _eachTransaction.TransactionIdentifier);
+					AppendResult ("Transaction Receipt = "		+ _eachTransaction.TransactionReceipt);
+					AppendResult ("Error = "					+ _eachTransaction.Error.GetPrintableString());
 				}
 			}
-			RootScrollView.EndScrollView();
-
-			DrawResults();
-			DrawPopButton();
 		}
 		
 		#endregion
-		
-		#region Unexposed Methods
+	
+		#region Misc. Methods
 		
 		private BillingProduct GetCurrentProduct ()
 		{
@@ -231,7 +220,7 @@ namespace VoxelBusters.NativePlugins.Demo
 		{
 			m_productIter++;
 			
-			if (m_productIter >= m_products.Count)
+			if (m_productIter >= m_products.Length)
 				m_productIter	= 0;
 		}
 		
@@ -240,14 +229,15 @@ namespace VoxelBusters.NativePlugins.Demo
 			m_productIter--;
 			
 			if (m_productIter < 0)
-				m_productIter	= m_products.Count - 1;
+				m_productIter	= m_products.Length - 1;
 		}
 		
-		private int GetProductsCount()
+		private int GetProductsCount ()
 		{
-			return m_products.Count;
+			return m_products.Length;
 		}
 		
 		#endregion
 	}
+#endif
 }

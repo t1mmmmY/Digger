@@ -1,19 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
-using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
-#if UNITY_EDITOR
+#if USES_GAME_SERVICES && UNITY_EDITOR
+using System;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins.Internal
 {
-	internal class EditorUser : User
+	public class EditorUser : User
 	{
-		#region Fields
-
-		private		Texture2D		m_image;
-
-		#endregion
-
 		#region Properties
 
 		public override string Identifier
@@ -35,33 +30,50 @@ namespace VoxelBusters.NativePlugins.Internal
 		internal EditorUser ()
 		{}
 
-		public EditorUser (string _id, string _name, Texture2D _image) : base (_id, _name)
-		{
-			// Initialize properties
-			m_image			= _image;
-		}
-
-		public EditorUser (EditorGameCenter.EGCUser _user)
+		public EditorUser (EGCUser _user)
 		{
 			// Initialize properties
 			Identifier		= _user.Identifier;
 			Name			= _user.Name;
-			m_image			= _user.Image;
 		}
 		
 		#endregion
 		
 		#region Methods
 		
-		public override void GetImageAsync (DownloadTexture.Completion _onCompletion)
+		protected override void RequestForImage ()
 		{
-			if (_onCompletion != null)
-			{
-				if (m_image == null)
-					_onCompletion(null, "Texture not found.");
-				else
-					_onCompletion(m_image, null);
-			}
+			EditorGameCenter.Instance.GetUserImage(this);
+		}
+		
+		#endregion
+
+		#region Static Methods
+		
+		public static EditorUser[] ConvertUsersList (IList _gcUsers)
+		{
+			if (_gcUsers == null)
+				return null;
+			
+			int 			_count			= _gcUsers.Count;
+			EditorUser[]	_usersList		= new EditorUser[_count];
+			
+			for (int _iter = 0; _iter < _count; _iter++)
+				_usersList[_iter]			= new EditorUser((EGCUser)_gcUsers[_iter]);
+			
+			return _usersList;
+		}
+		
+		#endregion
+		
+		#region Event Callback Methods
+		
+		protected override void RequestForImageFinished (IDictionary _dataDict)
+		{
+			string		_error	= _dataDict.GetIfAvailable<string>(EditorGameCenter.kErrorKey);
+			Texture2D	_image	= _dataDict.GetIfAvailable<Texture2D>(EditorGameCenter.kImageKey);
+
+			DownloadImageFinished(_image, _error);
 		}
 		
 		#endregion

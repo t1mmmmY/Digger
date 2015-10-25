@@ -2,31 +2,38 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace VoxelBusters.Utility
 {
 	public static class IDictionaryExtensions 
 	{
-		public static T GetIfAvailable<T>(this IDictionary _dictionary, string _key)
+		public static T GetIfAvailable <T> (this IDictionary _dictionary, string _key)
 		{
-			Type _type	= typeof(T);
-			
-			if(!string.IsNullOrEmpty(_key))
-			{	
-				if (_dictionary.Contains(_key))
-				{
-					if (_type.IsEnum)
-					{
-						return (T)Enum.ToObject(_type, _dictionary[_key]);
-					}
-					else
-					{
-						return (T)System.Convert.ChangeType(_dictionary[_key], _type);
-					}
-				}
+			if (_key == null || !_dictionary.Contains(_key))
+				return default(T);
+
+			object	_value		= _dictionary[_key];
+			Type 	_targetType	= typeof(T);
+
+			if (_value == null)
+				return default(T);
+
+			if (_targetType.IsInstanceOfType(_value))
+				return (T)_value;
+
+#if !NETFX_CORE
+			if (_targetType.IsEnum)
+#else
+			if (_targetType.GetTypeInfo().IsEnum)
+#endif
+			{
+				return (T)Enum.ToObject(_targetType, _value);
 			}
-			
-			return default(T);
+			else
+			{
+				return (T)System.Convert.ChangeType(_value, _targetType);
+			}
 		}
 
 		public static T GetIfAvailable<T>(this IDictionary _sourceDictionary, string _key, string _path)

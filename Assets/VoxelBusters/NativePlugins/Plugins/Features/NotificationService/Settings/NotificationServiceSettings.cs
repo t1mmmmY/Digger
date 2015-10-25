@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
-using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	/// <summary>
 	/// Notification Service Settings provides interface to configure properties related to notification.
 	/// </summary>
@@ -18,30 +19,43 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class iOSSettings 
 		{
+			#region Fields
+
 			[SerializeField]
 			[Tooltip ("Specify the key used to identify user data within notification payload")]//TODO
-			private string 				m_userInfoKey;
+			private 	string 			m_userInfoKey;
+
+			#endregion
+
+			#region Properties
+
 			/// <summary>
 			/// Gets or sets the key used to access user data within notification payload.
 			/// </summary>
 			/// <value>The user info key.</value>
-			public string  				UserInfoKey
+			public string UserInfoKey
 			{
 				get 
 				{ 
 					return m_userInfoKey; 
 				}
 				
-				set
+				private set
 				{
 					m_userInfoKey = value;
 				}
 			}
 
+			#endregion
+
+			#region Constructors
+
 			public iOSSettings ()
 			{
 				UserInfoKey	= "user_info";
 			}
+
+			#endregion
 		}
 
 		#endregion
@@ -54,9 +68,43 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class AndroidSettings 
 		{
+			#region Fields
+
 			[SerializeField]
 			[Tooltip ("List the sender IDs to register GCM with.")]
-			private string[]	 		m_senderIDs;
+			private 	string[]	 	m_senderIDs;
+			private 	bool	 		m_needsBigStyle		= false; 
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			[Tooltip ("Set this to allow vibration when a notification is received")]
+			private 	bool	 		m_allowVibration	= true; 
+
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			[Tooltip ("Used for post Android L Devices. Changes because of material design adaptation.")]
+			private 	Texture2D 		m_whiteSmallIcon;
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			[Tooltip ("Coloured icon used for pre Android L Devices.")]
+			private 	Texture2D 		m_colouredSmallIcon;
+
+			[Header("Remote Notification Keys")]
+			[SerializeField]
+			[Tooltip ("Custom ticker text key used in remote notifications.")]
+			private 	string 			m_tickerTextKey 	= "ticker_text";
+			[SerializeField]
+			[Tooltip ("Custom content text key used in remote notifications.")]
+			private 	string 			m_contentTextKey 	= "content_text";
+			[SerializeField]
+			[Tooltip ("Custom content title key used in remote notifications.")]
+			private 	string 			m_contentTitleKey 	= "content_title";
+			[SerializeField]
+			[Tooltip ("User info key used in remote notifications.")]
+			private 	string 			m_userInfoKey 		= "user_info";
+			[SerializeField]
+			[Tooltip ("Tag key used in notifications for  overwriting existing notifications in notification bar if specified uniquely.")]
+			private 	string 			m_tagKey 			= "tag";
+
+			#endregion
+
+			#region Properties
 
 			/// <summary>
 			/// Gets or sets the sender identifier list.
@@ -65,215 +113,209 @@ namespace VoxelBusters.NativePlugins
 			///	\note Sender ID list is required to receive Remote Notifications.
 			///	Please check in Google Play Developer Console, select your application -> SERVICES & APIS -> GOOGLE CLOUD MESSAGING section.
 			///</value>
-
-			public string[] 			SenderIDList
+			public string[] SenderIDList
 			{
 				get
 				{
 					return m_senderIDs;
 				}
 				
-				set
+				private set
 				{
 					m_senderIDs = value;
 				}
 			}
 			
-			private bool	 		m_needsBigStyle	= false; 
-			internal bool 			NeedsBigStyle //Not Exposed currenltly. Becuase of issues on Lollipop
+			internal bool NeedsBigStyle //Not Exposed currenltly. Becuase of issues on Lollipop
 			{
 				get
 				{
 					return m_needsBigStyle;
 				}
 				
-				set
+				private set
 				{
 					m_needsBigStyle = value;
 				}
 			}
 
-			[SerializeField, ExecuteOnValueChange("OnSmallNotificationIconChanged")]
-			[Tooltip ("Used for post Android L Devices. Changes because of material design adaptation.")]
-			private Texture2D m_whiteSmallIcon;
+			internal bool AllowVibration
+			{
+				get
+				{
+					return m_allowVibration;
+				}
+				
+				private set
+				{
+					m_allowVibration = value;
+				}
+			}
+
 			/// <summary>
 			/// This texture will be used for showing small icon in notification.
 			/// </summary>
 			/// <value> Android L devices will use this as icon in notifications.</value>
-			public Texture2D  				WhiteSmallIcon
+			public Texture2D WhiteSmallIcon
 			{
 				get 
 				{ 
 					return m_whiteSmallIcon; 
 				}
 				
-				set
+				private set
 				{
 					m_whiteSmallIcon = value;
 				}
 			}
 			
-			[SerializeField, ExecuteOnValueChange("OnSmallNotificationIconChanged")]
-			[Tooltip ("Coloured icon used for pre Android L Devices.")]
-			private Texture2D m_colouredSmallIcon;
 			/// <summary>
 			/// This texture will be used for showing small icon in notification.
 			/// </summary>
 			/// <value> Android L devices will use this as icon in notifications.</value>
-			public Texture2D  				ColouredSmallIcon
+			public Texture2D ColouredSmallIcon
 			{
 				get 
 				{ 
 					return m_colouredSmallIcon; 
 				}
 				
-				set
+				private set
 				{
 					m_colouredSmallIcon = value;
 				}
 			}
 
-			[Header("Remote Notification Keys")]
-			[SerializeField]
-			[Tooltip ("Custom ticker text key used in remote notifications.")]
-			private string 				m_tickerTextKey = "ticker_text";
 			/// <summary>
 			/// Gets or sets the ticker text key.
 			/// </summary>
 			/// <value>Custom ticker text key used for remote notifications.</value>
-			public string  				TickerTextKey
+			public string TickerTextKey
 			{
 				get 
 				{ 
 					return m_tickerTextKey; 
 				}
 				
-				set
+				private set
 				{
 					m_tickerTextKey = value;
 				}
 			}
 
-			[SerializeField]
-			[Tooltip ("Custom content title key used in remote notifications.")]
-			private string 				m_contentTitleKey = "content_title";
 			/// <summary>
 			/// Gets or sets the content title key.
 			/// </summary>
 			/// <value>Custom content title key used for remote notifications.</value>
-			public string  				ContentTitleKey
+			public string ContentTitleKey
 			{
 				get 
 				{ 
 					return m_contentTitleKey; 
 				}
 				
-				set
+				private set
 				{
 					m_contentTitleKey = value;
 				}
 			}
 
-			[SerializeField]
-			[Tooltip ("Custom content text key used in remote notifications.")]
-			private string 				m_contentTextKey = "content_text";
-
 			/// <summary>
 			/// Gets or sets the content text key.
 			/// </summary>
 			/// <value>Custom content text key used in remote notifications.</value>
-			public string  				ContentTextKey
+			public string ContentTextKey
 			{
 				get 
 				{ 
 					return m_contentTextKey; 
 				}
 				
-				set
+				private set
 				{
 					m_contentTextKey = value;
 				}
 			}
 
-			[SerializeField]
-			[Tooltip ("User info key used in remote notifications.")]
-			private string 				m_userInfoKey = "user_info";
-
 			/// <summary>
 			/// Gets or sets the user info key.
 			/// </summary>
 			/// <value>User info key where user can add custom data and retrieve back with UserInfo variable of CrossPlatformNotification.</value>
-			public string  				UserInfoKey
+			public string UserInfoKey
 			{
 				get 
 				{ 
 					return m_userInfoKey; 
 				}
 				
-				set
+				private set
 				{
 					m_userInfoKey = value;
 				}
 			}
 
-			[SerializeField]
-			[Tooltip ("Tag key used in notifications for  overwriting existing notifications in notification bar if specified uniquely.")]
-			private string 				m_tagKey = "tag";
 			/// <summary>
 			/// Gets or sets the tag key.
 			/// </summary>
 			/// <value>The Tag key used in remote notifcations. Specifying uniquely can avoid overwriting previous notification displayed.</value>
-			public string  				TagKey
+			public string TagKey
 			{
 				get 
 				{ 
 					return m_tagKey; 
 				}
 				
-				set
+				private set
 				{
 					m_tagKey = value;
 				}
 			}
+
+			#endregion
 		}
 
 		#endregion
 
-		#region Properties
+		#region Fields
 
 		[SerializeField]
-		private iOSSettings				m_iOS;
+		private 	iOSSettings			m_iOS;
+		[SerializeField]
+		private 	AndroidSettings		m_android;
+
+		#endregion
+
+		#region Properites
+
 		/// <summary>
 		/// Gets or sets the Notification Service Settings specific to iOS platform.
 		/// </summary>
 		/// <value>The i O.</value>
-		public	iOSSettings				iOS
+		public iOSSettings iOS
 		{
 			get 
 			{ 
 				return m_iOS; 
 			}
 			
-			set 
+			private set 
 			{ 
 				m_iOS = value; 
 			}
 		}
 
-		[SerializeField]
-		private AndroidSettings			m_android;
 		/// <summary>
 		/// Gets or sets the Notification Service Settings specific to Android platform.
 		/// </summary>
 		/// <value>The android.</value>
-		public	AndroidSettings			Android
+		public AndroidSettings Android
 		{
 			get 
 			{
 				return m_android; 
 			}
 
-			set 
+			private set 
 			{ 
 				m_android = value; 
 			}
@@ -281,12 +323,12 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Constructor
+		#region Constructors
 
 		public NotificationServiceSettings ()
 		{
-			iOS							= new iOSSettings();
-			Android						= new AndroidSettings();
+			iOS			= new iOSSettings();
+			Android		= new AndroidSettings();
 		}
 
 		#endregion

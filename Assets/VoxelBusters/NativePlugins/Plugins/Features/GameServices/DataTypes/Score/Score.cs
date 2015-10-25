@@ -10,14 +10,24 @@ namespace VoxelBusters.NativePlugins
 	/// <summary>
 	/// <see cref="VoxelBusters.NativePlugins.Score"/> class holds information for a score that was earned by the <see cref="VoxelBusters.NativePlugins.User"/>.
 	/// </summary>
-	public abstract class Score
+	public abstract class Score : NPObject
 	{
 		#region Properties
+
+		/// <summary>
+		/// Gets the unique identifier of <see cref="VoxelBusters.NativePlugins.Leaderboard"/> which is common for all supported platforms.
+		/// </summary>
+		/// <value>A string used to uniquely identify <see cref="VoxelBusters.NativePlugins.Leaderboard"/> across all supported platforms.</value>
+		public string LeaderboardGlobalID
+		{
+			get;
+			protected set;
+		}
 	
 		/// <summary>
-		/// Gets the identifier of the leaderboard that the score is being sent to.
+		/// Gets the identifier of <see cref="VoxelBusters.NativePlugins.Leaderboard"/> specific to current platform.
 		/// </summary>
-		/// <value>Identifies the leaderboard that the score is being sent to.</value>
+		/// <value>A string used to uniquely identify <see cref="VoxelBusters.NativePlugins.Leaderboard"/> specific to current platform.</value>
 		public abstract string LeaderboardID
 		{
 			get;
@@ -77,39 +87,71 @@ namespace VoxelBusters.NativePlugins
 		}
 
 		#endregion
-		
+
+		#region Delegates
+
+		/// <summary>
+		/// The callback delegate used when report see cref="VoxelBusters.NativePlugins.Score"/> request completes.
+		/// </summary>
+		/// <param name="_success">The operation completion status.</param>
+		/// <param name="_error">If the operation was successful, this value is nil; otherwise, this parameter holds the description of the problem that occurred.</param>
+		public delegate void ReportScoreCompletion (bool _success, string _error);
+
+		#endregion
+
+		#region Events
+
+		protected event ReportScoreCompletion ReportScoreFinishedEvent;
+
+		#endregion
+
 		#region Constructor
 		
-		protected Score ()
+		protected Score () : base (NPObjectManager.eCollectionType.GAME_SERVICES)
 		{}
 
-		protected Score (string _leaderboardID, User _user, long _scoreValue) 
+		protected Score (string _leaderboardGlobalID, string _leaderboardID, User _user, long _scoreValue) : base (NPObjectManager.eCollectionType.GAME_SERVICES)
 		{
 			// Initialize properties
-			LeaderboardID			= _leaderboardID;
-			User					= _user;
-			Value					= _scoreValue;
-			Date					= DateTime.Now;
-			Rank					= -1;
+			LeaderboardGlobalID	= _leaderboardGlobalID;
+			LeaderboardID		= _leaderboardID;
+			User				= _user;
+			Value				= _scoreValue;
+			Date				= DateTime.Now;
+			Rank				= 0;
 		}	
 		
 		#endregion
 		
-		#region Abstract Methods
+		#region Methods
 
 		/// <summary>
 		/// Reports the score to game service server.
 		/// </summary>
 		/// <param name="_onCompletion">Callback to be called when operation is completed.</param>
-		public abstract void ReportScore (Action<bool> _onCompletion);
-
-		#endregion
-		
-		#region Override Methods
+		public virtual void ReportScore (ReportScoreCompletion _onCompletion)
+		{
+			// Cache event
+			ReportScoreFinishedEvent = _onCompletion;
+		}
 		
 		public override string ToString ()
 		{
-			return string.Format("[Score: Rank={0}, UserName={1}, Value={2}]", Rank, User.Name, Value);
+			return string.Format("[Score: Rank={0}, UserName={1}, Value={2}]", 
+			                     Rank, User.Name, Value);
+		}
+
+		#endregion
+
+		#region Event Callback Methods
+
+		protected virtual void ReportScoreFinished (IDictionary _dataDict)
+		{}
+		
+		protected void ReportScoreFinished (bool _success, string _error)
+		{
+			if (ReportScoreFinishedEvent != null)
+				ReportScoreFinishedEvent(_success, _error);
 		}
 
 		#endregion

@@ -7,7 +7,7 @@ namespace VoxelBusters.Utility
 	{
 		#region Properties
 		
-		public		string			CallbackMethod 
+		public string InvokeMethod 
 		{ 
 			get; 
 			private set; 
@@ -22,7 +22,7 @@ namespace VoxelBusters.Utility
 
 		public ExecuteOnValueChangeAttribute (string _method)
 		{
-			CallbackMethod	= _method;
+			InvokeMethod	= _method;
 		}
 
 		#endregion

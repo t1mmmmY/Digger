@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NETWORK_CONNECTIVITY && UNITY_EDITOR
 using VoxelBusters.DebugPRO;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
@@ -13,9 +14,10 @@ namespace VoxelBusters.NativePlugins
 		
 		public override void Initialise ()
 		{
-			Console.Log(Constants.kDebugTag, "[NetworkConnectivity] Initialised");
+			base.Initialise ();
 
 			NetworkConnectivitySettings _settings = NPSettings.NetworkConnectivity;
+
 			// Starts scheduler to monitor connectivity
 			StopCoroutine("MonitorNetworkConnectivity");
 			StartCoroutine(MonitorNetworkConnectivity(_settings));

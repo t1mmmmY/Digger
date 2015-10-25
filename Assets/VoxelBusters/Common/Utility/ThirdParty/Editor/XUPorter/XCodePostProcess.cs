@@ -14,11 +14,9 @@ namespace VoxelBusters.ThirdParty.XUPorter
 		[PostProcessBuild(999)]
 		public static void OnPostProcessBuild( BuildTarget target, string pathToBuiltProject )
 		{
-			#if UNITY_5 || UNITY_6 || UNITY_7
-			if (target != BuildTarget.iOS)
-			#else
-			if (target != BuildTarget.iPhone)
-			#endif
+			string 	_targetStr	= target.ToString();
+
+			if (!(_targetStr.Equals("iOS") || _targetStr.Equals("iPhone")))
 			{
 				Debug.LogWarning("Target is not iPhone. XCodePostProcess will not run");
 				return;

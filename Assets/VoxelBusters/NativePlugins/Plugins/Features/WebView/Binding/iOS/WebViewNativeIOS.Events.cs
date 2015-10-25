@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_WEBVIEW && UNITY_IOS
 using VoxelBusters.Utility;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins.Internal
 {
 	public partial class WebViewNativeIOS : WebViewNative

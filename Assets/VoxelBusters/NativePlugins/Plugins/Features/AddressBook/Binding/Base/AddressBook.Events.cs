@@ -11,79 +11,70 @@ namespace VoxelBusters.NativePlugins
 	{
 		#region Delegates
 
+		protected delegate void RequestAccessCompletion	(eABAuthorizationStatus _authorizationStatus, string _error);
+
 		/// <summary>
-		/// Use this delegate type to get callback when reading contacts information completes.
+		/// The callback delegate used when reading contacts information completes.
 		/// </summary>
-		/// <param name="_authorizationStatus"> Authorization status for address book access .</param>
-		/// <param name="_contactList"> List of contacts read from address book database.</param>
+		/// <param name="_authorizationStatus">Authorization status for address book access.</param>
+		/// <param name="_contactList">List of contacts retrieved from address book database.</param>
 		public delegate void ReadContactsCompletion (eABAuthorizationStatus _authorizationStatus, AddressBookContact[] _contactList);
 
 		#endregion
 
 		#region Events
-		
-		protected ReadContactsCompletion		OnReadContactsFinished;
-		
+
+		protected RequestAccessCompletion RequestAccessFinishedEvent;
+		protected ReadContactsCompletion ReadContactsFinishedEvent;
+
 		#endregion
 
-		#region Callback Methods
+		#region Auth Methods
 
-		private void ABReadContactsFinished (string _contactsJsonStr)
+		protected virtual void ABRequestAccessFinished (string _dataStr)
+		{}
+
+		protected void ABRequestAccessFinished (eABAuthorizationStatus _authStatus, string _error)
+		{
+			Console.Log(Constants.kDebugTag, string.Format("[AddressBook] Request access finished. AuthStatus={0}, Error={1}.", _authStatus, _error.GetPrintableString()));
+
+			if (RequestAccessFinishedEvent != null)
+				RequestAccessFinishedEvent(_authStatus, _error);
+		}
+
+		#endregion
+
+		#region Read Contacts Methods
+
+		private void ABReadContactsFinished (string _data)
 		{	
-			IList _contactsJsonList				= JSONUtility.FromJSON(_contactsJsonStr) as IList;
-			int _count							= _contactsJsonList.Count;
-			AddressBookContact[] _contactsList	= new AddressBookContact[_count];
-			
-			for (int _iter = 0; _iter < _count; _iter++)
-			{
-				AddressBookContact _contact;
-				IDictionary _contactInfoDict	= _contactsJsonList[_iter] as IDictionary;
-				
-				// Parse native data
-				ParseContactData(_contactInfoDict, out _contact);
-				
-				// Add parsed object 
-				_contactsList[_iter]			= _contact;
-			}
+			eABAuthorizationStatus	_authStatus;
+			AddressBookContact[]	_contactsList;
+			IDictionary				_dataDict		= JSONUtility.FromJSON(_data) as IDictionary;
 
-			// Triggers event
-			ABReadContactsFinished(_contactsList);
+			// Parse response
+			ParseReadContactsResponseData(_dataDict, out _authStatus, out _contactsList);
+
+			// Invoke handler
+			ABReadContactsFinished(_authStatus, _contactsList);
 		}
 
-		private void ABReadContactsFinished (AddressBookContact[] _contactsList)
+		private void ABReadContactsFinished (eABAuthorizationStatus _authStatus, AddressBookContact[] _contactsList)
 		{
-			Console.Log(Constants.kDebugTag, "[AddressBook] Reading contacts finished, Status=" + eABAuthorizationStatus.AUTHORIZED + " " + "Read contacts count=" + _contactsList.Length);
+			Console.Log(Constants.kDebugTag, string.Format("[AddressBook] Read contacts finished. Status= {0}.", _authStatus));
 			
-			// Invoke callback
-			if (OnReadContactsFinished != null)
-				OnReadContactsFinished(eABAuthorizationStatus.AUTHORIZED, _contactsList);
-		}
-		
-		private void ABReadContactsFailed (string _statusStr)
-		{
-			eABAuthorizationStatus _authStatus;
-
-			// Parse data
-			ParseAuthorizationStatusData(_statusStr, out _authStatus);
-			Console.Log(Constants.kDebugTag, "[AddressBook] Reading contacts failed, AuthorizationStatus=" + _authStatus + "Contacts=" + "NULL");
-
-			// Invoke callback
-			if (OnReadContactsFinished != null)
-				OnReadContactsFinished(_authStatus, null);
+			if (ReadContactsFinishedEvent != null)
+				ReadContactsFinishedEvent(_authStatus, _contactsList);
 		}
 
-		#endregion
+		#endregion 
 
 		#region Parsing Methods
 
-		protected virtual void ParseContactData (IDictionary _contactInfoDict, out AddressBookContact _contact)
+		protected virtual void ParseReadContactsResponseData (IDictionary _dataDict, out eABAuthorizationStatus _authStatus, out AddressBookContact[] _contactsList)
 		{
-			_contact	= null;
-		}
-
-		protected virtual void ParseAuthorizationStatusData (string _statusStr, out eABAuthorizationStatus _authStatus)
-		{
-			_authStatus	= eABAuthorizationStatus.RESTRICTED;
+			_contactsList	= null;
+			_authStatus		= eABAuthorizationStatus.DENIED;
 		}
 
 		#endregion

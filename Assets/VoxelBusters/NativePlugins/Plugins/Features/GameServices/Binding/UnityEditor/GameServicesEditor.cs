@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_GAME_SERVICES && UNITY_EDITOR
 using System;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
-	public sealed class GameServicesEditor : GameServices 
+	public sealed partial class GameServicesEditor : GameServices 
 	{
 		#region Fields
 		
@@ -26,7 +27,7 @@ namespace VoxelBusters.NativePlugins
 			
 			protected set 
 			{
-				m_localUser = value as EditorLocalUser;
+				m_localUser = (EditorLocalUser)value;
 			}
 		}
 		
@@ -54,181 +55,123 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 		
 		#region Leaderboard Methods
-
-		public override Leaderboard CreateLeaderboard (string _leaderboardID)
+		
+		protected override Leaderboard CreateLeaderboard (string _leaderboarGID, string _leaderboardID)
 		{
-			// Verify user authentication state before proceeding
-			if (VerifyUser())
-				return new EditorLeaderboard(_leaderboardID);
+			// Verify auth status
+			if (!VerifyUser())
+				return null;
 
-			return null;
+			// Check if identifier is valid
+			if (string.IsNullOrEmpty(_leaderboardID))
+				return null;
+
+			return new EditorLeaderboard(_leaderboarGID, _leaderboardID);
+		}
+		
+		#endregion
+		
+		#region Achievement Description Methods
+		
+		protected override void LoadAchievementDescriptions (bool _needsVerification, AchievementDescription.LoadAchievementDescriptionsCompletion _onCompletion)
+		{
+			base.LoadAchievementDescriptions(_needsVerification, _onCompletion);
+			
+			// Verify auth status
+			if (_needsVerification && !VerifyUser())
+				return;
+			
+			EditorGameCenter.Instance.LoadAchievementDescriptions();
 		}
 		
 		#endregion
 		
 		#region Achievement Methods
 		
-		public override Achievement CreateAchievement (string _achievementID)
+		protected override Achievement CreateAchievement (string _achievementGID, string _achievementID)
 		{
-			// Verify user authentication state before proceeding
-			if (VerifyUser())
-				return new EditorAchievement(_achievementID);
-
-			return null;
-		}
-		
-		protected override void LoadAchievementDescriptions (bool _needsVerification, Action<AchievementDescription[]> _onCompletion)
-		{
-			base.LoadAchievementDescriptions(_needsVerification, _onCompletion);
-
-			// Verify user authentication state before proceeding
-			if (_needsVerification && !VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-
-				return;
-			}
-
-			// Load achievement descriptions
-			EditorGameCenter.Instance.LoadAchievementDescriptions((EditorAchievementDescription[] _descriptionList)=>{
-				
-				// Call request finished method
-				OnLoadAchievementDescriptionsFinished(_descriptionList);
-			});
-		}
-		
-		public override void LoadAchievements (Action<Achievement[]> _onCompletion)
-		{
-			// Verify user authentication state before proceeding
+			// Verify auth status
 			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-				
-				return;
-			}
+				return null;
 
-			// Load achievements
-			EditorGameCenter.Instance.LoadAchievements((EditorAchievement[] _achievementList)=>{
-				
-				if (_onCompletion != null)
-					_onCompletion(_achievementList);
-			});
-		}
-		
-		public override void ReportProgress (string _achievementID, int _pointsScored, Action<bool> _onCompletion)
-		{
-			base.ReportProgress(_achievementID, _pointsScored, _onCompletion);
-			
+			// Check if identifier is valid
 			if (string.IsNullOrEmpty(_achievementID))
-				return;
+				return null;
 			
-			// Verify user authentication state before proceeding
+			return new EditorAchievement(_achievementGID, _achievementID);
+		}
+		
+		public override void LoadAchievements (Achievement.LoadAchievementsCompletion _onCompletion)
+		{
+			base.LoadAchievements(_onCompletion);
+			
+			// Verify auth status
 			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(false);
-
 				return;
-			}
-
-			// Create new instance
-			EditorAchievement	_achievement	= new EditorAchievement(_achievementID);
-			_achievement.PointsScored			= _pointsScored;
 			
-			// Report progress
-			_achievement.ReportProgress(_onCompletion);
+			EditorGameCenter.Instance.LoadAchievements();
 		}
 		
 		#endregion
 		
 		#region User Methods
 		
-		public override void LoadUsers (string[] _userIDs, Action<User[]> _onCompletion)
+		public override void LoadUsers (string[] _userIDs, User.LoadUsersCompletion _onCompletion)
 		{
 			base.LoadUsers(_userIDs, _onCompletion);
 			
+			// Verify auth status
+			if (!VerifyUser())
+				return;
+			
+			// Verify id's
 			if (_userIDs == null)
 				return;
-
-			// Verify user authentication state before proceeding
-			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-				
-				return;
-			}
-
-			// Load users
-			EditorGameCenter.Instance.LoadUsers(_userIDs, (EditorUser[] _userList)=>{
-
-				// Trigger callback
-				if (_onCompletion != null)
-					_onCompletion(_userList);
-			});
+			
+			EditorGameCenter.Instance.LoadUsers(_userIDs);
 		}
 		
-		public override void ReportScore (string _leaderboardID, long _score, Action<bool> _onCompletion)
-		{
-			base.ReportScore(_leaderboardID, _score, _onCompletion);
-			
-			if (string.IsNullOrEmpty(_leaderboardID))
-				return;
-
-			// Verify user authentication state before proceeding
-			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(false);
-				
-				return;
-			}
-
-			// Create instance
-			EditorScore			_newScore		= new EditorScore(_leaderboardID, LocalUser, _score);
-
-			// Report new score
-			_newScore.ReportScore(_onCompletion);
-		}
-
 		#endregion
+		
+		#region Score Methods
 
-		#region UI Methods
-
-		public override void ShowDefaultAchievementCompletionBanner (bool _canShow)
+		protected override Score CreateScoreForLocalUser (string _leaderboardGID, string _leaderboardID)
 		{
-			EditorGameCenter.Instance.ShowDefaultAchievementCompletionBanner(_canShow);
+			// Verify auth status
+			if (!VerifyUser())
+				return null;
+			
+			// Verify id
+			if (string.IsNullOrEmpty(_leaderboardID))
+				return null;
+
+			return new EditorScore(_leaderboardGID, _leaderboardID, LocalUser);
 		}
+		
+		#endregion
+		
+		#region UI Methods
 		
 		public override void ShowAchievementsUI (GameServiceViewClosed _onCompletion)
 		{
 			base.ShowAchievementsUI(_onCompletion);
-
+			
+			// Verify auth status
 			if (!VerifyUser())
 				return;
-
-			// Request for view
-			EditorGameCenter.Instance.ShowAchievementsUI(()=>{
-				ShowAchievementViewFinished(null);
-			});
+			
+			EditorGameCenter.Instance.ShowAchievementsUI();
 		}
 		
-		public override void ShowLeaderboardUI (string _leaderboardID, eLeaderboardTimeScope _timeScope, GameServiceViewClosed _onCompletion)
+		public override void ShowLeaderboardUIWithID (string _leaderboardID, eLeaderboardTimeScope _timeScope, GameServiceViewClosed _onCompletion)
 		{
-			base.ShowLeaderboardUI(_leaderboardID, _timeScope, _onCompletion);
-
-			if (string.IsNullOrEmpty(_leaderboardID))
-				return;
-
+			base.ShowLeaderboardUIWithID(_leaderboardID, _timeScope, _onCompletion);
+			
+			// Verify auth status
 			if (!VerifyUser())
 				return;
-		
-			// Request for view
-			EditorGameCenter.Instance.ShowLeaderboardUI(_leaderboardID, _timeScope, ()=>{
-				ShowLeaderboardViewFinished(null);
-			});
+			
+			EditorGameCenter.Instance.ShowLeaderboardUI(_leaderboardID, _timeScope);
 		}
 		
 		#endregion

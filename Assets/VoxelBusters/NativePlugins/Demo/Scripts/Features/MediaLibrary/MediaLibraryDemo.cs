@@ -3,30 +3,121 @@ using System.Collections;
 using VoxelBusters.Utility;
 using VoxelBusters.Utility.UnityGUI.MENU;
 using VoxelBusters.NativePlugins;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class MediaLibraryDemo : DemoSubMenu 
+#if !USES_MEDIA_LIBRARY
+	public class MediaLibraryDemo : NPDisabledFeatureDemo 
+#else
+	public class MediaLibraryDemo : NPDemoBase 
+#endif
 	{
 		#region Properties
-		
-		[SerializeField]
-		private Texture2D		m_texture;
 
-		[Tooltip ("This needs to be direct link to the video file. ex: http://www.google.com/video.mp4")]		
-		[SerializeField]
-		private string			m_videoURL;
+#pragma warning disable
+		[SerializeField, Header("Image Section")]
+		private 	Texture2D	m_texture;
 
+		[SerializeField, Header("Video Section"), Tooltip ("This needs to be direct link to the video file. ex: http://www.google.com/video.mp4")]
+		private 	string		m_videoURL;
 		[SerializeField]
-		private string			m_youtubeVideoID;
-
+		private 	string		m_youtubeVideoID;
 		[SerializeField]
-		private string			m_embedHTMLString;
+		private 	string		m_embedHTMLString;
+#pragma warning restore
 
 		#endregion
 
-		#region API Calls
+#if !USES_MEDIA_LIBRARY
+	}
+#else
+		#region Unity Methods
+
+		protected override void Start ()
+		{
+			base.Start ();
+
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"You can configure this feature in NPSettings->Media Library Settings.");
+		}
+
+		#endregion
+	
+		#region GUI Methods
+		
+		protected override void DisplayFeatureFunctionalities ()
+		{
+			base.DisplayFeatureFunctionalities ();
+
+			DrawImageAPI ();
+			DrawVideoAPI ();
+		}
+		
+		private void DrawImageAPI ()
+		{
+			GUILayout.Label("Image", kSubTitleStyle);
+			
+			if (GUILayout.Button("Is Camera Supported"))
+			{
+				bool _isSupported = IsCameraSupported();
+
+				AddNewResult(_isSupported ? "Camera access is supported." : "Sorry, camera access is not supported.");
+			}
+			
+			GUILayout.BeginHorizontal();
+			{
+				if (GUILayout.Button("Pick Image From ALBUM"))
+				{
+					PickImageFromAlbum();
+				} 
+				
+				if (GUILayout.Button("Pick Image From CAMERA"))
+				{
+					PickImageFromCamera();
+				}
+			}
+			GUILayout.EndHorizontal(); 
+			
+			if (GUILayout.Button("Pick Image From BOTH - ALBUM & CAMERA"))
+			{
+				PickImageFromBoth();
+			} 
+			
+			if (GUILayout.Button("Save Screenshot To Album"))
+			{						
+				SaveScreenshotToGallery();
+			}
+		}
+		
+		private void DrawVideoAPI ()
+		{
+			GUILayout.Label("Video", kSubTitleStyle);
+			
+			if (GUILayout.Button("Play Youtube Video"))
+			{						
+				PlayYoutubeVideo();
+			} 
+			
+			if (GUILayout.Button("Play Video From URL"))
+			{		
+				PlayVideoFromURL();
+			} 
+			
+			if (GUILayout.Button("Play Video From Gallery"))
+			{						
+				PlayVideoFromGallery();
+			} 
+			
+			if (GUILayout.Button("Play Embedded Video"))
+			{		
+				PlayEmbeddedVideo();				
+			} 
+		}
+		
+		#endregion
+
+		#region Image API Methods
 		
 		private bool IsCameraSupported ()
 		{
@@ -64,6 +155,10 @@ namespace VoxelBusters.NativePlugins.Demo
 		{
 			NPBinding.MediaLibrary.SaveScreenshotToGallery(SaveImageToGalleryFinished);
 		}
+
+		#endregion
+
+		#region Video API Methods
 		
 		private void PlayYoutubeVideo ()
 		{
@@ -88,115 +183,33 @@ namespace VoxelBusters.NativePlugins.Demo
 		{
 			NPBinding.MediaLibrary.PlayEmbeddedVideo(m_embedHTMLString, PlayVideoFinished);
 		}
-		
+
 		#endregion
 
-		#region API Callbacks
+		#region API Callback Methods
 		
 		private void PickImageFinished (ePickImageFinishReason _reason, Texture2D _image)
 		{
-			AddNewResult("Image picker was closed");
-			AppendResult("Reason = " + _reason);
-			AppendResult("Texture Image = " + _image);
+			AddNewResult("Request to pick image from gallery finished. Reason for finish is " + _reason + ".");
+			AppendResult(string.Format("Selected image is {0}.", (_image == null ? "NULL" : _image.ToString())));
 		}
 		
 		private void SaveImageToGalleryFinished (bool _saved)
 		{
-			AddNewResult("Received Finished saving image to gallery Event");
-			AppendResult("Saved successfully ? " + _saved);
+			AddNewResult(_saved ? "Image saved successfully to gallery." : "Sorry, something went wrong. Couldn't save image to gallery.");
 		}
 		
 		private void PickVideoFinished (ePickVideoFinishReason _reason)
 		{
-			AddNewResult("Finished picking video from gallery");
-			AppendResult("Reason = " + _reason);
+			AddNewResult("Request to pick video from gallery finished. Reason for finish is " + _reason + ".");
 		}
 		
 		private void PlayVideoFinished (ePlayVideoFinishReason _reason)
 		{
-			AddNewResult("Finished playing video");
-			AppendResult("Reason = " + _reason);
+			AddNewResult("Request to play video finished. Reason for finish is " + _reason + ".");
 		}
 
-		#endregion
-
-		#region UI
-		
-		protected override void OnGUIWindow()
-		{		
-			base.OnGUIWindow();
-			
-			RootScrollView.BeginScrollView();
-			{
-				DrawImageAPI();
-				DrawVideoAPI();
-			}
-			RootScrollView.EndScrollView();
-			
-			DrawResults();
-			DrawPopButton();
-		}
-
-		private void DrawImageAPI ()
-		{
-			GUILayout.Label("Image", kSubTitleStyle);
-			
-			if (GUILayout.Button("IsCameraSupported"))
-			{
-				bool _isSupported = IsCameraSupported();
-				AddNewResult("IsCameraSupported ? " + _isSupported);
-			}
-			
-			GUILayout.BeginHorizontal();
-			{
-				if (GUILayout.Button("PickImage From ALBUM"))
-				{
-					PickImageFromAlbum();
-				} 
-				
-				if (GUILayout.Button("PickImage From CAMERA"))
-				{
-					PickImageFromCamera();
-				}
-			}
-			GUILayout.EndHorizontal(); 
-			
-			if (GUILayout.Button("PickImage From BOTH - ALBUM & CAMERA"))
-			{
-				PickImageFromBoth();
-			} 
-			
-			if (GUILayout.Button("SaveScreenshotToAlbum"))
-			{						
-				SaveScreenshotToGallery();
-			}
-		}
-
-		private void DrawVideoAPI ()
-		{
-			GUILayout.Label("Video", kSubTitleStyle);
-			
-			if (GUILayout.Button("Play Youtube Video"))
-			{						
-				PlayYoutubeVideo();
-			} 
-			
-			if (GUILayout.Button("Play Video From URL"))
-			{		
-				PlayVideoFromURL();
-			} 
-			
-			if (GUILayout.Button("Play Video From Gallery"))
-			{						
-				PlayVideoFromGallery();
-			} 
-			
-			if (GUILayout.Button("Play Embedded Video"))
-			{		
-				PlayEmbeddedVideo();				
-			} 
-		}
-		
 		#endregion
 	}
+#endif
 }

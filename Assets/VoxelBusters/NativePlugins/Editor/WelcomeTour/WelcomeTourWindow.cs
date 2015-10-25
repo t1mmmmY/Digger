@@ -34,15 +34,19 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		static WelcomeTourWindow ()
 		{
-			bool _alreadyShowedWelcomeTour	= EditorPrefs.GetBool(kShowWelcomeTourStatusKey, false);
-
-			// If we havent shown welcome tour, then lets show it
-			if (!_alreadyShowedWelcomeTour)
+			//Launch only if its not batchmode (command line execution)
+			if(!System.Environment.CommandLine.Contains("-batchmode"))
 			{
-				ShowWindow();
-
-				// Update status in preference
-				EditorPrefs.SetBool(kShowWelcomeTourStatusKey, true);
+				bool _alreadyShowedWelcomeTour	= EditorPrefs.GetBool(kShowWelcomeTourStatusKey, false);
+	
+				// If we havent shown welcome tour, then lets show it
+				if (!_alreadyShowedWelcomeTour)
+				{
+					ShowWindow();
+	
+					// Update status in preference
+					EditorPrefs.SetBool(kShowWelcomeTourStatusKey, true);
+				}
 			}
 		}
 

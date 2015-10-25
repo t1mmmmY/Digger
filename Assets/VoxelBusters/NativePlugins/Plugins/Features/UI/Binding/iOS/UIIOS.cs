@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Runtime.InteropServices;
 
 #if UNITY_IOS
+using System.Runtime.InteropServices;
+using VoxelBusters.DebugPRO;
+
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	public partial class UIIOS : UI 
 	{
 		#region Native Methods
@@ -14,7 +18,12 @@ namespace VoxelBusters.NativePlugins
 		
 		#endregion
 
-		#region API
+		#region API Methods
+
+		public override void ShowToast (string _message, eToastMessageLength _length)
+		{
+			Console.LogWarning(Constants.kDebugTag, Constants.kAndroidFeature);
+		}
 
 		public override void SetPopoverPoint (Vector2 _position)
 		{

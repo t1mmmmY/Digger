@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-#if UNITY_EDITOR
+#if USES_NOTIFICATION_SERVICE && UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
@@ -14,7 +14,7 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Initialise
+		#region Initialise Methods
 
 		protected override void Initialise (NotificationServiceSettings _settings)
 		{		
@@ -27,7 +27,7 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Local Notification API's
+		#region Notification Methods
 
 		public override void RegisterNotificationTypes (NotificationType _notificationTypes)
 		{
@@ -36,6 +36,10 @@ namespace VoxelBusters.NativePlugins
 			// Registering
 			m_notificationCenter.RegisterNotificationTypes(_notificationTypes);
 		}
+
+		#endregion
+
+		#region Local Notification Methods
 
 		public override string ScheduleLocalNotification (CrossPlatformNotification _notification)
 		{
@@ -79,7 +83,7 @@ namespace VoxelBusters.NativePlugins
 		
 		#endregion
 
-		#region Remote Notification API's
+		#region Remote Notification Methods
 
 		public override void RegisterForRemoteNotifications ()
 		{

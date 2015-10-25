@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
-using VoxelBusters.Utility;
+
+#if USES_NOTIFICATION_SERVICE && UNITY_ANDROID
+using System;
 using System.Collections.Generic;
 using VoxelBusters.DebugPRO;
-using System;
+using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
@@ -91,15 +93,14 @@ namespace VoxelBusters.NativePlugins.Internal
 			FireDate			= _secsFromNow.ToDateTimeFromJavaTime();
 
 			if (_payloadDict.Contains(kRepeatIntervalKey))
-				RepeatInterval		= (eNotificationRepeatInterval)_payloadDict.GetIfAvailable<int>(kRepeatIntervalKey);
+				RepeatInterval	= (eNotificationRepeatInterval)_payloadDict.GetIfAvailable<int>(kRepeatIntervalKey);
 
-			// Sound, Badge
+			SoundName			= 	_payloadDict.GetIfAvailable<string>(kCustomSound);
+			
+
 			AndroidProperties.ContentTitle		=  	_payloadDict.GetIfAvailable<string>(ContentTitleKey);
 			AndroidProperties.TickerText		=  	_payloadDict.GetIfAvailable<string>(TickerTextKey);
 			AndroidProperties.Tag				=  	_payloadDict.GetIfAvailable<string>(TagKey);
-
-			//Added in 1.03
-			AndroidProperties.CustomSound		= 	_payloadDict.GetIfAvailable<string>(kCustomSound);
 			AndroidProperties.LargeIcon			= 	_payloadDict.GetIfAvailable<string>(kLargeIcon);
 		}
 		
@@ -121,6 +122,7 @@ namespace VoxelBusters.NativePlugins.Internal
 
 
 			_payloadDict[kRepeatIntervalKey]	= (int)_notification.RepeatInterval;
+			_payloadDict[kCustomSound]			= _notification.SoundName;
 			
 
 			// ContentTitle, TickerText, Tag
@@ -129,8 +131,14 @@ namespace VoxelBusters.NativePlugins.Internal
 				_payloadDict[ContentTitleKey]	= _androidProperties.ContentTitle;
 				_payloadDict[TickerTextKey]		= _androidProperties.TickerText;
 				_payloadDict[TagKey]			= _androidProperties.Tag;
-				_payloadDict[kCustomSound]		= _androidProperties.CustomSound;
 				_payloadDict[kLargeIcon]		= _androidProperties.LargeIcon;
+
+				if(string.IsNullOrEmpty(_notification.SoundName)) //This fallback will be removed in upcoming version.
+				{
+#pragma warning disable
+					_payloadDict[kCustomSound] = _androidProperties.CustomSound;
+#pragma warning enable
+				}
 			}
 			
 			return _payloadDict;
@@ -139,3 +147,4 @@ namespace VoxelBusters.NativePlugins.Internal
 		#endregion
 	}
 }
+#endif

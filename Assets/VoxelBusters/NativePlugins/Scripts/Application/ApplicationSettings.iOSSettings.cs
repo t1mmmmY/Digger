@@ -14,19 +14,24 @@ namespace VoxelBusters.NativePlugins
 			#region Properties
 
 			[SerializeField, Tooltip("Identifier used to identify your app in App Store.")]
-			private string			m_storeIdentifier;
+			private 	string		m_storeIdentifier;
+
+			#endregion
+
+			#region Fields
+
 			/// <summary>
 			/// Gets or sets the store identifier.
 			/// </summary>
 			/// <value>The store identifier for this application.</value>
-			public string			StoreIdentifier
+			public string StoreIdentifier
 			{
 				get
 				{
 					return m_storeIdentifier;
 				}
 				
-				set
+				private set
 				{
 					m_storeIdentifier	= value;
 				}

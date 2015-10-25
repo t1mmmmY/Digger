@@ -20,6 +20,7 @@ namespace VoxelBusters.Utility
 
 		public static string MakeRelativePath (this Uri _fromUri, string _toPath)
 		{
+#if !NETFX_CORE
 			if (_fromUri == null)
 				throw new ArgumentNullException("_fromUri");
 
@@ -36,51 +37,115 @@ namespace VoxelBusters.Utility
 				_relativePath = _relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
 			return _relativePath;
+#else
+			return null;
+#endif
 		}
 
-		public static void CopyFilesRecursively (string _sourceDirectory, string _destinationDirectory, bool _excludeMetaFiles = true) 
+		public static bool AssignPermissionRecursively (string _directoryPath, FileAttributes _attribute)
 		{
-			#if !(UNITY_WEBPLAYER || UNITY_WEBGL)
+			DirectoryInfo	_directoryInfo	= new DirectoryInfo(_directoryPath);
 
+			return AssignPermissionRecursively(_directoryInfo, _attribute);
+		}
+
+		public static bool AssignPermissionRecursively (DirectoryInfo _directoryInfo, FileAttributes _attribute)
+		{
+#if !(UNITY_WEBPLAYER || UNITY_WEBGL || NETFX_CORE)
+			if (_directoryInfo == null)
+				return false;
+
+			// Update directory attribute
+			_directoryInfo.Attributes	|= _attribute;
+
+			// Update file attribute
+			foreach (FileInfo _curFileInfo in _directoryInfo.GetFiles())
+				_curFileInfo.Attributes |= _attribute;
+
+			// Dig deep into subfolders
+			foreach (DirectoryInfo _subDirectoryInfo in _directoryInfo.GetDirectories())
+				AssignPermissionRecursively(_subDirectoryInfo, _attribute);
+
+			return true;
+#else
+			return false;
+#endif
+		}
+
+		public static void CopyFilesRecursively (string _sourceDirectory, string _destinationDirectory, bool _excludeMetaFiles = true, bool _deleteDestinationFolderIfExists = true) 
+		{
+#if !(UNITY_WEBPLAYER || UNITY_WEBGL || NETFX_CORE)
 			// Get the subdirectories for the specified directory.
-			DirectoryInfo 		_sourceDirectoryInfo 		= new DirectoryInfo(_sourceDirectory);
-			DirectoryInfo[]	 	_subDirectories 			= _sourceDirectoryInfo.GetDirectories();
-			
-			if (!_sourceDirectoryInfo.Exists)
-				throw new DirectoryNotFoundException("Source directory does not exist or could not be found=" + _sourceDirectory);
+			DirectoryInfo 	_sourceDirectoryInfo 		= new DirectoryInfo(_sourceDirectory);
+			DirectoryInfo 	_destinationDirectoryInfo 	= new DirectoryInfo(_destinationDirectory);
 
-			// If the destination directory doesn't exist, create it. 
-			if (!Directory.Exists(_destinationDirectory))
-				Directory.CreateDirectory(_destinationDirectory);
+			CopyFilesRecursively(_sourceDirectoryInfo, _destinationDirectoryInfo, _excludeMetaFiles, _deleteDestinationFolderIfExists);
+#else
+			Debug.LogError("IOExtensions] Copy files not supported on web player");			
+#endif
+		}
+
+		public static void CopyFilesRecursively (DirectoryInfo _sourceDirectoryInfo, DirectoryInfo _destinationDirectoryInfo, bool _excludeMetaFiles = true, bool _deleteDestinationFolderIfExists = true)
+		{
+#if !(UNITY_WEBPLAYER || UNITY_WEBGL || NETFX_CORE)
+			if (!_sourceDirectoryInfo.Exists)
+				throw new DirectoryNotFoundException(string.Format("Source directory does not exist or could not be found= {0}.", _sourceDirectoryInfo.FullName));
+
+			// Remove existing directory and create new folder
+			if (_deleteDestinationFolderIfExists && _destinationDirectoryInfo.Exists)
+				_destinationDirectoryInfo.Delete(true);
+
+			_destinationDirectoryInfo.Create();
 
 			// Get the files in the directory and copy them to the new location.
-			FileInfo[] 			_files = _sourceDirectoryInfo.GetFiles();
+			FileInfo[] 		_files 			= _sourceDirectoryInfo.GetFiles();
 
 			if (_excludeMetaFiles)
 			{
-				foreach (FileInfo _curFile in _files)
+				foreach (FileInfo _curFileInfo in _files)
 				{
-					if (_curFile.Extension == ".meta")
+					if (_curFileInfo.Extension == ".meta")
 						continue;
 
-					_curFile.CopyTo(Path.Combine(_destinationDirectory, _curFile.Name), true);
+					CopyFile(_curFileInfo, _destinationDirectoryInfo.FullName);
 				}
 			}
 			else
 			{
-				foreach (FileInfo _curFile in _files)
-					_curFile.CopyTo(Path.Combine(_destinationDirectory, _curFile.Name), true);
+				foreach (FileInfo _curFileInfo in _files)
+					CopyFile(_curFileInfo, _destinationDirectoryInfo.FullName);
 			}
 			
 			// If copying subdirectories, copy them and their contents to new location. 
-			foreach (DirectoryInfo _subDirectory in _subDirectories)
-				CopyFilesRecursively(_subDirectory.FullName, Path.Combine(_destinationDirectory, _subDirectory.Name));
+			DirectoryInfo[]	 _subDirectories = _sourceDirectoryInfo.GetDirectories();
 
-			#else
-
+			foreach (DirectoryInfo _subDirectoryInfo in _subDirectories)
+				CopyFilesRecursively(_subDirectoryInfo, new DirectoryInfo(Path.Combine(_destinationDirectoryInfo.FullName, _subDirectoryInfo.Name)), _excludeMetaFiles);
+#else
 			Debug.LogError("IOExtensions] Copy files not supported on web player");
+#endif
+		}
 
-			#endif
+		public static void CopyFile (FileInfo _sourceFileInfo, string _destinationFolderPath)
+		{
+			CopyFile(_sourceFileInfo, _destinationFolderPath, _sourceFileInfo.Name);
+		}
+
+		public static void CopyFile (FileInfo _sourceFileInfo, string _destinationFolderPath, string _destinationFileName)
+		{
+#if !(UNITY_WEBPLAYER || UNITY_WEBGL || NETFX_CORE)
+			// Set attributes to normal, to avoid i/o exceptions
+			FileAttributes	_prevAttributes	= _sourceFileInfo.Attributes;
+			_sourceFileInfo.Attributes		= FileAttributes.Normal;
+			
+			// Copy file
+			_sourceFileInfo.CopyTo(Path.Combine(_destinationFolderPath, _destinationFileName), true);
+			
+			// Reset file attribute
+			_sourceFileInfo.Attributes		= _prevAttributes;
+#else
+			Debug.LogError("IOExtensions] Copy files not supported on web player");
+#endif
 		}
 	}
 }

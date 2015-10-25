@@ -1,6 +1,6 @@
 //
 //  Defines.h
-//  Unity-iPhone
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 06/12/14.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -10,6 +10,10 @@
 #define Unity_iPhone_Defines_h
 
 #import "Utility.h"
+
+// Constants
+#define kNativePluginsErrorDomain 		@"com.voxelbusters.nativeplugins"
+
 
 // Unity message
 #define NotifyEventListener(method, message) \

@@ -96,19 +96,22 @@ public class SingleplayerGameManager : GameManager
 	{
 		if (canShare)
 		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			// Create share sheet
+			SocialShareSheet _shareSheet 	= new SocialShareSheet();	
+			_shareSheet.Text				= "My result";
+			
+//			 Add below line if you want to share URL
+//			_shareSheet.URL					= m_shareURL;
+			
+			// Add below line if you want to share a screenshot
+			_shareSheet.AttachScreenShot();
 
-//			canShare = false;
-			eShareOptions[] options = new eShareOptions[] { eShareOptions.FB,
-															eShareOptions.MAIL,
-															eShareOptions.MESSAGE,
-															eShareOptions.TWITTER,
-															eShareOptions.UNDEFINED,
-															eShareOptions.WHATSAPP 
-														};
-			NPBinding.Sharing.ShareScreenShot("My result", options, OnFinishSharing);
-//			NPBinding.Sharing.ShareScreenShotOnSocialNetwork("My result", null);
+			// Add below line if you want to share an image from a specified path.
+//			_shareSheet.AttachImageAtPath(IMAGE_PATH);
+			
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition(); // To show popover at last touch point on iOS. On Android, its ignored.
+			NPBinding.Sharing.ShowView(_shareSheet, OnFinishSharing);
 
 			base.ShareGame();
 		}

@@ -3,6 +3,10 @@ using System.Collections;
 using System;
 using System.Text;
 
+#if NETFX_CORE
+using System.Reflection;
+#endif
+
 namespace VoxelBusters.Utility
 {
 	using Internal;
@@ -53,14 +57,22 @@ namespace VoxelBusters.Utility
 			}
 			
 			Type _objectType	= _objectVal.GetType();
-			
+
+#if !NETFX_CORE
 			if (_objectType.IsPrimitive)
+#else
+			if (_objectType.GetTypeInfo().IsPrimitive)
+#endif
 			{
 				WritePrimitive(_objectVal);
 				return;
 			}
 			// Enum type
+#if !NETFX_CORE
 			else if (_objectType.IsEnum)
+#else
+			else if (_objectType.GetTypeInfo().IsEnum)
+#endif
 			{
 				WriteEnum(_objectVal);
 				return;

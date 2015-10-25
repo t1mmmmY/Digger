@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-#if UNITY_EDITOR
+#if USES_ADDRESS_BOOK && UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {	
 	using Internal;
@@ -12,15 +12,26 @@ namespace VoxelBusters.NativePlugins
 
 		public override eABAuthorizationStatus GetAuthorizationStatus ()
 		{
-			return EditorAddressBook.GetAuthorizationStatus();
+			return EditorAddressBook.Instance.GetAuthorizationStatus();
 		}
 
-		public override void ReadContacts (ReadContactsCompletion _onCompletion)
+		protected override void RequestAccess (RequestAccessCompletion _onCompletion)
 		{
-			base.ReadContacts(_onCompletion);
+			base.RequestAccess (_onCompletion);
+
+			// Request for auth
+			EditorAddressBook.Instance.RequestForAuthorization();
+		}
+
+		protected override void ReadContacts (eABAuthorizationStatus _status, ReadContactsCompletion _onCompletion)
+		{
+			base.ReadContacts (_status, _onCompletion);
+
+			if (_status != eABAuthorizationStatus.AUTHORIZED)
+				return;
 
 			// Requesting for contacts info
-			EditorAddressBook.ReadContacts();
+			EditorAddressBook.Instance.ReadContacts();
 		}
 
 		#endregion

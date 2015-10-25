@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE
 using UnityEditor;
 using System.Collections.Generic;
-using System.Collections;
 using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins.Internal
@@ -46,3 +48,4 @@ namespace VoxelBusters.NativePlugins.Internal
 		#endregion
 	}
 }
+#endif

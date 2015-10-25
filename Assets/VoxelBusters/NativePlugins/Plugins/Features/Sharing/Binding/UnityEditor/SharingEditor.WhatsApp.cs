@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_SHARING && UNITY_EDITOR
 using VoxelBusters.DebugPRO;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
 	public partial class SharingEditor : Sharing 
 	{
-		#region Overriden API's 
+		#region Methods
 
 		public override bool IsWhatsAppServiceAvailable ()
 		{
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 			return base.IsWhatsAppServiceAvailable();
 		}
 

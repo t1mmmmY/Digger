@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE 
 using System.Collections.Generic;
 
 namespace VoxelBusters.NativePlugins
@@ -9,10 +11,13 @@ namespace VoxelBusters.NativePlugins
 	/// </summary>
 	public partial class NotificationService : MonoBehaviour 
 	{
-		#region properties
+		#region Static Fields
 
-		// Notification types
-		protected 			NotificationType			m_supportedNotifcationTypes		= (NotificationType)0;
+		public				string						notificationDefaultSoundName	= "default.mp3";
+
+		#endregion
+
+		#region properties
 
 		// Received notifications
 		private				CrossPlatformNotification	m_launchLocalNotification		= null;
@@ -66,7 +71,7 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Local Notification API's
+		#region Notification Methods
 
 		/// <summary>
 		/// Apps that use either local or remote notifications must register the types of notifications they intend to deliver.
@@ -76,9 +81,11 @@ namespace VoxelBusters.NativePlugins
 		/// If your app displays alerts, play sounds, or badges its icon, you must call this method during your launch.
 		/// </description>
 		public virtual void RegisterNotificationTypes (NotificationType _notificationTypes)
-		{
-			m_supportedNotifcationTypes	= _notificationTypes;
-		}
+		{}
+
+		#endregion
+
+		#region Local Notification Methods
 
 		/// <summary>
 		/// Schedules a local notification.
@@ -111,7 +118,7 @@ namespace VoxelBusters.NativePlugins
 		
 		#endregion
 
-		#region Remote Notification API's
+		#region Remote Notification Methods
 
 		/// <summary>
 		/// Register to receive remote notifications via Push Notification service.
@@ -128,3 +135,4 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 	}
 }
+#endif

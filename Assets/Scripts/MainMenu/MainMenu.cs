@@ -114,16 +114,30 @@ public class MainMenu : MonoBehaviour
 #if UNITY_ANDROID
 		MultiplayerController.Instance.SignIn();
 #elif UNITY_IOS
+//		UnityEngine.Social.localUser.Authenticate(null);
 		MultiplayerController.Instance.SignIn();
 #endif
 	}
 
+//	void OnGUI()
+//	{
+//		if (GUILayout.Button("Authenticate"))
+//		{
+//			UnityEngine.Social.localUser.Authenticate((bool success) => {});
+//		}
+//		if (GUILayout.Button("ShowLeaderboardUI"))
+//		{
+//			UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
+//		}
+//	}
 
 	public void ShowLeaderboard()
 	{
 #if UNITY_ANDROID
 		MultiplayerController.Instance.ShowLeaderboard();
 #elif UNITY_IOS
+//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
+		
 		MultiplayerController.Instance.ShowLeaderboard();
 		
 //		if (localUser.IsAuthenticated)

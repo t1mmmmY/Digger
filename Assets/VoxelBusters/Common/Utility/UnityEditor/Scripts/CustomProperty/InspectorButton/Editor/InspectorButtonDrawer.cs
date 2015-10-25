@@ -9,7 +9,7 @@ namespace VoxelBusters.Utility
 	{
 		#region Properties
 		
-		private					InspectorButtonAttribute		InspectorButton
+		private InspectorButtonAttribute InspectorButton
 		{ 
 			get 
 			{ 

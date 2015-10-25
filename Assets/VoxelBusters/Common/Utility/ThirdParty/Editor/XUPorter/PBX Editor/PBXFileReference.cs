@@ -46,7 +46,11 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			{ ".xib", "file.xib" },
 			{ ".strings", "text.plist.strings" },
 			{ ".bundle", "wrapper.plug-in" },
-			{ ".dylib", "compiled.mach-o.dylib" }
+			{ ".dylib", "compiled.mach-o.dylib" },
+			{ ".mp3", "audio.mp3" },
+			{ ".caf", "file" },
+			{ ".aif", "file" },
+			{ ".wav", "audio.wav" }
    		 };
 		
 		public static readonly Dictionary<string, string> typePhases = new Dictionary<string, string> {
@@ -71,8 +75,12 @@ namespace VoxelBusters.ThirdParty.XUPorter
 			{ ".xib", "PBXResourcesBuildPhase" },
 			{ ".strings", "PBXResourcesBuildPhase" },
 			{ ".bundle", "PBXResourcesBuildPhase" },
-			{ ".dylib", "PBXFrameworksBuildPhase" }
-    	};
+			{ ".dylib", "PBXFrameworksBuildPhase" },
+			{ ".mp3", "PBXResourcesBuildPhase" },
+			{ ".caf", "PBXResourcesBuildPhase" },
+			{ ".aif", "PBXResourcesBuildPhase" },
+			{ ".wav", "PBXResourcesBuildPhase" }
+		};
 		
 		public PBXFileReference( string guid, PBXDictionary dictionary ) : base( guid, dictionary )
 		{

@@ -8,7 +8,11 @@ namespace VoxelBusters.Utility
 	{
 		#region String Operations
 
-		//This will compare ignoring the case in both strings
+		public static string GetPrintableString (this string _string)
+		{
+			return _string == null ? "NULL" : _string;
+		}
+
 		public static bool Contains (this string _string, string _stringToCheck, bool _ignoreCase)
 		{
 			if(!_ignoreCase)
@@ -20,7 +24,6 @@ namespace VoxelBusters.Utility
 				return _string.ToLower().Contains(_stringToCheck.ToLower());
 			}
 		}
-
 
 		public static string ToBase64(this string _string)
 		{

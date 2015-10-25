@@ -1,78 +1,96 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-//Add these Namespaces
+// Add these Namespaces
 using VoxelBusters.NativePlugins;
 using VoxelBusters.Utility;
 
-public class RemoteNotificationTest : MonoBehaviour 
+namespace VoxelBusters.NativePlugins.Demo
 {
-	[SerializeField, EnumMaskField(typeof(NotificationType))]
-	private NotificationType	m_notificationType;
-
-
-	void Start()
+#if !USES_NOTIFICATION_SERVICE
+	public class RemoteNotificationTest : NPDisabledFeatureDemo 
+#else
+	public class RemoteNotificationTest : MonoBehaviour 
+#endif
 	{
-		NPBinding.NotificationService.RegisterNotificationTypes(m_notificationType);
+		#region Fields
+
+#pragma warning disable
+		[SerializeField, EnumMaskField(typeof(NotificationType))]
+		private NotificationType	m_notificationType;
+#pragma warning restore
+
+		#endregion
+
+#if !USES_NOTIFICATION_SERVICE
 	}
-	void OnEnable ()
-	{
-		// Register RemoteNotificated related callbacks
-		NotificationService.DidFinishRegisterForRemoteNotificationEvent	+= DidFinishRegisterForRemoteNotificationEvent;
-		NotificationService.DidReceiveRemoteNotificationEvent			+= DidReceiveRemoteNotificationEvent;
-
-		//Add below for local notification
-		//NotificationService.DidReceiveLocalNotificationEvent 			+= DidReceiveLocalNotificationEvent;
+#else
+		#region Unity Methods
 		
-	}
-	
-	void OnDisable ()
-	{
-		// Un-Register from callbacks
-		NotificationService.DidFinishRegisterForRemoteNotificationEvent	-= DidFinishRegisterForRemoteNotificationEvent;
-		NotificationService.DidReceiveRemoteNotificationEvent			-= DidReceiveRemoteNotificationEvent;
+		private void Start()
+		{
+			NPBinding.NotificationService.RegisterNotificationTypes(m_notificationType);
+		}
+
+		private void OnEnable ()
+		{
+			// Register RemoteNotificated related callbacks
+			NotificationService.DidFinishRegisterForRemoteNotificationEvent	+= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidReceiveRemoteNotificationEvent			+= DidReceiveRemoteNotificationEvent;
+
+			//Add below for local notification
+			//NotificationService.DidReceiveLocalNotificationEvent 			+= DidReceiveLocalNotificationEvent;
+		}
 		
-		//Add below for local notification
-		//NotificationService.DidReceiveLocalNotificationEvent 			-= DidReceiveLocalNotificationEvent;
-
-	}
-	
-
-	
-	// Update is called once per frame
-	void OnGUI () 
-	{
-		if(GUILayout.Button("Register for Remote Notifications", GUILayout.Width(Screen.width/2f),  GUILayout.Height(Screen.height * 0.2f)))
+		private void OnDisable ()
 		{
-			NPBinding.NotificationService.RegisterForRemoteNotifications(); //This triggers a event. so capture it by registering to that event.
+			// Un-Register from callbacks
+			NotificationService.DidFinishRegisterForRemoteNotificationEvent	-= DidFinishRegisterForRemoteNotificationEvent;
+			NotificationService.DidReceiveRemoteNotificationEvent			-= DidReceiveRemoteNotificationEvent;
+			
+			//Add below for local notification
+			//NotificationService.DidReceiveLocalNotificationEvent 			-= DidReceiveLocalNotificationEvent;
 		}
 
-	}
+		#endregion
 
-
-	#region API Callbacks
-	
-	private void DidReceiveLocalNotificationEvent (CrossPlatformNotification _notification)
-	{
-		Debug.Log("Received DidReceiveLocalNotificationEvent : " + _notification.ToString());
-	}
-	
-	private void DidReceiveRemoteNotificationEvent (CrossPlatformNotification _notification)
-	{
-		Debug.Log("Received DidReceiveRemoteNotificationEvent : " + _notification.ToString());
-	}
-	
-	private void DidFinishRegisterForRemoteNotificationEvent (string _deviceToken, string _error)
-	{
-		if(string.IsNullOrEmpty(_error))
+		#region GUI Methods
+		
+		private void OnGUI () 
 		{
-			Debug.Log("Device Token : " + _deviceToken);
+			if(GUILayout.Button("Register for Remote Notifications", GUILayout.Width(Screen.width/2f),  GUILayout.Height(Screen.height * 0.2f)))
+			{
+				NPBinding.NotificationService.RegisterForRemoteNotifications(); //This triggers a event. so capture it by registering to that event.
+			}
 		}
-		else
-		{
-			Debug.Log("Error in registering for remote notifications : " + _deviceToken);
-		}
-	}
 
-	#endregion
+		#endregion
+
+		#region API Callback Methods
+		
+		private void DidReceiveLocalNotificationEvent (CrossPlatformNotification _notification)
+		{
+			Debug.Log("Received DidReceiveLocalNotificationEvent : " + _notification.ToString());
+		}
+		
+		private void DidReceiveRemoteNotificationEvent (CrossPlatformNotification _notification)
+		{
+			Debug.Log("Received DidReceiveRemoteNotificationEvent : " + _notification.ToString());
+		}
+		
+		private void DidFinishRegisterForRemoteNotificationEvent (string _deviceToken, string _error)
+		{
+			if(string.IsNullOrEmpty(_error))
+			{
+				Debug.Log("Device Token : " + _deviceToken);
+			}
+			else
+			{
+				Debug.Log("Error in registering for remote notifications : " + _deviceToken);
+			}
+		}
+
+		#endregion
+	}
+#endif
 }

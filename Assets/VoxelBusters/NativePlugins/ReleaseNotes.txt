@@ -1,3 +1,50 @@
+1.2.1
+	- iOS 9 Sharing callback fix.
+
+1.2
+Important: Delete package folders before updating.[blogs.voxelbusters.com/products/cross-platform-native-plugins/folder-structure]
+
+Feature Request:	
+	- Implemented a new system, which makes it possible for user to remove unused features completely.
+	- Mail sharing now includes 2 new fields CC and BCC recipients.
+	- Billing Products includes currency code and currency symbol.
+	- Added menu item for uninstalling plugin which can be used before importing an update.
+	- Signout added for Game Services. On iOS it just ignores the call as its not possible to signout.
+	- [iOS] Native files are hard copied to exported build, inorder to avoid compilation issues caused by moving files.
+	- [Android] Vibration setting optional for notifications. Now can enable/disable from NPSettings.
+
+Changes:
+	- Game Services: Callback now includes error description information.
+	- Game Services: Included Global Identifier support for easy access of Leaderboard and Achievement objects.
+	- Billing: Existing callbacks are deprecated. Use the new ones instead.
+	- Billing: Included new static API to create product at runtime.
+	- Sharing: Existing API's are deprecated. Now it makes use of composer object for accessing sharing functionality.
+	- NPSettings: Changed interface to provide better user experience.
+	- Macro Symbols are now added to player settings for supporting Cloud builds.
+	- Option to place plugin resources under Assets/PluginResources/NativePlugins for each platform.
+	- Demo scenes provides info about key points related to feature usage.
+	- [Android] Network Connectivity: Changed from ping to socket connection. Now it expects a port number in NPSettings.
+	- [Android] Notification images & sounds no more uses Streaming assets and deprecated. Place your resources under Assets/PluginResources/NativePlugins/[Android / Common] folder.
+
+Fixes:
+	- [Media Library] Exif data considered for images which are picked from Library and handled automatically.
+	- [iOS] Fixed major bug related to IAP validation.
+	- [iOS] Fixed notification issues.
+	- [iOS] Share intent window is not showed for sharing using FB or Twitter only.
+	- [iOS] Not using Unity's implementation anymore for Notification and Game Center feature.
+	- [Android] Fixed loadData call for webview.
+	- [Android] Fixed JSON conversion crashes on Samsung and HTC devices.
+	- [Android] Fixed Notification custom sound volume.
+	- [Android] Fixed stop video callback for youtube play.
+	- [Android] Fixed Raw purchase data for Billing Transaction.
+	- [Android] Fixed Ping access failure on Samsung Galaxy devices.
+	- [Android] Fixed Twitter SDK crash on pressing cancel while logging in.
+
+
+
+
+Important: Delete package folders before updating.
+
 1.1
 New Features:	
 	- Game Services feature: Game application will make use Game Center, Google Play Services in iOS, Android platforms respectively for Leaderboard, Achievement, Score reporting etc.

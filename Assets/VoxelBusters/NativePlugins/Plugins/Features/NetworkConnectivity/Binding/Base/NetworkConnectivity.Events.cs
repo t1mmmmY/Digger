@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NETWORK_CONNECTIVITY
 using VoxelBusters.DebugPRO;
 
 namespace VoxelBusters.NativePlugins
@@ -48,3 +50,4 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 	}
 }
+#endif

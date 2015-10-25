@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+#if USES_NETWORK_CONNECTIVITY
 namespace VoxelBusters.NativePlugins
 {
 	/// <summary>
@@ -14,7 +15,7 @@ namespace VoxelBusters.NativePlugins
 		/// Gets a value indicating whether network is connected.
 		/// </summary>
 		/// <value><c>true</c> if network is connected; otherwise, <c>false</c>.</value>
-		public bool 			IsConnected
+		public bool IsConnected
 		{
 			get;
 		 	protected set;
@@ -22,27 +23,30 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Unity Methods
+		#region API Methods
 
-		private void Awake ()
-		{
-			NetworkConnectivitySettings _settings	= NPSettings.NetworkConnectivity;
-
-			if (string.IsNullOrEmpty(_settings.IPAddress))
-				_settings.IPAddress	= "8.8.8.8";
-
-		}
-
-		#endregion
-
-		#region API
 		/// <summary>
 		/// Initialise Network reachability checking.
 		/// </summary>
 		///	<description> This starts checking if IP Address psecified in the connectivity settings is reachable or not and delivers events. </description>
 		public virtual void Initialise ()
-		{}
-		
+		{
+			StartCoroutine(ManuallyTriggerInitialState());
+		}
+
+		#endregion
+
+		#region Misc. Methods
+
+		private IEnumerator ManuallyTriggerInitialState ()
+		{
+			yield return new WaitForSeconds(1f);
+
+			if (IsConnected == false)
+				ConnectivityChanged(false);
+		}
+
 		#endregion
 	}
 }
+#endif

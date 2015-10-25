@@ -16,6 +16,34 @@ namespace VoxelBusters.Utility
 	{
 		#region Field Extensions
 
+		public static void SetFieldValue (this object _object, string _name, object _value)
+		{
+			SetFieldValue(_object, _object.GetType(), _name, _value);
+		}
+
+		private static void SetFieldValue (this object _object, Type _objectType, string _name, object _value)
+		{
+			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+			FieldInfo 		_fieldInfo		= _objectType.GetField(_name, _bindingAttr);
+
+			if (_fieldInfo != null)
+			{
+				_fieldInfo.SetValue(_object, _value);
+			}
+			else if (_objectType.BaseType != null)
+			{
+				SetFieldValue(_object, _objectType.BaseType, _name, _value);
+			}
+			else
+			{
+#if !NETFX_CORE
+				throw new MissingFieldException(string.Format("[ReflectionExtension] Field {0} not found.", _name));
+#else
+				throw new Exception(string.Format("[ReflectionExtension] Field {0} not found.", _name));
+#endif		
+			}
+		}
+
 		public static object GetStaticValue (this Type _objectType, string _name)
 		{
 			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
@@ -25,12 +53,23 @@ namespace VoxelBusters.Utility
 			{
 				return _fieldInfo.GetValue(null);
 			}
+#if !NETFX_CORE
 			else if (_objectType.BaseType != null)
 			{
 				return GetStaticValue(_objectType.BaseType, _name);
 			}
+#else
+			else if (_objectType.BaseType() != null)
+			{
+				return GetStaticValue(_objectType.BaseType(), _name);
+			}
+#endif
 
-			throw new MissingFieldException(string.Format("[RS] Field {0} not found.", _name));
+#if !NETFX_CORE
+			throw new MissingFieldException(string.Format("[ReflectionExtension] Field {0} not found.", _name));
+#else
+			throw new Exception(string.Format("[ReflectionExtension] Field {0} not found.", _name));
+#endif
 		}
 
 		public static void SetStaticValue (this Type _objectType, string _name, object _value)
@@ -42,10 +81,17 @@ namespace VoxelBusters.Utility
 			{
 				_fieldInfo.SetValue(null, _value);
 			}
+#if !NETFX_CORE
 			else if (_objectType.BaseType != null)
 			{
 				SetStaticValue(_objectType.BaseType, _name, _value);
 			}
+#else
+			else if (_objectType.BaseType() != null)
+			{
+				SetStaticValue(_objectType.BaseType(), _name, _value);
+			}
+#endif
 		}
 
 		#endregion
@@ -57,18 +103,18 @@ namespace VoxelBusters.Utility
 			if (_object == null)
 				throw new NullReferenceException("Target Object is null.");
 
-			Type			_objectType		= _object.GetType();
-			object[] 		_argValueList	= null;
-			Type[]			_argTypeList	= null;
+			Type		_objectType	= _object.GetType();
+			object[] 	_argValues	= null;
+			Type[]		_argTypes	= null;
 
 			if (_value != null)
 			{
-				_argValueList				= new object[] { _value };
-				_argTypeList				= new Type[] { _value.GetType() };
+				_argValues			= new object[] { _value };
+				_argTypes			= new Type[] { _value.GetType() };
 			}
 
 			// Invoke method
-			InvokeMethod(_object, _objectType, _method, _argValueList, _argTypeList);
+			InvokeMethod(_object, _objectType, _method, _argValues, _argTypes);
 		}
 
 		public static void InvokeMethod (this object _object, string _method, object[] _argValues, Type[] _argTypes)
@@ -76,38 +122,71 @@ namespace VoxelBusters.Utility
 			InvokeMethod(_object, _object.GetType(), _method, _argValues, _argTypes);
 		}
 
-		private static void InvokeMethod (object _object, Type _objectType, string _method, object[] _argValueList, Type[] _argTypeList)
+		private static void InvokeMethod (object _object, Type _objectType, string _method, object[] _argValues, Type[] _argTypes)
 		{
+#if !NETFX_CORE
 			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.OptionalParamBinding;
 			MethodInfo 		_methodInfo		= null;
 
 			// Find method info based on method name, parameter
-			if (_argValueList != null)
-				_methodInfo 				= _objectType.GetMethod(_method, _bindingAttr, null, _argTypeList, null);
+			if (_argValues != null)
+				_methodInfo 				= _objectType.GetMethod(_method, _bindingAttr, null, _argTypes, null);
 			else
 				_methodInfo					= _objectType.GetMethod(_method, _bindingAttr);
 
 			// Invoke the method
 			if (_methodInfo != null)
 			{
-				_methodInfo.Invoke(_object, _argValueList);
+				_methodInfo.Invoke(_object, _argValues);
 			}
 			// Failed to find a matching method, so search for it in base class
 			else if (_objectType.BaseType != null)
 			{
-				InvokeMethod(_object, _objectType.BaseType, _method, _argValueList, _argTypeList);
+				InvokeMethod(_object, _objectType.BaseType, _method, _argValues, _argTypes);
 			}
 			// Object doesnt have this method
 			else
 			{
 				throw new MissingMethodException();
 			}
+#endif
+		}
+
+		public static void InvokeStaticMethod (this Type _objectType, string _method, object[] _argValues, Type[] _argTypes)
+		{
+#if !NETFX_CORE
+			BindingFlags 	_bindingAttr	= BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.OptionalParamBinding;
+			MethodInfo 		_methodInfo		= null;
+
+			// Find method info based on method name, parameter
+			if (_argValues != null)
+				_methodInfo 				= _objectType.GetMethod(_method, _bindingAttr, null, _argTypes, null);
+			else
+				_methodInfo					= _objectType.GetMethod(_method, _bindingAttr);
+
+			// Invoke the method
+			if (_methodInfo != null)
+			{
+				_methodInfo.Invoke(null, _argValues);
+			}
+			// Failed to find a matching method, so search for it in base class
+			else if (_objectType.BaseType != null)
+			{
+				InvokeStaticMethod(_objectType.BaseType, _method, _argValues, _argTypes);
+			}
+			// Object doesnt have this method
+			else
+			{
+				throw new MissingMethodException();
+			}
+#endif
 		}
 
 		#endregion
 
 		public static T GetAttribute <T> (this System.Type _type, bool _inherit) where T : System.Attribute
 		{
+#if !NETFX_CORE
 			object[] _attributes	= _type.GetCustomAttributes(_inherit);
 			
 			for (int _iter = 0; _iter < _attributes.Length; _iter++)
@@ -117,10 +196,14 @@ namespace VoxelBusters.Utility
 			}
 			
 			return null;
+#else
+			return null;
+#endif
 		}
 
 		public static T GetAttribute <T> (this FieldInfo _fieldInfo, bool _inherit) where T : System.Attribute
 		{
+#if !NETFX_CORE
 			object[] _attributes	= _fieldInfo.GetCustomAttributes(_inherit);
 			
 			for (int _iter = 0; _iter < _attributes.Length; _iter++)
@@ -130,6 +213,9 @@ namespace VoxelBusters.Utility
 			}
 			
 			return null;
+#else
+			return null;
+#endif
 		}
 
 		public static FieldInfo GetFieldWithName (this System.Type _type, string _name, bool _isPublic)
@@ -146,7 +232,11 @@ namespace VoxelBusters.Utility
 			// Lets search in base class
 			if (_field == null)
 			{
+#if !NETFX_CORE
 				System.Type _baseType	= _type.BaseType;
+#else
+				System.Type _baseType	= _type.BaseType();
+#endif
 
 				if (_baseType != null)
 					return _baseType.GetFieldWithName(_name, _isPublic);

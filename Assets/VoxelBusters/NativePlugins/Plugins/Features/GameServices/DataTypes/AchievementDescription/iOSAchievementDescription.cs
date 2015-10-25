@@ -1,17 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
-using UnityEngine.SocialPlatforms;
-using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
-#if UNITY_IOS
+#if USES_GAME_SERVICES && UNITY_IOS
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins.Internal
 {
-	internal sealed class iOSAchievementDescription : AchievementDescription 
+	public sealed class iOSAchievementDescription : AchievementDescription 
 	{
-		#region Properties
-		
-		private		IAchievementDescription		m_achievementDescriptionData;
+		#region Constants
+
+		private 	const 	string 		kIdentifierKey				= "id";
+		private 	const 	string 		kTitleKey					= "title";
+		private 	const 	string 		kUnachievedDescriptionKey	= "unachieved-desc";
+		private 	const 	string 		kAchievedDescriptionKey		= "achieved-desc";
+		private 	const 	string 		kMaximumPointsKey			= "max-points";
+		private 	const 	string 		kHiddenKey					= "hidden";
+		private 	const 	string 		kReplayableKey				= "replayable";
+		private		const 	string		kImagePathKey				= "image-path";
 
 		#endregion
 
@@ -19,80 +28,38 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		public override string Identifier
 		{
-			get
-			{
-				return m_achievementDescriptionData.id;
-			}
-
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		public override	string Title
 		{
-			get
-			{
-				return m_achievementDescriptionData.title;
-			}
-			
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		public override string AchievedDescription
 		{
-			get
-			{
-				return m_achievementDescriptionData.achievedDescription;
-			}
-			
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		public override	string UnachievedDescription
 		{
-			get
-			{
-				return m_achievementDescriptionData.unachievedDescription;
-			}
-			
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		public override	int MaximumPoints
 		{
-			get
-			{
-				return m_achievementDescriptionData.points;
-			}
-			
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		public override bool IsHidden
 		{
-			get
-			{
-				return m_achievementDescriptionData.hidden;
-			}
-			
-			protected set
-			{
-				throw new Exception("[GameServices] Only getter is supported.");
-			}
+			get;
+			protected set;
 		}
 		
 		#endregion
@@ -102,44 +69,81 @@ namespace VoxelBusters.NativePlugins.Internal
 		private iOSAchievementDescription ()
 		{}
 		
-		internal iOSAchievementDescription (IAchievementDescription _descriptionData)
+		public iOSAchievementDescription (IDictionary _dataDict)
 		{
-			m_achievementDescriptionData	= _descriptionData;
+			// Parse data dictionary values
+			Identifier				= _dataDict.GetIfAvailable<string>(kIdentifierKey);
+			Title					= _dataDict.GetIfAvailable<string>(kTitleKey);
+			UnachievedDescription	= _dataDict.GetIfAvailable<string>(kUnachievedDescriptionKey);
+			AchievedDescription		= _dataDict.GetIfAvailable<string>(kAchievedDescriptionKey);
+			MaximumPoints			= _dataDict.GetIfAvailable<int>(kMaximumPointsKey);
+			IsHidden				= _dataDict.GetIfAvailable<bool>(kHiddenKey);
+
+			// Set global identifier
+			GlobalIdentifier		= GameServicesIDHandler.GetAchievementGID(Identifier);
 		}
+		
+		#endregion
+		
+		#region External Methods
+		
+		[DllImport("__Internal")]
+		private static extern void loadAchievementImage (string _descriptionInfoJSON);
 		
 		#endregion
 
 		#region Static Methods
-
-		internal static iOSAchievementDescription[] ConvertAchievementDescriptionList (IAchievementDescription[] _achievementDescriptionList)
+		
+		public static iOSAchievementDescription[] ConvertAchievementDescriptionsList (IList _descriptionsJSONList)
 		{
-			if (_achievementDescriptionList == null)
+			if (_descriptionsJSONList == null)
 				return null;
-
-			int  							_count 							= _achievementDescriptionList.Length;
-			iOSAchievementDescription[]		_iOSAchievementDescriptionList	= new iOSAchievementDescription[_count];
+			
+			int 				_count				= _descriptionsJSONList.Count;
+			iOSAchievementDescription[]	_descriptionsList	= new iOSAchievementDescription[_count];
 			
 			for (int _iter = 0; _iter < _count; _iter++)
-				_iOSAchievementDescriptionList[_iter] 						= new iOSAchievementDescription(_achievementDescriptionList[_iter]);
-
-			return _iOSAchievementDescriptionList;
+				_descriptionsList[_iter]			= new iOSAchievementDescription((IDictionary)_descriptionsJSONList[_iter]);
+			
+			return _descriptionsList;
 		}
-
+		
 		#endregion
 
 		#region Methods
 		
-		public override void GetImageAsync (DownloadTexture.Completion _onCompletion)
+		protected override void RequestForImage ()
 		{
-			if (_onCompletion != null)
-			{
-				if (m_achievementDescriptionData.image == null)
-					_onCompletion(null, "Texture not found.");
-				else
-					_onCompletion(m_achievementDescriptionData.image, null);
-			}
+			// Native method call
+			loadAchievementImage(GetDescriptionInfoObject().ToJSON());
 		}
 		
+		public IDictionary GetDescriptionInfoObject ()
+		{
+			IDictionary		_JSONDict	= new Dictionary<string, object>();
+			_JSONDict[kIdentifierKey]	= Identifier;
+			_JSONDict[GameServicesIOS.kObjectInstanceIDKey]	= GetInstanceID();
+
+			return _JSONDict;
+		}
+		
+		#endregion
+
+		#region Event Callback Methods
+
+		protected override void RequestForImageFinished (IDictionary _dataDict)
+		{
+			string			_error		= _dataDict.GetIfAvailable<string>(GameServicesIOS.kNativeMessageErrorKey);
+
+			if (_error == null)
+			{
+				string _imagePath = _dataDict.GetIfAvailable<string>(kImagePathKey);
+				RequestForImageFinished(URL.FileURLWithPath(_imagePath), null);
+			}
+			else
+				RequestForImageFinished(URL.FileURLWithPath(null), _error);
+		}
+
 		#endregion
 	}
 }

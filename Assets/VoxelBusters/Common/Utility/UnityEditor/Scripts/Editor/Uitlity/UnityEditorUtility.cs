@@ -2,12 +2,19 @@
 using UnityEditor;
 using System.Collections;
 using System.Text.RegularExpressions;
-using VoxelBusters.Utility;
 
 namespace VoxelBusters.Utility
 {
 	public class UnityEditorUtility : Editor 
 	{
+		public enum Alignment
+		{
+			None,
+			Left,
+			Center,
+			Right
+		}
+
 		#region Constants 
 
 		private const int 				kTabSize				= 12;
@@ -18,175 +25,178 @@ namespace VoxelBusters.Utility
 	
 		#endregion
 
-		#region Property Drawer Methods
-
-		public static void DrawSerializableObject (SerializedObject _serializedObject)
+		#region Static Fields
+		
+		private		static		GUIStyle		splitterStyle;
+		
+		#endregion
+		
+		#region Constructor
+		
+		static UnityEditorUtility ()
 		{
-			// Object type properties are shown as sub menu
-			IList _serializableProperties		= _serializedObject.GetSerializableProperties();
-			int _serializablePropertyCount		= _serializableProperties.Count;
-
-			EditorGUILayout.BeginVertical(kOuterContainerStyle);
-			{
-				for (int _cIter = 0; _cIter < _serializablePropertyCount; _cIter++)
-				{				
-					SerializedProperty _property	= _serializableProperties[_cIter] as SerializedProperty;
-					
-					// Draw property
-					DrawPropertyField(_property);
-				}
-			}
-			EditorGUILayout.EndVertical();
+			// Create splitter style
+			splitterStyle					= new GUIStyle();
+			splitterStyle.normal.background	= Texture2D.whiteTexture;
+			splitterStyle.stretchWidth		= true;
 		}
 		
-		public static void DrawPropertyField (SerializedProperty _property)
-		{
-			// Non container type properties 
-			if (!_property.hasVisibleChildren)
-			{
-				EditorGUILayout.PropertyField(_property);
-			}
-			// Array element
-			else if (_property.isArray)
-			{	
-				DrawArrayField(_property);
-			}
-			// Container object
-			else
-			{ 
-				DrawObjectField(_property);
-			}
-		}
+		#endregion
+
+		#region Splitter Methods
 		
-		private static void DrawArrayField (SerializedProperty _arrayProperty)
+		public static void DrawSplitter (Color _color, float _thickness = 1f, int _margin = 0)
 		{
-			EditorGUILayout.BeginVertical(kContainerStyle);
-			{
-				string _displayName				= ObjectNames.NicifyVariableName(_arrayProperty.name);
-				_arrayProperty.isExpanded		= UnityEditorUtility.DrawHeader(_displayName, _arrayProperty.isExpanded);
-				
-				// Show array contents, if its expanded
-				if (_arrayProperty.isExpanded)
-				{
-					// Start displaying array elements in next indentation level
-					EditorGUI.indentLevel++;
-
-					// Draw array size
-					EditorGUILayout.PropertyField(_arrayProperty.FindPropertyRelative("Array.size"));
-
-					// Get array size
-					int _arraySize	= _arrayProperty.arraySize;
-
-					// Draw elements
-					for (int _arrayIter = 0; _arrayIter < _arraySize; _arrayIter++)
-					{
-						DrawPropertyField(_arrayProperty.GetArrayElementAtIndex(_arrayIter));
-					}
-
-					// Reset indentation level
-					EditorGUI.indentLevel--;
-				}
-			}
-			EditorGUILayout.EndVertical();
-		}
-
-		private static void DrawObjectField (SerializedProperty _property)
-		{
-			EditorGUILayout.BeginVertical(kContainerStyle);
-			{
-				string _displayName		= _property.GetDisplayName();
-				_property.isExpanded	= UnityEditorUtility.DrawHeader(_displayName, _property.isExpanded);
-				
-				// If is expanded, then only show child properties
-				if (_property.isExpanded)
-				{
-					// Start displaying child properties in next indentation level
-					EditorGUI.indentLevel++;
-
-					// Draw child properties
-					DrawChildPropertyFields(_property);
-
-					// Reset indentation level
-					EditorGUI.indentLevel--;
-				}
-			}
-			EditorGUILayout.EndVertical();
-		}
-		
-		public static void DrawChildPropertyFields (SerializedProperty _serializedProperty)
-		{
-			// Object type properties are shown as sub menu
-			IList _serializableChildProperties		= _serializedProperty.GetSerializableChildProperties();
-			int _serializableChildPropertyCount		= _serializableChildProperties.Count;
+			splitterStyle.margin	= new RectOffset(_margin, _margin, 7, 7);
+			Rect	_rectPosition	= GUILayoutUtility.GetRect(GUIContent.none, splitterStyle, GUILayout.Height(_thickness));
 			
-			for (int _cIter = 0; _cIter < _serializableChildPropertyCount; _cIter++)
-			{				
-				SerializedProperty _childProperty	= _serializableChildProperties[_cIter] as SerializedProperty;
+			if (Event.current.type == EventType.repaint)
+			{
+				Color 	_resetColor = GUI.color;
+				GUI.color 			= _color;
 				
-				// Draw child property
-				DrawPropertyField(_childProperty);
+				// Draw
+				splitterStyle.Draw(_rectPosition, false, false, false, false);
+				
+				// Reset values
+				GUI.color	 		= _resetColor;
 			}
 		}
+		
+		#endregion
 
+		#region Label Methods
+		
+		public static void DrawLabel (string _text, Alignment _alignment = Alignment.None)
+		{
+			DrawLabel(_text, GUI.skin.label, _alignment);
+		}
+		
+		public static void DrawLabel (string _text, GUIStyle _style, Alignment _alignment = Alignment.None)
+		{
+			GUILayout.BeginHorizontal();
+			{
+				switch (_alignment)
+				{
+				case Alignment.None:
+					GUILayout.Label(_text, _style);
+					break;
+					
+				case Alignment.Left:
+					GUILayout.Label(_text, _style);
+					GUILayout.FlexibleSpace();
+					break;
+					
+				case Alignment.Center:
+					GUILayout.FlexibleSpace();
+					GUILayout.Label(_text, _style);
+					GUILayout.FlexibleSpace();
+					break;
+					
+				case Alignment.Right:
+					GUILayout.FlexibleSpace();
+					GUILayout.Label(_text, _style);
+					break;
+				}
+			}
+			GUILayout.EndHorizontal();
+		}
+		
+		#endregion
+		
+		#region Button Method
+		
+		public static bool DrawButton (Rect _position, string _text, bool _enabled)
+		{
+			return DrawButton(_position, _text, GUI.skin.button, _enabled);
+		}
+		
+		public static bool DrawButton (Rect _position, string _text, GUIStyle _style, bool _enabled = true)
+		{
+			bool	_resetState		= GUI.enabled;
+			GUI.enabled				= _enabled;
+			bool	_buttonPressed	= GUI.Button(_position, _text, _style);
+			
+			// Reset GUI state
+			GUI.enabled				= _resetState;
+			
+			return _buttonPressed;
+		}
+		
+		public static bool DrawButton (string _text, Alignment _alignment = Alignment.None, bool _enabled = true, params GUILayoutOption[] _options)
+		{
+			return DrawButton(_text, GUI.skin.button, _alignment, _enabled, _options);
+		}
+		
+		public static bool DrawButton (string _text, GUIStyle _style, Alignment _alignment = Alignment.None, bool _enabled = true, params GUILayoutOption[] _options)
+		{
+			bool 	_isPressed		= false;
+			bool	_resetState		= GUI.enabled;
+			GUI.enabled				= _enabled;
+			
+			GUILayout.BeginHorizontal();
+			{
+				switch (_alignment)
+				{
+				case Alignment.None:
+					_isPressed = GUILayout.Button(_text, _style, _options);
+					break;
+					
+				case Alignment.Left:
+					_isPressed = GUILayout.Button(_text, _style, _options);
+					GUILayout.FlexibleSpace();
+					break;
+					
+				case Alignment.Center:
+					GUILayout.FlexibleSpace();
+					_isPressed = GUILayout.Button(_text, _style, _options);
+					GUILayout.FlexibleSpace();
+					break;
+					
+				case Alignment.Right:
+					GUILayout.FlexibleSpace();					
+					_isPressed = GUILayout.Button(_text, _style, _options);
+					break;
+				}
+			}
+			GUILayout.EndHorizontal();
+			
+			// Reset GUI state
+			GUI.enabled				= _resetState;
+			
+			return _isPressed;
+		}
+		
 		#endregion
 
 		#region Header Methods
 
-		public static bool DrawHeader (string _header, SerializedProperty _property)
+		public static bool DrawPropertyHeader (SerializedProperty _property)
 		{
-			bool _newState	= DrawHeader(_header, _property.boolValue);
+			bool		_isExpandedOld	= _property.isExpanded;
+			string		_displayName	= _property.displayName;
+			string 		_toolTip		= _property.tooltip;
 
-			// Update property if value has changed
-			if (GUI.changed) 
-				_property.boolValue	= _newState;			
+			// Draw toggle
+			_property.isExpanded		= DrawPropertyHeader(_isExpandedOld, _displayName, _toolTip);
 			
-			return _newState;
+			return (_property.isExpanded != _isExpandedOld);
 		}
 
-		public static bool DrawHeader (string _label, bool _state)
+		public static bool DrawPropertyHeader (bool _status, GUIContent _text)
 		{
-			return DrawHeader(new GUIContent(_label), _state);
+			return DrawPropertyHeader(_status, _text.text, _text.tooltip);
 		}
 
-		public static bool DrawHeader (GUIContent _label, bool _state)
+		public static bool DrawPropertyHeader (bool _status, string _text, string _toolTip)
 		{
-			// Enable rich text
-			GUIStyle _style			= new GUIStyle(EditorStyles.label);
-			_style.richText			= true;
-
-			// Create new label
-			GUIContent _labelCopy	= new GUIContent(_label);
-			string _toggleSymbol	= null;
-
-			if (_state) 
-				_toggleSymbol	= "-";
-			else 
-				_toggleSymbol 	= "+";
-
-			// Append tags
-			_labelCopy.text		= string.Format("<b>{0} {1} </b>", _toggleSymbol, _label.text);
-		
-			GUILayout.BeginHorizontal();
-			{
-				GUILayout.Space(kTabSize * EditorGUI.indentLevel);
-
-				if (!GUILayout.Toggle(true, _labelCopy, _style)) 
-					_state = !_state;
-			}
-			GUILayout.EndHorizontal();
-
-			return _state;
+			GUIContent	_newText		= new GUIContent(_text, _toolTip);
+			GUIStyle 	_toggleStyle	= new GUIStyle("LargeButton");
+			_toggleStyle.richText		= true;
+			
+			return GUILayout.Toggle(_status, _newText, _toggleStyle);
 		}
 		
-		#endregion
-
-		#region Spacing Methods
-
-		public static void Space ()
-		{
-			GUILayout.Space(5f);
-		}
-
 		#endregion
 	}
 }

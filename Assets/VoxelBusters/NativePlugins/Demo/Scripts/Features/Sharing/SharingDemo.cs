@@ -2,243 +2,86 @@ using UnityEngine;
 using System.Collections;
 using VoxelBusters.NativePlugins;
 using VoxelBusters.Utility;
-using VoxelBusters.AssetStoreProductUtility.Demo;
 
 namespace VoxelBusters.NativePlugins.Demo
 {
-	public class SharingDemo : DemoSubMenu 
+#if !USES_SHARING
+	public class SharingDemo : NPDisabledFeatureDemo 
+#else
+	public class SharingDemo : NPDemoBase 
+#endif
 	{
 		#region Properties
 
-		// Related to sharing
+#pragma warning disable
+		[SerializeField, Header("Message Sharing Properties")]
+		private 	string			m_smsBody			= "SMS body holds text message that needs to be sent to recipients";
 		[SerializeField]
-		private string					m_shareMessage		= "share message";
+		private 	string[] 		m_smsRecipients;
+		
+		[SerializeField, Header("Mail Sharing Properties")]
+		private 	string			m_mailSubject		= "Demo Mail";
 		[SerializeField]
-		private string					m_shareURL			= "http://www.google.com";
+		private 	string			m_plainMailBody		= "This is plain text mail.";
 		[SerializeField]
-		private eShareOptions[]			m_excludedOptions	= new eShareOptions[0];
+		private 	string			m_htmlMailBody		= "<html><body><h1>Hello</h1></body></html>";
+		[SerializeField]
+		private 	string[] 		m_mailToRecipients;
+		[SerializeField]
+		private 	string[] 		m_mailCCRecipients;
+		[SerializeField]
+		private 	string[] 		m_mailBCCRecipients;
 
-		// Related to SMS
+		[SerializeField, Header("Share Sheet Properties")]
+		private 	eShareOptions[]	m_excludedOptions	= new eShareOptions[0];
+
+		[SerializeField, Header("Share Properties ")]
+		private 	string			m_shareMessage		= "share message";
 		[SerializeField]
-		private string					m_smsBody			= "SMS body holds text message that needs to be sent to recipients";
-		[SerializeField]
-		private string[] 				m_smsRecipients;
-		
-		// Related to mail
-		[SerializeField]
-		private string					m_plainTextMailBody	= "This is plain text mail";
-		[SerializeField]
-		private string					m_htmlMailBody		= "<html><body><h1>Hello</h1></body></html>";
-		[SerializeField]
-		private string[] 				m_mailRecipients;
-		
-		[Tooltip ("This demo consideres image relative to Application.persistentDataPath")]
-		[SerializeField]
-		private string 					m_sampleImageAtDataPath;
+		private 	string			m_shareURL			= "http://www.google.com";
+
+		[SerializeField, Tooltip ("This demo consideres image relative to Application.persistentDataPath")]
+		private 	string 			m_shareImageRelativePath;
+#pragma warning restore
 
 		#endregion
 
-		#region Message Sharing
+#if !USES_SHARING
+	}
+#else
+		#region Unity Methods
 
-		private bool IsMessagingServiceAvailable()
+		protected override void Start ()
 		{
-			return NPBinding.Sharing.IsMessagingServiceAvailable();
-		}
+			base.Start ();
 
-		private void SendTextMessage()
-		{
-			NPBinding.Sharing.SendTextMessage(m_smsBody, m_smsRecipients, FinishedSharing);
-		}
-		
-		#endregion
-		
-		#region Mail Sharing
-		
-		private bool IsMailServiceAvailable()
-		{
-			return NPBinding.Sharing.IsMailServiceAvailable();
-		}
-
-		private void SendPlainTextMail()
-		{
-			NPBinding.Sharing.SendPlainTextMail("Demo", m_plainTextMailBody, m_mailRecipients, FinishedSharing);
-		}
-
-		private void SendHTMLTextMail () 
-		{
-			NPBinding.Sharing.SendHTMLTextMail("Demo", m_htmlMailBody, m_mailRecipients, FinishedSharing);
-		}
-
-		private void SendMailWithScreenshot()
-		{
-
-			NPBinding.Sharing.SendMailWithScreenshot("Demo",
-			                                         m_plainTextMailBody,
-			                                         false,
-			                                         m_mailRecipients,
-			                                         FinishedSharing);
-
-		}
-
-		private void SendMailWithAttachment()
-		{
-			NPBinding.Sharing.SendMailWithAttachment(	"Demo",
-				                                         m_htmlMailBody,
-				                                         true,
-			                                         	 Application.persistentDataPath + "/" + m_sampleImageAtDataPath,
-				                                         "image/png", 
-				                                         m_mailRecipients,
-				                                         FinishedSharing);
-		}
-
-		private bool IsWhatsAppServiceAvailable ()
-		{
-			return NPBinding.Sharing.IsWhatsAppServiceAvailable();
-		}
-
-		#endregion
-		
-		#region WhatsApp Sharing
-
-		private void ShareTextMessageOnWhatsApp()
-		{
-			NPBinding.Sharing.ShareTextMessageOnWhatsApp(m_shareMessage, FinishedSharing);			
-		}
-
-		private void ShareScreenshotOnWhatsApp()
-		{
-			NPBinding.Sharing.ShareScreenshotOnWhatsApp(FinishedSharing);
-		}
-		
-		private void ShareImageOnWhatsApp()
-		{
-			NPBinding.Sharing.ShareImageOnWhatsApp(Application.persistentDataPath + "/" + m_sampleImageAtDataPath, FinishedSharing);
-		}
-	
-		#endregion
-		
-		#region Sharing On Social Network
-		
-		private void ShareTextMessageOnSocialNetwork()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-
-			// Share
-			NPBinding.Sharing.ShareTextMessageOnSocialNetwork(m_shareMessage, 	FinishedSharing);
-		}
-
-		private void ShareURLOnSocialNetwork()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareURLOnSocialNetwork(m_shareMessage, 		m_shareURL, 
-			                                          FinishedSharing);
-		}
-		private void ShareScreenShotOnSocialNetwork()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareScreenShotOnSocialNetwork(m_shareMessage, FinishedSharing);
-			
-		}
-		
-		private void ShareImageOnSocialNetwork()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareImageOnSocialNetwork(m_shareMessage, Application.persistentDataPath + "/" + m_sampleImageAtDataPath,
-			                                            FinishedSharing);
-			
-		}
-		
-		#endregion
-		
-		#region Sharing
-
-		private void ShareMessage()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareMessage(m_shareMessage, 		m_excludedOptions, 
-			                               FinishedSharing);
-		}
-		
-		private void ShareURL()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareURL(m_shareMessage,			m_shareURL, 				
-			                           m_excludedOptions, 		FinishedSharing);
-		}
-		
-		private void ShareScreenShot()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareScreenShot(m_shareMessage, 	m_excludedOptions,
-			                                  FinishedSharing);
-		}
-		
-		private void ShareImageAtPath()
-		{
-			// Set popover to last touch position
-			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
-			
-			// Share
-			NPBinding.Sharing.ShareImageAtPath(m_shareMessage, 		Application.persistentDataPath + "/" + m_sampleImageAtDataPath,
-			                                   m_excludedOptions, 	FinishedSharing);
+			// Set additional info texts
+			AddExtraInfoTexts(
+				"When it comes to WhatsApp sharing, there is one major limitation on iOS platform i.e, you can either share only image or only text but not both. While sharing if both properties are set, then only image will be shared.");
 		}
 
 		#endregion
 
-		#region Callbacks
+		#region GUI Methods
 		
-		private void FinishedSharing (eShareResult _result)
+		protected override void DisplayFeatureFunctionalities ()
 		{
-			AddNewResult("Finished sharing");
-			AppendResult("Share Result = " + _result);
-		}
-
-		#endregion
-
-		#region UI
-
-		protected override void OnGUIWindow ()
-		{
-			base.OnGUIWindow();
-
-			RootScrollView.BeginScrollView();
-			{
-				DrawMessageSharing();
-				DrawMailSharing();
-				DrawWhatsAppSharing();
-				DrawSocialNetworkingSharing();
-				DrawGeneralSharing();
-			}
-			RootScrollView.EndScrollView();
+			base.DisplayFeatureFunctionalities ();
 			
-			DrawResults();
-			DrawPopButton();
+			DrawMessageShareSection ();
+			DrawMailShareSection ();
+			DrawFBShareSection ();
+			DrawTwitterShareSection ();
+			DrawWhatsAppShareSection ();
+			DrawSocialShareSheetSection ();
+			DrawShareSheetSection ();
 		}
-
-		private void DrawMessageSharing ()
+		
+		private void DrawMessageShareSection ()
 		{	
-			GUILayout.Label("Share via Message", kSubTitleStyle);
+			GUILayout.Label("Message Share", kSubTitleStyle);
 			
-			if (GUILayout.Button("Is Messaging Available"))
+			if (GUILayout.Button ("Is Messaging Available"))
 			{
 				AddNewResult("IsMessagingAvailable=" + IsMessagingServiceAvailable());
 			}
@@ -248,10 +91,10 @@ namespace VoxelBusters.NativePlugins.Demo
 				SendTextMessage();
 			}
 		}
-			
-		private void DrawMailSharing ()
+		
+		private void DrawMailShareSection ()
 		{
-			GUILayout.Label("Share via Mail", kSubTitleStyle);
+			GUILayout.Label("Mail Share", kSubTitleStyle);
 			
 			if (GUILayout.Button("Is Mail Available"))
 			{
@@ -279,11 +122,71 @@ namespace VoxelBusters.NativePlugins.Demo
 			}
 		}
 
-		private void DrawWhatsAppSharing ()
+		private void DrawFBShareSection ()
 		{
-			GUILayout.Label("Share on WhatsApp", kSubTitleStyle);
+			GUILayout.Label("FB Share", kSubTitleStyle);
 			
-			if (GUILayout.Button("IsWhatsAppServiceAvailable"))
+			if (GUILayout.Button("Is FB Share Service Available"))
+			{
+				AddNewResult("Can Share On FB = " + IsFBShareServiceAvailable());
+			}
+			
+			if (GUILayout.Button("Share Text Message On FB"))
+			{
+				ShareTextMessageOnFB();
+			}
+			
+			if (GUILayout.Button("Share URL On FB"))
+			{
+				ShareURLOnFB();
+			}
+			
+			if (GUILayout.Button("Share Screenshot On FB"))
+			{
+				ShareScreenshotOnFB();
+			}
+			
+			if (GUILayout.Button("Share Image On FB"))
+			{
+				ShareImageOnFB();
+			}
+		}
+
+		private void DrawTwitterShareSection ()
+		{
+			GUILayout.Label("Twitter Share", kSubTitleStyle);
+			
+			if (GUILayout.Button("Is Twitter Share Service Available"))
+			{
+				AddNewResult("Can Share On Twitter = " + IsTwitterShareServiceAvailable());
+			}
+			
+			if (GUILayout.Button("Share Text Message On Twitter"))
+			{
+				ShareTextMessageOnTwitter();
+			}
+			
+			if (GUILayout.Button("ShareURLOnTwitter"))
+			{
+				ShareURLOnTwitter();
+			}
+			
+			if (GUILayout.Button("Share Screenshot On Twitter"))
+			{
+				ShareScreenshotOnTwitter();
+			}
+			
+			if (GUILayout.Button("Share Image On Twitter"))
+			{
+				ShareImageOnTwitter();
+			}
+		}
+		
+		private void DrawWhatsAppShareSection ()
+		{
+			GUILayout.Label("WhatsApp Share", kSubTitleStyle);
+			
+			if (GUILayout.Button("Is WhatsApp Service Available"))
 			{
 				AddNewResult("Can Share On WhatsApp = " + IsWhatsAppServiceAvailable());
 			}
@@ -293,67 +196,427 @@ namespace VoxelBusters.NativePlugins.Demo
 				ShareTextMessageOnWhatsApp();
 			}
 			
-			if (GUILayout.Button("ShareScreenshotOnWhatsApp"))
+			if (GUILayout.Button("Share Screenshot On WhatsApp"))
 			{
 				ShareScreenshotOnWhatsApp();
 			}
 			
-			if (GUILayout.Button("ShareImageOnWhatsApp"))
+			if (GUILayout.Button("Share Image On WhatsApp"))
 			{
 				ShareImageOnWhatsApp();
 			}
 		}
-
-		private void DrawSocialNetworkingSharing ()
+		
+		private void DrawSocialShareSheetSection ()
 		{
-			GUILayout.Label("Share on Social Network", kSubTitleStyle);
+			GUILayout.Label("Social Share Sheet", kSubTitleStyle);
 			
-			if (GUILayout.Button("ShareTextMessageOnSocialNetwork"))
+			if (GUILayout.Button("Share Text Message On SocialNetwork"))
 			{
 				ShareTextMessageOnSocialNetwork();
 			}
 			
-			if (GUILayout.Button("ShareURLOnSocialNetwork"))
+			if (GUILayout.Button("Share URL On SocialNetwork"))
 			{
 				ShareURLOnSocialNetwork();
 			}
 			
-			if (GUILayout.Button("ShareScreenShotOnSocialNetwork"))
+			if (GUILayout.Button("Share ScreenShot On SocialNetwork"))
 			{
 				ShareScreenShotOnSocialNetwork();
 			}
 			
-			if (GUILayout.Button("ShareImageOnSocialNetwork"))
+			if (GUILayout.Button("Share Image On SocialNetwork"))
 			{
 				ShareImageOnSocialNetwork();
 			}
 		}
-
-		private void DrawGeneralSharing ()
+		
+		private void DrawShareSheetSection ()
 		{
-			GUILayout.Label("Share", kSubTitleStyle);
+			GUILayout.Label("Share Sheet", kSubTitleStyle);
 			
-			if (GUILayout.Button("ShareMessage"))
+			if (GUILayout.Button("Share Text Message Using ShareSheet"))
 			{
-				ShareMessage();
+				ShareTextMessageUsingShareSheet();
 			}
 			
-			if (GUILayout.Button("ShareURL"))
+			if (GUILayout.Button("Share URL Using ShareSheet"))
 			{
-				ShareURL();
+				ShareURLUsingShareSheet();
 			}
 			
-			if (GUILayout.Button("ShareScreenShot"))
+			if (GUILayout.Button("Share ScreenShot Using ShareSheet"))
 			{
-				ShareScreenShot();
+				ShareScreenShotUsingShareSheet();
 			}
 			
-			if (GUILayout.Button("ShareImageAtPath"))
+			if (GUILayout.Button("Share Image At Path Using ShareSheet"))
 			{
-				ShareImageAtPath();
+				ShareImageAtPathUsingShareSheet();
 			}
+		}
+		
+		#endregion
+
+		#region Message Sharing API Methods
+
+		private bool IsMessagingServiceAvailable ()
+		{
+			return NPBinding.Sharing.IsMessagingServiceAvailable();
+		}
+
+		private void SendTextMessage ()
+		{
+			// Create composer
+			MessageShareComposer	_composer	= new MessageShareComposer();
+			_composer.Body						= m_smsBody;
+			_composer.ToRecipients				= m_smsRecipients;
+
+			// Show message composer
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+		
+		#endregion
+		
+		#region Mail Sharing API Methods
+		
+		private bool IsMailServiceAvailable ()
+		{
+			return NPBinding.Sharing.IsMailServiceAvailable();
+		}
+
+		private void SendPlainTextMail ()
+		{
+			// Create composer
+			MailShareComposer	_composer	= new MailShareComposer();
+			_composer.Subject				= m_mailSubject;
+			_composer.Body					= m_plainMailBody;
+			_composer.IsHTMLBody			= false;
+			_composer.ToRecipients			= m_mailToRecipients;
+			_composer.CCRecipients			= m_mailCCRecipients;
+			_composer.BCCRecipients			= m_mailBCCRecipients;
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+
+		private void SendHTMLTextMail () 
+		{
+			// Create composer
+			MailShareComposer	_composer	= new MailShareComposer();
+			_composer.Subject				= m_mailSubject;
+			_composer.Body					= m_htmlMailBody;
+			_composer.IsHTMLBody			= true;
+			_composer.ToRecipients			= m_mailToRecipients;
+			_composer.CCRecipients			= m_mailCCRecipients;
+			_composer.BCCRecipients			= m_mailBCCRecipients;
+
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+
+		private void SendMailWithScreenshot ()
+		{
+			// Create composer
+			MailShareComposer	_composer	= new MailShareComposer();
+			_composer.Subject				= m_mailSubject;
+			_composer.Body					= m_plainMailBody;
+			_composer.IsHTMLBody			= false;
+			_composer.ToRecipients			= m_mailToRecipients;
+			_composer.CCRecipients			= m_mailCCRecipients;
+			_composer.BCCRecipients			= m_mailBCCRecipients;
+			_composer.AttachScreenShot();
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+
+		private void SendMailWithAttachment ()
+		{
+			// Create composer
+			MailShareComposer	_composer	= new MailShareComposer();
+			_composer.Subject				= m_mailSubject;
+			_composer.Body					= m_plainMailBody;
+			_composer.IsHTMLBody			= false;
+			_composer.ToRecipients			= m_mailToRecipients;
+			_composer.CCRecipients			= m_mailCCRecipients;
+			_composer.BCCRecipients			= m_mailBCCRecipients;
+			_composer.AddAttachmentAtPath(GetImageFullPath(), MIMEType.kPNG);
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+
+		#endregion
+
+		#region FB Sharing API Methods
+
+		private bool IsFBShareServiceAvailable ()
+		{
+			return NPBinding.Sharing.IsFBShareServiceAvailable();
+		}
+
+		private void ShareTextMessageOnFB ()
+		{
+			// Create composer
+			FBShareComposer _composer	= new FBShareComposer();
+			_composer.Text				= m_shareMessage;
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+
+		private void ShareURLOnFB ()
+		{
+			// Create share sheet
+			FBShareComposer _composer	= new FBShareComposer();
+			_composer.Text				= m_shareMessage;
+			_composer.URL				= m_shareURL;
+			
+			// Show composer
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+		
+		private void ShareScreenshotOnFB ()
+		{
+			// Create composer
+			FBShareComposer _composer	= new FBShareComposer();
+			_composer.Text				= m_shareMessage;
+			_composer.AttachScreenShot();
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+		
+		private void ShareImageOnFB ()
+		{
+			// Create composer
+			FBShareComposer _composer	= new FBShareComposer();
+			_composer.Text				= m_shareMessage;
+			_composer.AttachImageAtPath(GetImageFullPath());
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);
+		}
+
+		#endregion
+
+		#region Twitter Sharing API Methods
+		
+		private bool IsTwitterShareServiceAvailable ()
+		{
+			return NPBinding.Sharing.IsTwitterShareServiceAvailable();
+		}
+		
+		private void ShareTextMessageOnTwitter ()
+		{
+			// Create composer
+			TwitterShareComposer _composer	= new TwitterShareComposer();
+			_composer.Text					= m_shareMessage;
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+		
+		private void ShareURLOnTwitter ()
+		{
+			// Create share sheet
+			TwitterShareComposer _composer	= new TwitterShareComposer();
+			_composer.Text					= m_shareMessage;
+			_composer.URL					= m_shareURL;
+			
+			// Show composer
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+		
+		private void ShareScreenshotOnTwitter ()
+		{
+			// Create composer
+			TwitterShareComposer _composer	= new TwitterShareComposer();
+			_composer.Text					= m_shareMessage;
+			_composer.AttachScreenShot();
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+		
+		private void ShareImageOnTwitter ()
+		{
+			// Create composer
+			TwitterShareComposer _composer	= new TwitterShareComposer();
+			_composer.Text					= m_shareMessage;
+			_composer.AttachImageAtPath(GetImageFullPath());
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+
+		#endregion
+		
+		#region WhatsApp Sharing API Methods
+		
+		private bool IsWhatsAppServiceAvailable ()
+		{
+			return NPBinding.Sharing.IsWhatsAppServiceAvailable();
+		}
+
+		private void ShareTextMessageOnWhatsApp ()
+		{
+			// Create composer
+			WhatsAppShareComposer _composer	= new WhatsAppShareComposer();
+			_composer.Text					= m_shareMessage;
+
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);			
+		}
+
+		private void ShareScreenshotOnWhatsApp ()
+		{
+			// Create composer
+			WhatsAppShareComposer _composer	= new WhatsAppShareComposer();
+			_composer.AttachScreenShot();
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);	
+		}
+		
+		private void ShareImageOnWhatsApp ()
+		{
+			// Create composer
+			WhatsAppShareComposer _composer	= new WhatsAppShareComposer();
+			_composer.AttachImageAtPath(GetImageFullPath());
+			
+			// Show share view
+			NPBinding.Sharing.ShowView(_composer, FinishedSharing);	
+		}
+	
+		#endregion
+		
+		#region Social Share Sheet API Methods
+		
+		private void ShareTextMessageOnSocialNetwork ()
+		{
+			// Create share sheet
+			SocialShareSheet _shareSheet 	= new SocialShareSheet();	
+			_shareSheet.Text				= m_shareMessage;
+
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+
+		private void ShareURLOnSocialNetwork ()
+		{
+			// Create share sheet
+			SocialShareSheet _shareSheet 	= new SocialShareSheet();	
+			_shareSheet.Text				= m_shareMessage;
+			_shareSheet.URL					= m_shareURL;
+			
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+
+		private void ShareScreenShotOnSocialNetwork ()
+		{
+			// Create share sheet
+			SocialShareSheet _shareSheet 	= new SocialShareSheet();	
+			_shareSheet.Text				= m_shareMessage;
+			_shareSheet.AttachScreenShot();
+
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+		
+		private void ShareImageOnSocialNetwork ()
+		{
+			// Create share sheet
+			SocialShareSheet _shareSheet 	= new SocialShareSheet();	
+			_shareSheet.Text				= m_shareMessage;
+			_shareSheet.AttachImageAtPath(GetImageFullPath());
+			
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+		
+		#endregion
+		
+		#region Share Sheet API Methods
+
+		private void ShareTextMessageUsingShareSheet ()
+		{
+			// Create share sheet
+			ShareSheet _shareSheet 	= new ShareSheet();	
+			_shareSheet.Text		= m_shareMessage;
+			_shareSheet.ExcludedShareOptions	= m_excludedOptions;
+
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+		
+		private void ShareURLUsingShareSheet ()
+		{
+			// Create share sheet
+			ShareSheet _shareSheet 	= new ShareSheet();	
+			_shareSheet.Text		= m_shareMessage;
+			_shareSheet.URL			= m_shareURL;
+			_shareSheet.ExcludedShareOptions	= m_excludedOptions;
+
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+		
+		private void ShareScreenShotUsingShareSheet ()
+		{
+			// Create share sheet
+			ShareSheet _shareSheet 	= new ShareSheet();	
+			_shareSheet.Text		= m_shareMessage;
+			_shareSheet.ExcludedShareOptions	= m_excludedOptions;
+			_shareSheet.AttachScreenShot();
+
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+		
+		private void ShareImageAtPathUsingShareSheet ()
+		{
+			// Create share sheet
+			ShareSheet _shareSheet 	= new ShareSheet();	
+			_shareSheet.Text		= m_shareMessage;
+			_shareSheet.ExcludedShareOptions	= m_excludedOptions;
+			_shareSheet.AttachImageAtPath(GetImageFullPath());
+			
+			// Show composer
+			NPBinding.UI.SetPopoverPointAtLastTouchPosition();
+			NPBinding.Sharing.ShowView(_shareSheet, FinishedSharing);
+		}
+
+		#endregion
+		
+		#region API Callback Methods
+		
+		private void FinishedSharing (eShareResult _result)
+		{
+			AddNewResult("Finished sharing");
+			AppendResult("Share Result = " + _result);
+		}
+		
+		#endregion
+
+		#region Misc. Methods
+
+		private string GetImageFullPath ()
+		{
+			return Application.persistentDataPath + "/" + m_shareImageRelativePath;
 		}
 
 		#endregion
 	}
+#endif
 }

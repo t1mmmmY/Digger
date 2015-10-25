@@ -9,7 +9,7 @@ namespace VoxelBusters.DesignPatterns
 		#region Properties
 
 		// List which holds reference to all observers
-		private List<IObserver>	m_observers 	= new List<IObserver>();
+		private List<IObserver>	m_observers 	= new List<IObserver> ();
 
 		#endregion
 
@@ -21,10 +21,10 @@ namespace VoxelBusters.DesignPatterns
 		/// <param name="_observer">_observer.</param>
 		public void AddObserver (IObserver _observer)
 		{
-			if (!m_observers.Contains(_observer))
+			if (!m_observers.Contains (_observer))
 			{
-				Debug.Log("[ObserverPattern] Adding new observer=" + _observer);
-				m_observers.Add(_observer);
+				Debug.Log (string.Format ("[ObserverPattern] Adding new observer= {0}.", _observer.ToString ()));
+				m_observers.Add (_observer);
 			}
 		}
 
@@ -34,10 +34,10 @@ namespace VoxelBusters.DesignPatterns
 		/// <param name="_observer">_observer.</param>
 		public void RemoveObserver (IObserver _observer)
 		{
-			if (m_observers.Contains(_observer))
+			if (m_observers.Contains (_observer))
 			{
-				Debug.Log("[ObserverPattern] Removing new observer=" + _observer);
-				m_observers.Remove(_observer);
+				Debug.Log (string.Format ("[ObserverPattern] Removing observer= {0}.", _observer.ToString ()));
+				m_observers.Remove (_observer);
 			}
 		}
 
@@ -48,10 +48,11 @@ namespace VoxelBusters.DesignPatterns
 		/// <param name="_data">_data.</param>
 		public virtual void NotifyObservers (string _key, ArrayList _data)
 		{
-			Debug.Log(string.Format("[{0}] Notifying observers with message key: {1}", this.ToString(), _key));
+			Debug.Log (string.Format ("[ObserverPattern] {0} is notifying observers with key {1}.", this.ToString (), _key));
+
 			for (int _iter = 0; _iter < m_observers.Count; _iter++)
 			{
-				m_observers[_iter].OnPropertyChange(_key, _data);
+				m_observers[_iter].OnPropertyChange (_key, _data);
 			}	
 		}
 		

@@ -14,11 +14,16 @@ namespace VoxelBusters.NativePlugins
 	/// </summary>
 	public partial class MediaLibrary : MonoBehaviour 
 	{
+		#region Properties
+
+		private		float		m_scaleFactor;
+
+		#endregion
+
 		#region Unity Methods
 		
 		protected virtual void Awake()
-		{
-		}
+		{}
 		
 		#endregion
 
@@ -47,8 +52,9 @@ namespace VoxelBusters.NativePlugins
 			// Pause unity player
 			this.PauseUnity();
 
-			// Cache callbacks
-			OnPickImageFinished	= _onCompletion;
+			// Cache properties
+			m_scaleFactor			= _scaleFactor;
+			OnPickImageFinished		= _onCompletion;
 
 			if (_scaleFactor <= 0f)
 			{
@@ -148,18 +154,19 @@ namespace VoxelBusters.NativePlugins
 		/// <param name="_videoID">Video id of the youtube video.</param>
 		/// <param name="_onCompletion">Callback triggered on completion or failure. see <see cref="ePlayVideoFinishReason"/> for status.</param>
 		public virtual void PlayYoutubeVideo (string _videoID, PlayVideoCompletion _onCompletion)
-		{			
-			// Load Youtube player HTML script
-			TextAsset _youtubePlayerHTML	= Resources.Load("YoutubePlayer", typeof(TextAsset)) as TextAsset;
-			string _embedHTMLString			= null;
-			
-			if (_youtubePlayerHTML != null)
+		{	
+			// Pause unity player
+			this.PauseUnity();
+		
+			// Cache callback
+			OnPlayVideoFinished	= _onCompletion;
+
+			if (string.IsNullOrEmpty(_videoID))
 			{
-				_embedHTMLString			= _youtubePlayerHTML.text.Replace("%@", _videoID);
+				Console.LogError(Constants.kDebugTag, "[MediaLibrary] Play youtube video failed, Video ID can't be null");
+				PlayVideoFinished(ePlayVideoFinishReason.PLAYBACK_ERROR);
+				return;
 			}
-			
-			// Play video
-			PlayEmbeddedVideo(_embedHTMLString, _onCompletion);
 		}
 
 		/// <summary>
@@ -244,6 +251,20 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 			return _youtubeID;
+		}
+
+		protected string GetYoutubeEmbedHTMLString (string _videoID)
+		{
+			// Load Youtube player HTML script
+			TextAsset _youtubePlayerHTML	= Resources.Load("YoutubePlayer", typeof(TextAsset)) as TextAsset;
+			string _embedHTMLString			= null;
+			
+			if (_youtubePlayerHTML != null)
+			{
+				_embedHTMLString			= _youtubePlayerHTML.text.Replace("%@", _videoID);
+			}
+
+			return _embedHTMLString;
 		}
 
 		#endregion

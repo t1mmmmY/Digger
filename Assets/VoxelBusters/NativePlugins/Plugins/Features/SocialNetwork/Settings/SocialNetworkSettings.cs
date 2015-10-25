@@ -6,11 +6,16 @@ namespace VoxelBusters.NativePlugins
 	[System.Serializable]
 	public class SocialNetworkSettings
 	{
-		#region Properties
+		#region Fields
 
 		[SerializeField]
-		private 				TwitterSettings			m_twitterSettings;
-		public					TwitterSettings			TwitterSettings
+		private TwitterSettings m_twitterSettings;
+
+		#endregion
+
+		#region Properties
+
+		public TwitterSettings TwitterSettings
 		{
 			get
 			{

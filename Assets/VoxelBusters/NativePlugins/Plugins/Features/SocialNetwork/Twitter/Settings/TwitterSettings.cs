@@ -14,41 +14,46 @@ namespace VoxelBusters.NativePlugins
 	[System.Serializable]
 	public class TwitterSettings
 	{
-		#region Properties
+		#region Fields
 
 		[SerializeField]
-		private string 		m_consumerKey;
+		private 	string 		m_consumerKey;
+		[SerializeField]
+		private 	string 		m_consumerSecret;
+
+		#endregion
+
+		#region Properties
+
 		/// <summary>
 		/// Gets or sets the consumer key.
 		/// </summary>
 		/// <value>The consumer key.</value>
-		public string		ConsumerKey
+		public string ConsumerKey
 		{
 			get 
 			{ 
 				return m_consumerKey; 
 			}
 
-			set 
+			private set 
 			{ 
 				m_consumerKey	= value; 
 			}
 		}
 
-		[SerializeField]
-		private string 		m_consumerSecret;
 		/// <summary>
 		/// Gets or sets the consumer secret.
 		/// </summary>
 		/// <value>The consumer secret.</value>
-		public string		ConsumerSecret
+		public string ConsumerSecret
 		{
 			get 
 			{ 
 				return m_consumerSecret; 
 			}
 
-			set 
+			private set 
 			{ 
 				m_consumerSecret	= value; 
 			}

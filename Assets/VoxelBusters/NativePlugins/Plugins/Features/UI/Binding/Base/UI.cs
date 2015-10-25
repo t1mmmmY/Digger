@@ -9,6 +9,14 @@ namespace VoxelBusters.NativePlugins
 	public partial class UI : MonoBehaviour 
 	{
 		#region API
+
+		/// <summary>
+		/// Shows the toast. A toast is a view containing a quick little message for the user.
+		/// </summary>
+		/// <param name="_message">The text message in a Toast view.</param>
+		/// <param name="_length">Toast view show duration time length.</param>
+		public virtual void ShowToast (string _message, eToastMessageLength _length)
+		{}
 	
 		/// <summary>
 		/// Sets position of popover controller to given position.

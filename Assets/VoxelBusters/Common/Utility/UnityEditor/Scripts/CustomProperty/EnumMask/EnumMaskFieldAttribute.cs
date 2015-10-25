@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+#if NETFX_CORE
+using System.Reflection;
+#endif
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -35,7 +39,11 @@ namespace VoxelBusters.Utility
 
 		public bool IsEnum ()
 		{
+#if !NETFX_CORE
 			return TargetType.IsEnum;
+#else
+			return TargetType.GetTypeInfo().IsEnum;
+#endif
 		}
 
 #if UNITY_EDITOR

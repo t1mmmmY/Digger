@@ -1,6 +1,6 @@
 //
 //  UIImage+Save.m
-//  NativePluginIOSWorkspace
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 20/01/15.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -15,20 +15,15 @@
 
 - (NSString *)saveImageToDocumentsDirectory
 {
-	return [self saveImageToDocumentsDirectory:1];
+	return [self saveImageToDocumentsDirectory:[Utility GetUUID]];
 }
 
-- (NSString *)saveImageToDocumentsDirectory:(float)scale
+- (NSString *)saveImageToDocumentsDirectory:(NSString *)imageName
 {
-	UIImage *resizedImage	= [self resize:scale];
-	
-	if (resizedImage == NULL)
-		return kNSStringDefault;
-	
-	if ([self imageFormat] == UIImageFomatPNG)
-		return [UIImagePNGRepresentation(resizedImage) saveImage];
+	if ([self imageFormat] == UIImageFomatJPEG)
+		return [UIImageJPEGRepresentation(self, 1) saveImage:imageName];
 	else
-		return [UIImageJPEGRepresentation(resizedImage, 1) saveImage];
+		return [UIImagePNGRepresentation(self) saveImage:imageName];
 }
 
 @end

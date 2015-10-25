@@ -1,84 +1,157 @@
 ﻿using UnityEngine;
 using System.Collections;
-//using System.Collections.Generic;
-//using Soomla.Store;
-//using Soomla;
-//
-//public class InGameStore : MonoBehaviour 
-//{
-//	void Start ()
-//    {
-//        StoreEvents.OnSoomlaStoreInitialized += OnSoomlaStoreInitialized;
-//        SoomlaStore.Initialize(new AndroidStore());
-//        StoreEvents.OnItemPurchaseStarted += OnItemPurchaseStarted;
-//        StoreEvents.OnItemPurchased += OnItemPurchased;
-//        StoreEvents.OnMarketPurchaseStarted += OnMarketPurchaseStarted;
-//        StoreEvents.OnMarketPurchase += OnMarketPurchase;
-//        StoreEvents.OnMarketPurchaseCancelled += OnMarketPurchaseCancelled;
-//	}
-//
-//    void OnDestroy()
-//    {
-//        StoreEvents.OnSoomlaStoreInitialized -= OnSoomlaStoreInitialized;
-//        StoreEvents.OnItemPurchaseStarted -= OnItemPurchaseStarted;
-//        StoreEvents.OnItemPurchased -= OnItemPurchased;
-//        StoreEvents.OnMarketPurchaseStarted -= OnMarketPurchaseStarted;
-//        StoreEvents.OnMarketPurchase -= OnMarketPurchase;
-//        StoreEvents.OnMarketPurchaseCancelled -= OnMarketPurchaseCancelled;
-//
-//		SoomlaStore.StopIabServiceInBg();
-//    }
-//
-//	void OnGUI()
-//	{
-//		if (GUILayout.Button("BuySomething"))
+using System.Collections.Generic;
+using VoxelBusters.NativePlugins;
+using UnityEngine.UI;
+
+public class InGameStore : BaseSingleton<InGameStore>
+{
+	[SerializeField] Button fadeButton;
+
+	private BillingProduct[] products;
+	private System.Action<bool> onTransacionFinishedCallback;
+	private int currentProductNumber = 0;
+
+	protected override void Awake ()
+	{
+		Billing.TransactionFinishedEvent += HandleTransactionFinishedEvent;
+		Billing.BillingProductsRequestFinishedEvent += HandleBillingProductsRequestFinishedEvent;
+
+		base.Awake ();
+	}
+
+	void Start()
+	{
+		products = NPSettings.Billing.Products;
+		NPBinding.Billing.RequestForBillingProducts(products);
+	}
+
+	protected override void OnDestroy ()
+	{
+		Billing.TransactionFinishedEvent -= HandleTransactionFinishedEvent;
+		Billing.BillingProductsRequestFinishedEvent -= HandleBillingProductsRequestFinishedEvent;
+
+		base.OnDestroy ();
+	}
+
+	public bool IsProductPurchased(int characterNumber)
+	{
+		if (characterNumber >= products.Length)
+		{
+			return false;
+		}
+
+		if (characterNumber == 0)
+		{
+			return true;
+		}
+
+		return NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier);
+	}
+
+	public string GetProductPrice(int characterNumber)
+	{
+		if (characterNumber >= products.Length)
+		{
+			return "out of range";
+		}
+
+		if (characterNumber == 0)
+		{
+			return "free";
+		}
+
+		return string.Format("{0} {1}", products[characterNumber].CurrencyCode, products[characterNumber].Price);
+	}
+
+	public bool BuyProduct(int characterNumber, System.Action<bool> callback)
+	{
+		if (characterNumber >= products.Length)
+		{
+			return false;
+		}
+
+		if (characterNumber == 0)
+		{
+			return false;
+		}
+
+		//Do not buy the same products twice
+		if (!NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier))
+		{
+			fadeButton.gameObject.SetActive(true);
+			onTransacionFinishedCallback = callback;
+			currentProductNumber = characterNumber;
+			NPBinding.Billing.BuyProduct(products[characterNumber].ProductIdentifier);
+			return true;
+		}
+
+		return false;
+	}
+
+	public void RestoreCompletedTransactions()
+	{
+		NPBinding.Billing.RestoreCompletedTransactions();
+		NPBinding.Billing.RequestForBillingProducts(products);
+
+		Debug.Log("Restore products");
+	}
+
+
+	void HandleBillingProductsRequestFinishedEvent (List<BillingProduct> _regProductsList, string _error)
+	{
+//		if (_error != "")
 //		{
-//			SoomlaStore.BuyMarketItem(AndroidStore.CHARACTER_ITEM_ID, "Nice work!");
-//			//StoreInventory.BuyItem(AndroidStore.CHARACTER_PACK.ItemId);
+//			Debug.LogError("Request products error " + _error);
 //		}
-//	}
-//
-//    public void OnSoomlaStoreInitialized()
-//    {
-//		SoomlaStore.StartIabServiceInBg();
-//        Debug.Log("Store initialized");
-//        // ... your game specific implementation here ...
-//    }
-//
-//    void OnItemPurchaseStarted(PurchasableVirtualItem item)
-//    {
-//
-//    }
-//
-//    void OnItemPurchased(PurchasableVirtualItem item, string name)
-//    {
-//
-//    }
-//
-//    void OnMarketPurchaseStarted(PurchasableVirtualItem item)
-//    {
-//        // pvi - the PurchasableVirtualItem whose purchase operation has just started
-//
-//        // ... your game specific implementation here ...
-//    }
-//
-//    public void OnMarketPurchase(PurchasableVirtualItem pvi, string payload, Dictionary<string, string> extra)
-//    {
-//        // pvi - the PurchasableVirtualItem that was just purchased
-//        // payload - a text that you can give when you initiate the purchase operation and
-//        //    you want to receive back upon completion
-//        // extra - contains platform specific information about the market purchase
-//        //    Android: The "extra" dictionary will contain: 'token', 'orderId', 'originalJson', 'signature', 'userId'
-//        //    iOS: The "extra" dictionary will contain: 'receiptUrl', 'transactionIdentifier', 'receiptBase64', 'transactionDate', 'originalTransactionDate', 'originalTransactionIdentifier'
-//
-//        // ... your game specific implementation here ...
-//    }
-//
-//    public void OnMarketPurchaseCancelled(PurchasableVirtualItem pvi)
-//    {
-//        // pvi - the PurchasableVirtualItem whose purchase operation was cancelled
-//
-//        // ... your game specific implementation here ...
-//    }
-//	
-//}
+
+		for (int i = 0; i < _regProductsList.Count; i++)
+		{
+			products[i] = FindProductById(_regProductsList, products[i].ProductIdentifier);
+			Debug.Log("product " + i.ToString() + " = " + products[i].ToString());
+		}
+
+	}
+
+	BillingProduct FindProductById(List<BillingProduct> allProducts, string id)
+	{
+		foreach (BillingProduct bp in allProducts)
+		{
+			if (bp.ProductIdentifier == id)
+			{
+				return bp;
+			}
+		}
+
+		return null;
+	}
+
+	void HandleTransactionFinishedEvent (List<BillingTransaction> _finishedTransactions)
+	{
+		fadeButton.gameObject.SetActive(false);
+		
+		foreach (VoxelBusters.NativePlugins.BillingTransaction transaction in _finishedTransactions)
+		{
+			Debug.Log(transaction.ToString());
+			if (transaction.ProductIdentifier == products[currentProductNumber].ProductIdentifier)
+			{
+				bool isSuccess = false;
+
+				if (transaction.TransactionState == eBillingTransactionState.PURCHASED)
+				{
+					isSuccess = true;
+					NPBinding.Billing.RequestForBillingProducts(products);
+				}
+
+				if (onTransacionFinishedCallback != null)
+				{
+					onTransacionFinishedCallback(isSuccess);
+				}
+			}
+		}
+
+	}
+	
+
+
+}

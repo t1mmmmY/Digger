@@ -1,19 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
-using DownloadTexture = VoxelBusters.Utility.DownloadTexture;
 
-#if UNITY_EDITOR
+#if USES_GAME_SERVICES && UNITY_EDITOR
+using System;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins.Internal
 {
-	internal sealed class EditorAchievementDescription : AchievementDescription
+	public sealed class EditorAchievementDescription : AchievementDescription
 	{
-		#region Fields
-
-		private		Texture2D		m_image;
-
-		#endregion
-
 		#region Properties
 
 		public override string Identifier
@@ -59,31 +54,57 @@ namespace VoxelBusters.NativePlugins.Internal
 		private EditorAchievementDescription ()
 		{}
 
-		internal EditorAchievementDescription (EditorGameCenter.EGCAchievementDescription _achievementDescription)
+		public EditorAchievementDescription (EGCAchievementDescription _gcDescriptionInfo)
 		{
-			// Initialize properties
-			Identifier				= _achievementDescription.Identifier;
-			Title					= _achievementDescription.Title;
-			AchievedDescription		= _achievementDescription.AchievedDescription;
-			UnachievedDescription	= _achievementDescription.UnachievedDescription;
-			MaximumPoints			= _achievementDescription.MaximumPoints;
-			IsHidden				= _achievementDescription.IsHidden;
-			m_image					= _achievementDescription.Image;
+			// Set properties from info object
+			Identifier				= _gcDescriptionInfo.Identifier;
+			Title					= _gcDescriptionInfo.Title;
+			UnachievedDescription	= _gcDescriptionInfo.UnachievedDescription;
+			AchievedDescription		= _gcDescriptionInfo.AchievedDescription;
+			MaximumPoints			= _gcDescriptionInfo.MaximumPoints;
+			IsHidden				= _gcDescriptionInfo.IsHidden; 
+
+			// Set global identifier			
+			GlobalIdentifier		= GameServicesIDHandler.GetAchievementGID(Identifier);
 		}
 
 		#endregion
 
+		#region Static Methods
+		
+		public static EditorAchievementDescription[] ConvertAchievementDescriptionsList (IList _gcDescriptions)
+		{
+			if (_gcDescriptions == null)
+				return null;
+			
+			int 				_count				= _gcDescriptions.Count;
+			EditorAchievementDescription[]	_descriptionsList	= new EditorAchievementDescription[_count];
+			
+			for (int _iter = 0; _iter < _count; _iter++)
+				_descriptionsList[_iter]			= new EditorAchievementDescription((EGCAchievementDescription)_gcDescriptions[_iter]);
+			
+			return _descriptionsList;
+		}
+		
+		#endregion
+		
 		#region Methods
 		
-		public override void GetImageAsync (DownloadTexture.Completion _onCompletion)
+		protected override void RequestForImage ()
 		{
-			if (_onCompletion != null)
-			{
-				if (m_image == null)
-					_onCompletion(null, "Texture not found.");
-				else
-					_onCompletion(m_image, null);
-			}
+			EditorGameCenter.Instance.GetDescriptionImage(this);
+		}
+		
+		#endregion
+
+		#region Event Callback Methods
+		
+		protected override void RequestForImageFinished (IDictionary _dataDict)
+		{
+			string			_error		= _dataDict.GetIfAvailable<string>(EditorGameCenter.kErrorKey);
+			Texture2D		_image		= _dataDict.GetIfAvailable<Texture2D>(EditorGameCenter.kImageKey);
+
+			DownloadImageFinished(_image, _error);
 		}
 		
 		#endregion

@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+
+#if USES_TWITTER
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
@@ -40,9 +42,9 @@ namespace VoxelBusters.NativePlugins
 		/// <summary>
 		/// Use this delegate type to get callback when the network request succeeds or fails.
 		/// </summary>
-		/// <param name="_response">Content data of the response.</param>
+		/// <param name="_responseData">Contents of response as JSON object.</param>
 		/// <param name="_error">Describes the network error that occurred.</param>
-		public delegate void TWTRResonse (IDictionary _response, string _error);
+		public delegate void TWTRResonse (object _responseData, string _error);
 
 		#endregion
 
@@ -154,10 +156,10 @@ namespace VoxelBusters.NativePlugins
 			if (OnTwitterURLRequestFinished != null)
 			{
 				// Get response data
-				IDictionary _responseJsonDict	= JSONUtility.FromJSON(_responseJsonStr) as IDictionary;
+				object 	_responseData	= JSONUtility.FromJSON(_responseJsonStr);
 
 				// Trigger event
-				OnTwitterURLRequestFinished(_responseJsonDict, null);
+				OnTwitterURLRequestFinished(_responseData, null);
 			}
 		}
 		
@@ -191,3 +193,4 @@ namespace VoxelBusters.NativePlugins
 		#endregion
 	}
 }
+#endif

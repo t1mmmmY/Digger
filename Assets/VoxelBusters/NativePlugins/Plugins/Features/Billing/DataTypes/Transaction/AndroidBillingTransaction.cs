@@ -10,10 +10,11 @@ namespace VoxelBusters.NativePlugins.Internal
 	{
 		#region Constants
 
-		//http://developer.android.com/google/play/billing/billing_reference.html Table 4
-		//From transaction payload - DONT MODIFY THE KEYS BELOW
+		// http://developer.android.com/google/play/billing/billing_reference.html Table 4
+		// From transaction payload - DONT MODIFY THE KEYS BELOW
 		private const string	kOriginalJSON					= "original-json";
-
+		private const string	kRawPurchaseData				= "raw-purchase-data";
+		
 		private const string 	kOrderID						= "orderId";
 		private const string 	kPackageName					= "packageName";
 		private const string 	kProductID						= "productId";
@@ -22,12 +23,12 @@ namespace VoxelBusters.NativePlugins.Internal
 		private const string 	kDeveloperPayload				= "developerPayload";
 		private const string 	kPurchaseToken					= "purchaseToken";
 
-		//Custom flags added in Native
+		// Custom flags added in Native
 		private const string	kPurchaseValidationState		= "purchaseValidationState";
 		private const string 	kSignature						= "signature";
 		private const string 	kError							= "error";
 
-		//Validation values
+		// Validation values
 		private const string 	kNoValidationDone				= "no-validation-done";
 		private const string 	kValidationSuccess				= "success";
 		private const string 	kValidationFailed				= "failed";
@@ -38,13 +39,13 @@ namespace VoxelBusters.NativePlugins.Internal
 		
 		public AndroidBillingTransaction (IDictionary _transactionInfo)
 		{
-			IDictionary _originalJSON = _transactionInfo[kOriginalJSON] as IDictionary;
+			IDictionary _originalJSON 		= _transactionInfo[kOriginalJSON] as IDictionary;
 
 			// Set raw response
-			RawPurchaseData			= _originalJSON.ToJSON();
+			RawPurchaseData					= _transactionInfo.GetIfAvailable<string>(kRawPurchaseData);
 			
 			// Assign values
-			ProductIdentifier		= _originalJSON.GetIfAvailable<string>(kProductID);
+			ProductIdentifier				= _originalJSON.GetIfAvailable<string>(kProductID);
 
 			// Transaction time
 			long _purchaseTimeInMillis		= _originalJSON.GetIfAvailable<long>(kPurchaseTime);
@@ -95,6 +96,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			_originalJson[kProductID]								= _transaction.ProductIdentifier;
 
 			_transactionJsonDict[kOriginalJSON]						= _originalJson;
+			_transactionJsonDict[kRawPurchaseData]					= _transaction.RawPurchaseData;
 			_transactionJsonDict[kPurchaseValidationState]			= GetValidationState(_transaction.VerificationState);
 			_transactionJsonDict[kSignature]						= _transaction.TransactionReceipt;
 			_transactionJsonDict[kError]							= _transaction.Error;

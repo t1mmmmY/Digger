@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NETWORK_CONNECTIVITY && UNITY_IOS
 using System.Runtime.InteropServices;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	public class NetworkConnectivityIOS : NetworkConnectivity
@@ -18,6 +19,8 @@ namespace VoxelBusters.NativePlugins
 
 		public override void Initialise ()
 		{
+			base.Initialise ();
+
 			NetworkConnectivitySettings _settings = NPSettings.NetworkConnectivity;
 
 			// Set new IP address

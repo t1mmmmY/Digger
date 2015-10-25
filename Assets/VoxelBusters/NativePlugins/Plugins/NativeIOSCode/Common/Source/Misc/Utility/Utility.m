@@ -1,6 +1,6 @@
 //
 //  Utility.m
-//  Unity-iPhone
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 06/12/14.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -10,8 +10,10 @@
 
 #pragma mark - String
 
-NSString const*	kNSStringDefault	= @"";
-const char*		kCStringDefault		= "";
+const NSString *kNSStringDefault	= @"";
+const NSString *kBoolTrue			= @"true";
+const NSString *kBoolFalse			= @"false";
+const char*		kCStringEmpty		= "";
 
 NSString* ConvertToNSString (const char * jsonCharArray)
 {
@@ -104,12 +106,12 @@ CGRect ScreenBounds ()
 
 CGRect GetUsableScreenSpace ()
 {
-	CGRect bounds		= ScreenBounds();
-	
+	CGRect bounds			= ScreenBounds();
 	UINavigationController *navController	= UnityGetGLViewController().navigationController;
+
 	if (navController != NULL && !navController.navigationBarHidden)
 	{
-		float navBarHeight			= CGRectGetHeight([[navController navigationBar] frame]);
+		float navBarHeight	= CGRectGetHeight([[navController navigationBar] frame]);
 		
 		// Update origin and height
 		bounds.origin.y		+= navBarHeight;
@@ -204,6 +206,18 @@ bool IsIpadInterface ()
 	[dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
 
     return [dateFormatter stringFromDate:date];
+}
+
++ (NSDate *)ConvertNSStringToNSDate:(NSString *)dateString
+{
+	if (dateString == NULL)
+		return NULL;
+	
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	[dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
+	[dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss Z"];
+	
+	return [dateFormatter dateFromString:dateString];
 }
 
 #pragma mark - NSData

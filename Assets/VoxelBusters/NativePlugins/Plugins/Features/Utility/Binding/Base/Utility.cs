@@ -60,7 +60,7 @@ namespace VoxelBusters.NativePlugins
 		///	</param>
 		public virtual void OpenStoreLink (string _applicationID)
 		{
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 
 		/// <summary>
@@ -69,7 +69,7 @@ namespace VoxelBusters.NativePlugins
 		/// <param name="_badgeNumber">The number currently set as badge.</param>
 		public virtual void SetApplicationIconBadgeNumber (int _badgeNumber)
 		{
-			Console.LogError(Constants.kDebugTag, Constants.kErrorMessage);
+			Console.LogError(Constants.kDebugTag, Constants.kFeatureNotSupported);
 		}
 
 		/// <summary>

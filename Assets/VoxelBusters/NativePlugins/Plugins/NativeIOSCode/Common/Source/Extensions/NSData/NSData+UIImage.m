@@ -1,6 +1,6 @@
 //
 //  NSData+UIImage.m
-//  NativePluginIOSWorkspace
+//  Cross Platform Native Plugins
 //
 //  Created by Ashwin kumar on 19/01/15.
 //  Copyright (c) 2015 Voxel Busters Interactive LLP. All rights reserved.
@@ -10,29 +10,38 @@
 
 @implementation NSData (UIImage)
 
+#pragma mark - Save Methods
+
 - (NSString *)saveImage
 {
-    NSString *imageName         =  NULL;
+	return [self saveImage:[Utility GetUUID]];
+}
+
+- (NSString *)saveImage:(NSString *)imageName
+{
+	NSString *imageNameWithExt	= NULL;
 	
 	if ([self isPNG])
-		imageName = [[Utility GetUUID] stringByAppendingString:@".png"];
+		imageNameWithExt 		= [imageName stringByAppendingString:@".png"];
 	else if ([self isJPEG])
-		imageName = [[Utility GetUUID] stringByAppendingString:@".jpg"];
+		imageNameWithExt 		= [imageName stringByAppendingString:@".jpg"];
 	else
-		return kNSStringDefault;
-    
+		return NULL;
+	
     // Now, we have to find the documents directory so we can save it
     NSArray *paths              = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDir      = [paths objectAtIndex:0];
     
     // Now we get the full path to the file
-    NSString *finalPath         = [documentsDir stringByAppendingPathComponent:imageName];
+    NSString *finalPath         = [documentsDir stringByAppendingPathComponent:imageNameWithExt];
     
     // Write it to disk
     [self writeToFile:finalPath atomically:NO];
 	
 	return finalPath;
 }
+
+#pragma mark - Image Format Methods
 
 - (BOOL)isPNG
 {

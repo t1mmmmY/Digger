@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_WEBVIEW && UNITY_IOS
 using System.Runtime.InteropServices;
 using System.IO;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins.Internal
 {
 	public partial class WebViewNativeIOS : WebViewNative
@@ -105,8 +106,7 @@ namespace VoxelBusters.NativePlugins.Internal
 			// Create native instance and set frame
 			WebViewFrame 	_webviewFrame	= new WebViewFrame(_frame);
 
-			webviewCreate(_webview.UniqueID, 	_webviewFrame);
-			webviewSetFrame(_webviewFrame, 		_webview.UniqueID);
+			webviewCreate(_webview.UniqueID, _webviewFrame);
 		}
 		
 		public override void Destroy (VoxelBusters.NativePlugins.WebView _webview)

@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE 
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 
@@ -47,8 +49,9 @@ namespace VoxelBusters.NativePlugins
 			/// <summary>
 			/// Gets or sets the sound for notification.
 			/// </summary>
-			/// /note : Make sure all referred sounds are in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.In Push notifcation key should be custom-sound.
+			/// /note : Make sure all referred sounds are in Assets/PluginResources/Android or Common folder. In Push notifcation key should be custom-sound.
 			/// <value>Sound name used for the incoming notification.</value>
+			[System.Obsolete("This property is deprecated. Use SoundName property of CrossPlatformNotification instance instead.")]
 			public string			CustomSound
 			{
 				get; 
@@ -57,7 +60,7 @@ namespace VoxelBusters.NativePlugins
 
 			/// <summary>
 			/// Gets or sets the Large Icon for notification.
-			/// /note : Make sure all referred images are in Assets/StreamingAssets/VoxelBusters/NativePlugins/Android folder.
+			/// /note : Make sure all referred images are in Assets/PluginResources/Android or Common folder.
 			/// </summary>
 			/// <value>If not set, default will be used. This will be the icon thats displayed in notification. For push, use large-icon as key.</value>
 			public string			LargeIcon
@@ -74,7 +77,6 @@ namespace VoxelBusters.NativePlugins
 			private const string 	kContentTitleKey	= "content-title";
 			private const string 	kTickerTextKey		= "ticker-text";
 			private const string 	kTagKey				= "tag";
-			private const string 	kCustomSoundKey		= "custom-sound";
 			private const string 	kLargeIcon			= "large-icon";
 
 			#endregion
@@ -86,7 +88,6 @@ namespace VoxelBusters.NativePlugins
 				ContentTitle	= null;
 				TickerText		= null;
 				Tag				= null;
-				CustomSound		= null;
 				LargeIcon		= null;
 			}
 
@@ -95,7 +96,6 @@ namespace VoxelBusters.NativePlugins
 				ContentTitle	= _jsonDict.GetIfAvailable<string>(kContentTitleKey);
 				TickerText		= _jsonDict.GetIfAvailable<string>(kTickerTextKey);
 				Tag				= _jsonDict.GetIfAvailable<string>(kTagKey);
-				CustomSound		= _jsonDict.GetIfAvailable<string>(kCustomSoundKey);
 				LargeIcon		= _jsonDict.GetIfAvailable<string>(kLargeIcon);
 			}
 
@@ -109,7 +109,6 @@ namespace VoxelBusters.NativePlugins
 				_jsonDict[kContentTitleKey]				= ContentTitle;
 				_jsonDict[kTickerTextKey]				= TickerText;
 				_jsonDict[kTagKey]						= Tag;
-				_jsonDict[kCustomSoundKey]				= CustomSound;
 				_jsonDict[kLargeIcon]					= LargeIcon;
 
 				return _jsonDict;
@@ -120,11 +119,12 @@ namespace VoxelBusters.NativePlugins
 			/// </summary>
 			public override string ToString ()
 			{
-				return string.Format ("[AndroidSpecificProperties: ContentTitle={0}, TickerText={1}, Tag = {2}, CustomSound = {3} , LargeIcon = {4}]", 
-				                      ContentTitle, TickerText, Tag, CustomSound, LargeIcon);
+				return string.Format ("[AndroidSpecificProperties: ContentTitle={0}, TickerText={1}, Tag = {2}, LargeIcon = {3}]", 
+				                      ContentTitle, TickerText, Tag, LargeIcon);
 			}
 
 			#endregion
 		}
 	}
 }
+#endif

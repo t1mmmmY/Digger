@@ -54,14 +54,14 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		public iOSBillingTransaction (IDictionary _transactionJsonDict)
 		{
-			ProductIdentifier			= _transactionJsonDict.GetIfAvailable<string>(kProductID);
+			ProductIdentifier		= _transactionJsonDict.GetIfAvailable<string>(kProductID);
 
 			// Transaction date can be NULL/Empty
-			string _tDateStr			= _transactionJsonDict.GetIfAvailable<string>(kTransactionDate);
+			string 	_tDateStr		= _transactionJsonDict.GetIfAvailable<string>(kTransactionDate);
 
 			if (!string.IsNullOrEmpty(_tDateStr))
 			{
-				TransactionDateUTC		= _tDateStr.ToDateTimeUTCUsingZuluFormat();
+				TransactionDateUTC		= _tDateStr.ToZuluFormatDateTimeUTC();
 				TransactionDateLocal	= TransactionDateUTC.ToLocalTime();
 			}
 
@@ -73,7 +73,7 @@ namespace VoxelBusters.NativePlugins.Internal
 
 			// Transactions state
 			SKPaymentTransactionState _skTransactionState	= (SKPaymentTransactionState)int.Parse(_transactionJsonDict[kTransactionState].ToString());
-			TransactionState								= ConvertToBillingTransactionState(_skTransactionState);
+			TransactionState		= ConvertToBillingTransactionState(_skTransactionState);
 
 			// Verifications state
 			VerificationState		= (eBillingTransactionVerificationState)int.Parse(_transactionJsonDict[kVerificationState].ToString());
@@ -93,14 +93,14 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			SKPaymentTransactionState _skTransactionState	= ConvertToSKTransactionState(_transaction.TransactionState);
 
-			IDictionary _transactionJsonDict				= new Dictionary<string, object>();
-			_transactionJsonDict[kTransactionDate]			= _transaction.TransactionDateUTC.ToStringUsingZuluFormat();
-			_transactionJsonDict[kVerificationState]		= _transaction.VerificationState;
-			_transactionJsonDict[kTransactionID]			= _transaction.TransactionIdentifier;
-			_transactionJsonDict[kTransactionReceipt]		= _transaction.TransactionReceipt;
-			_transactionJsonDict[kTransactionState]			= _skTransactionState;
-			_transactionJsonDict[kProductID]				= _transaction.ProductIdentifier;
-			_transactionJsonDict[kError]					= _transaction.Error;
+			IDictionary _transactionJsonDict			= new Dictionary<string, object>();
+			_transactionJsonDict[kTransactionDate]		= _transaction.TransactionDateUTC.ToStringUsingZuluFormat();
+			_transactionJsonDict[kVerificationState]	= (int)_transaction.VerificationState;
+			_transactionJsonDict[kTransactionID]		= _transaction.TransactionIdentifier;
+			_transactionJsonDict[kTransactionReceipt]	= _transaction.TransactionReceipt;
+			_transactionJsonDict[kTransactionState]		= (int)_skTransactionState;
+			_transactionJsonDict[kProductID]			= _transaction.ProductIdentifier;
+			_transactionJsonDict[kError]				= _transaction.Error;
 
 			return _transactionJsonDict;
 		}
@@ -109,7 +109,6 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			switch (_skTransactionState)
 			{
-
 			case SKPaymentTransactionState.SKPaymentTransactionStatePurchased:
 				return eBillingTransactionState.PURCHASED;
 				
@@ -118,7 +117,6 @@ namespace VoxelBusters.NativePlugins.Internal
 
 			case SKPaymentTransactionState.SKPaymentTransactionStateRestored:
 				return eBillingTransactionState.RESTORED;
-
 			}
 
 			return eBillingTransactionState.FAILED;
@@ -128,7 +126,6 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			switch (_billingTransactionState)
 			{
-		
 			case eBillingTransactionState.PURCHASED:
 				return SKPaymentTransactionState.SKPaymentTransactionStatePurchased;
 				
@@ -137,7 +134,6 @@ namespace VoxelBusters.NativePlugins.Internal
 				
 			case eBillingTransactionState.RESTORED:
 				return SKPaymentTransactionState.SKPaymentTransactionStateRestored;
-				
 			}
 			
 			return SKPaymentTransactionState.SKPaymentTransactionStateFailed;

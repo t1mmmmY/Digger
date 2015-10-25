@@ -35,23 +35,25 @@ namespace VoxelBusters.Utility
 		
 		#region Handling Response
 
+		protected override void DidFailStartRequestWithError (string _error)
+		{
+			if (OnCompletion != null)
+				OnCompletion(null, _error);
+		}
+
 		protected override void OnFetchingResponse ()
 		{			
 			Debug.Log("[DownloadTextAsset] Did finish downloading, Error=" + WWWObject.error);
 
-			// Callback isnt set
-			if (OnCompletion == null)
-				return;
-
-			// Valid data
 			if (string.IsNullOrEmpty(WWWObject.error))
 			{
-				OnCompletion(WWWObject.text, null);
+				if (OnCompletion != null)
+					OnCompletion(WWWObject.text, null);
 			}
-			// Encountered error while downloading
 			else
 			{
-				OnCompletion(null, WWWObject.error);
+				if (OnCompletion != null)
+					OnCompletion(null, WWWObject.error);
 			}
 		}
 

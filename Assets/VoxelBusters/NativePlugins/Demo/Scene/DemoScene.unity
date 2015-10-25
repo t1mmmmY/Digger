@@ -116,24 +116,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_uiSkin: {fileID: 0}
   m_timeScope: 2
-  m_iOSLeaderboardIDList:
-  - lb1
-  m_androidLeaderboardIDList:
-  - CgkIo-D7wIEaEAIQBA
-  - CgkIo-D7wIEaEAIQBQ
   m_maxScoreResults: 20
-  m_iOSAchievementIDList:
-  - ach1
-  - ach2
-  - ach3
-  - ach4
-  - ach5
-  m_androidAchievementIDList:
-  - CgkIo-D7wIEaEAIQAQ
-  - CgkIo-D7wIEaEAIQAg
-  - CgkIo-D7wIEaEAIQAw
-  - CgkIo-D7wIEaEAIQBg
-  - CgkIo-D7wIEaEAIQBw
 --- !u!1001 &67576172
 Prefab:
   m_ObjectHideFlags: 0
@@ -511,7 +494,7 @@ MonoBehaviour:
   m_uiSkin: {fileID: 0}
   m_texture: {fileID: 2800000, guid: a89030e9cf82e4ee996b3409f3dbcb58, type: 3}
   m_videoURL: http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4
-  m_youtubeVideoID: M7lc1UVf-VE
+  m_youtubeVideoID: z4UDNzXD3qA
   m_embedHTMLString: "<!DOCTYPE html>\n<html>  \n<head>\n\t<style>\n\tbody { margin:
     0; width:100%%; height:100%%; }\n\thtml { width:100%%; height:100%%; }\n\t</style>\n</head>\n<body
     bgcolor=\"#00000\">\n\n    <div style=\"width:100%%; height:100%%\">\n\t\t<iframe
@@ -590,16 +573,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_uiSkin: {fileID: 0}
-  m_shareMessage: share message
-  m_shareURL: http://www.google.com
-  m_excludedOptions: 
   m_smsBody: SMS body holds text message that needs to be sent to recipients
   m_smsRecipients: []
-  m_plainTextMailBody: This is plain text mail
-  m_htmlMailBody: <html><body><h1>Hello</h1></body></html>
-  m_mailRecipients:
-  - gameon@voxelbusters.com
-  m_sampleImageAtDataPath: Screenshot.png
+  m_mailSubject: Demo Mail
+  m_plainMailBody: This is plain text mail.
+  m_htmlMailBody: <html><body><h1>Hello</h1><img src=https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png></body></html>
+  m_mailToRecipients: []
+  m_mailCCRecipients: []
+  m_mailBCCRecipients: []
+  m_excludedOptions: 
+  m_shareMessage: share message
+  m_shareURL: http://www.google.com
+  m_shareImageRelativePath: Screenshot.png
 --- !u!1 &1360961058
 GameObject:
   m_ObjectHideFlags: 0
@@ -1009,6 +994,57 @@ MonoBehaviour:
   m_evalString: Concat("Voxel", "Busters")
   m_URLSchemeName: unity
   m_webview: {fileID: 1774173791}
+--- !u!1 &2085774513
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 2085774516}
+  - 114: {fileID: 2085774515}
+  - 114: {fileID: 2085774514}
+  m_Layer: 0
+  m_Name: EditorGallery
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2085774514
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2085774513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec0417f260e9f4eeba302812a7e8713a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2085774515
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2085774513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eeb81e7bfce24dc6b20373e4705dcd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2085774516
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2085774513}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
 --- !u!1 &2087679120
 GameObject:
   m_ObjectHideFlags: 0
@@ -1100,3 +1136,54 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_uiSkin: {fileID: 11400000, guid: b4ae3a4ad51354e68aac62448f7faa7c, type: 2}
+--- !u!1 &2128442460
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 2128442463}
+  - 114: {fileID: 2128442462}
+  - 114: {fileID: 2128442461}
+  m_Layer: 0
+  m_Name: EditorGallery
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2128442461
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2128442460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec0417f260e9f4eeba302812a7e8713a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2128442462
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2128442460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eeb81e7bfce24dc6b20373e4705dcd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2128442463
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2128442460}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0

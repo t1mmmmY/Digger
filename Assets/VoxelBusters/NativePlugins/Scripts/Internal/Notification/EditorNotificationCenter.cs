@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_NOTIFICATION_SERVICE && UNITY_EDITOR
+using UnityEditor;
 using System.Collections.Generic;
 using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
-
-#if UNITY_EDITOR
-using UnityEditor;
 
 namespace VoxelBusters.NativePlugins.Internal
 {
@@ -182,6 +182,11 @@ namespace VoxelBusters.NativePlugins.Internal
 		public void RegisterNotificationTypes (NotificationType _notificationTypes)
 		{
 			m_supportedNotificationTypes	= _notificationTypes;
+		}
+
+		public NotificationType GetEnabledNotificationTypes ()
+		{
+			return m_supportedNotificationTypes;
 		}
 		
 		/// <summary>

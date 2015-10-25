@@ -1,31 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
 
-#if UNITY_EDITOR
+#if USES_GAME_SERVICES && UNITY_EDITOR
+using System;
+using VoxelBusters.Utility;
+
 namespace VoxelBusters.NativePlugins.Internal
 {
-	internal sealed class EditorAchievement : Achievement
+	public sealed class EditorAchievement : Achievement
 	{
-		#region Fields
-
-		private			string				m_identifier;
-
-		#endregion
-
 		#region Properties
 
 		public override string Identifier
 		{
-			get
-			{
-				return m_identifier;
-			}
-
-			protected set
-			{
-				m_identifier	= value;
-			}
+			get;
+			protected set;
 		}
 		
 		public override int PointsScored
@@ -53,48 +42,74 @@ namespace VoxelBusters.NativePlugins.Internal
 		private EditorAchievement ()
 		{}
 
-		internal EditorAchievement (string _identifier) : base (_identifier)
+		public EditorAchievement (string _globalIdentifier, string _identifier, int _pointsScored = 0) 
+			: base (_globalIdentifier, _identifier, _pointsScored)
 		{}
 
-		internal EditorAchievement (EditorGameCenter.EGCAchievement _achievement)
+		public EditorAchievement (EGCAchievement _gcAchievementInfo)
 		{
-			Identifier			= _achievement.Identifier;
-			PointsScored		= _achievement.PointsScored;
-			Completed			= _achievement.Completed;
-			LastReportedDate	= _achievement.LastReportedDate;
+			// Set properties from info object
+			Identifier					= _gcAchievementInfo.Identifier;
+			PointsScored				= _gcAchievementInfo.PointsScored;
+			Completed					= _gcAchievementInfo.Completed;
+			LastReportedDate			= _gcAchievementInfo.LastReportedDate;
+
+			// Set global identifier			
+			GlobalIdentifier			= GameServicesIDHandler.GetAchievementGID(Identifier);
+		}
+		
+		#endregion
+
+		#region Static Methods
+		
+		public static EditorAchievement[] ConvertAchievementsList (IList _gcAchievements)
+		{
+			if (_gcAchievements == null)
+				return null;
+			
+			int 				_count				= _gcAchievements.Count;
+			EditorAchievement[]	_achievementsList	= new EditorAchievement[_count];
+			
+			for (int _iter = 0; _iter < _count; _iter++)
+				_achievementsList[_iter]			= new EditorAchievement((EGCAchievement)_gcAchievements[_iter]);
+			
+			return _achievementsList;
 		}
 		
 		#endregion
 
 		#region Methods
 
-		public override void ReportProgress (Action<bool> _onCompletion)
+		public override void ReportProgress (ReportProgressCompletion _onCompletion)
 		{
-			base.ReportProgress(_onCompletion);
-
+			base.ReportProgress (_onCompletion);
+			
 			if (Description == null)
 				return;
-
-			// Report progress
-			EditorGameCenter.Instance.ReportProgress(this, (EditorAchievement _achievementInfo)=>{
-
-				if (_achievementInfo == null)
-				{
-					// Invoke completion handler
-					OnReportProgressFinished(false);
-				}
-				else
-				{
-					// Set properties
-					LastReportedDate	= _achievementInfo.LastReportedDate;
-					Completed			= _achievementInfo.Completed;
-
-					// Invoke completion handler
-					OnReportProgressFinished(true);
-				}
-			});
+			
+			EditorGameCenter.Instance.ReportProgress(this);
 		}
 
+		#endregion
+
+		#region Event Callback Methods
+		
+		protected override void ReportProgressFinished (IDictionary _dataDict)
+		{
+			string			_error				= _dataDict.GetIfAvailable<string>(EditorGameCenter.kErrorKey);
+			EGCAchievement 	_gcAchievementInfo	= _dataDict.GetIfAvailable<EGCAchievement>(EditorGameCenter.kAchievementInfoKey);
+			
+			if (_gcAchievementInfo != null)
+			{
+				// Update properties
+				PointsScored		= _gcAchievementInfo.PointsScored;
+				Completed			= _gcAchievementInfo.Completed;
+				LastReportedDate	= _gcAchievementInfo.LastReportedDate;
+			}
+			
+			ReportProgressFinished(_error == null, _error);
+		}
+		
 		#endregion
 	}
 }

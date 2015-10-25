@@ -44,11 +44,13 @@ namespace VoxelBusters.NativePlugins
 
 		protected virtual void ShowAlertDialogWithMultipleButtons (string _title, string _message, string[] _buttonsList, string _callbackTag)
 		{
-			if(_buttonsList == null || _buttonsList.Length == 0)
+			if (_buttonsList == null || _buttonsList.Length == 0)
 			{
-				_buttonsList = new string[]{kDefaultTextForButton}; //Adding default text
+				_buttonsList 	= new string[] {
+					kDefaultTextForButton // Adding default text
+				}; 
 			}
-			else if(string.IsNullOrEmpty(_buttonsList[0]))
+			else if (string.IsNullOrEmpty(_buttonsList[0]))
 			{
 				_buttonsList[0] = kDefaultTextForButton;
 			}

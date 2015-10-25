@@ -15,24 +15,64 @@ namespace VoxelBusters.NativePlugins
 	/// <description>
 	/// Package includes WebView prefab, which is placed under "Assets/VoxelBusters/NativePlugins/Prefab" folder.
 	/// Drag and drop WebView prefab into heirarchy and send requests to display local content or content that is loaded from the network. 
-	/// </description>
+	/// </description>	
 	public class WebView : MonoBehaviour 
 	{
+		#region Fields
+
+#pragma warning disable
+		[SerializeField]
+		private 	bool				m_canHide			= true;
+
+		[SerializeField]
+		private 	bool				m_canBounce			= true;
+
+		[SerializeField]
+		private 	eWebviewControlType	m_controlType;
+
+		[SerializeField]
+		private 	bool				m_showSpinnerOnLoad;
+
+		[SerializeField]
+		private 	bool				m_autoShowOnLoadFinish	= true;
+		
+		[SerializeField]
+		private 	bool				m_scalesPageToFit	= true;
+		
+		[SerializeField]
+		private 	Rect				m_frame				= new Rect(0f, 0f, -1f, -1f);
+		
+		[SerializeField]
+		private 	Color				m_backgroundColor	= Color.white;
+#pragma warning restore
+
+		#endregion
+
+#if !USES_WEBVIEW
 		#region Properties
 
-		public string		UniqueID 
+		public string UniqueID 
 		{ 
 			get; 
 			private set; 
 		}
 
-		[SerializeField]
-		private bool		m_canHide	= true;
+		#endregion
+	}
+#else
+		#region Properties
+		
+		public string UniqueID 
+		{ 
+			get; 
+			private set; 
+		}
+
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="WebView"/> can hide on pressing dismiss button.
 		/// </summary>
 		/// <value><c>true</c> if this instance can hide; otherwise, <c>false</c>.</value>
-		public bool 		CanHide
+		public bool CanHide
 		{
 			get 
 			{ 
@@ -49,13 +89,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private bool		m_canBounce		= true;
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="WebView"/> bounces past the edge of content and back again.
 		/// </summary>
 		/// <value><c>true</c> if this instance can bounce; otherwise, <c>false</c>.</value>
-		public bool 		CanBounce
+		public bool CanBounce
 		{
 			get 
 			{ 
@@ -72,13 +110,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private eWebviewControlType		m_controlType;
 		/// <summary>
 		/// Gets or sets the type of the control shown along with <see cref="WebView"/>.
 		/// </summary>
 		/// <value>The type of the control.</value>
-		public eWebviewControlType 		ControlType
+		public eWebviewControlType ControlType
 		{
 			get 
 			{
@@ -95,13 +131,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 		
-		[SerializeField]
-		private bool		m_showSpinnerOnLoad;
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="WebView"/> shows spinner when loading requests.
 		/// </summary>
 		/// <value><c>true</c> if show spinner on load; otherwise, <c>false</c>.</value>
-		public bool 		ShowSpinnerOnLoad
+		public bool ShowSpinnerOnLoad
 		{
 			get 
 			{ 
@@ -118,13 +152,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private bool		m_autoShowOnLoadFinish	= true;
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="WebView"/> can autoshow itself when load request is finished.
 		/// </summary>
 		/// <value><c>true</c> if auto show on load finish; otherwise, <c>false</c>.</value>
-		public bool 		AutoShowOnLoadFinish
+		public bool AutoShowOnLoadFinish
 		{
 			get
 			{ 
@@ -141,13 +173,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private bool		m_scalesPageToFit	= true;
 		/// <summary>
 		/// Gets or sets a value indicating whether this <see cref="WebView"/> scales webpages to fit the view and the user can change the scale.
 		/// </summary>
 		/// <value><c>true</c> if scales page to fit; otherwise, <c>false</c>.</value>
-		public bool 		ScalesPageToFit
+		public bool ScalesPageToFit
 		{
 			get 
 			{
@@ -164,13 +194,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private Rect		m_frame				= new Rect(0f, 0f, -1f, -1f);
 		/// <summary>
 		/// Gets or sets the rectangle, which describes this <see cref="WebView"/> position and size.
 		/// </summary>
 		/// <value>The frame.</value>
-		public Rect 		Frame
+		public Rect Frame
 		{
 			get 
 			{ 
@@ -195,13 +223,11 @@ namespace VoxelBusters.NativePlugins
 			}
 		}
 
-		[SerializeField]
-		private Color		m_backgroundColor		= Color.white;
 		/// <summary>
 		/// Gets or sets the color of the background.
 		/// </summary>
 		/// <value>The color of the background.</value>
-		public Color 		BackgroundColor
+		public Color BackgroundColor
 		{
 			get 
 			{ 
@@ -307,6 +333,13 @@ namespace VoxelBusters.NativePlugins
 		{			
 			// Assign unique id
 			UniqueID				= GetInstanceID().ToString();
+			
+			//Consider updating with predefined constants.
+			if (m_frame.width 	==	-1f)
+				m_frame.width	= Screen.width;
+			
+			if (m_frame.height	==	-1f)
+				m_frame.height	= Screen.height;
 			
 			// Create webview
 			NPBinding.WebView.Create(this, m_frame);
@@ -534,6 +567,18 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Sets the <see cref="WebView"/> frame size to screen bounds.
+		/// </summary>
+		public void SetFullScreenFrame ()
+		{
+			Frame	= new Rect(0f, 0f, Screen.width, Screen.height);
+		}
+
+		#endregion
+
 		#region Cache Clearence
 
 		/// <summary>
@@ -599,4 +644,5 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 	}
+#endif
 }

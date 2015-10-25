@@ -17,63 +17,72 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class EditorSettings
 		{
+			#region Fields
+
 			[SerializeField]
-			private int 				m_timeOutPeriod = 60;
+			private 	int 		m_timeOutPeriod 		= 60;
+			[SerializeField]
+			private 	int 		m_maxRetryCount 		= 2;
+			[SerializeField]
+			private 	float 		m_timeGapBetweenPolling = 2.0f;
+
+			#endregion
+
+			#region Properties
+		
 			/// <summary>
 			/// Gets or sets the time out period.
 			/// </summary>
 			/// <value>The time out period.</value>
-			public int 					TimeOutPeriod
+			public int TimeOutPeriod
 			{
 				get 
 				{ 
 					return m_timeOutPeriod; 
 				}
 
-				set
+				private set
 				{
 					m_timeOutPeriod	= value;
 				}
 			}
-			
-			[SerializeField]
-			private int 				m_maxRetryCount = 2;
+
 			/// <summary>
 			/// Gets or sets the max retry count, whenever polling fails.
 			/// </summary>
 			/// <value>The max retry count.</value>
-			public int 					MaxRetryCount
+			public int MaxRetryCount
 			{
 				get 
 				{ 
 					return m_maxRetryCount; 
 				}
 				
-				set
+				private set
 				{
 					m_maxRetryCount	= value;
 				}
 			}
 			
-			[SerializeField]
-			private float 				m_timeGapBetweenPolling = 2.0f;
 			/// <summary>
 			/// Gets or sets the time gap between successive polling.
 			/// </summary>
 			/// <value>The time gap between polling.</value>
-			public float 				TimeGapBetweenPolling
+			public float TimeGapBetweenPolling
 			{
 				get 
 				{ 
 					return m_timeGapBetweenPolling;
 				}
 				
-				set
+				private set
 				{
 					m_timeGapBetweenPolling	= value;
 				}
 			}
 		}
+
+		#endregion
 
 		#endregion
 
@@ -85,58 +94,85 @@ namespace VoxelBusters.NativePlugins
 		[System.Serializable]
 		public class AndroidSettings
 		{
+			#region Fields
+
+			[Tooltip ("On Android, it uses sockets to connect. So port is required. For DNS ip it will be 53 else 80.")]		
 			[SerializeField]
-			private int 				m_timeOutPeriod = 60;
+			private 	int 		m_port 					= 53;
+			[SerializeField]
+			private 	int 		m_timeOutPeriod 		= 60;
+			[SerializeField]
+			private 	int 		m_maxRetryCount 		= 2;
+			[SerializeField]
+			private 	float 		m_timeGapBetweenPolling = 2.0f;
+
+			#endregion
+
+			#region Properties
+
+			/// <summary>
+			/// Gets or sets the Port to connect to.
+			/// </summary>
+			/// <value>Port to connect.</value>
+			public int Port
+			{
+				get 
+				{ 
+					return m_port; 
+				}
+				
+				private set
+				{
+					m_port	= value;
+				}
+			}
+
 			/// <summary>
 			/// Gets or sets the time out period.
 			/// </summary>
 			/// <value>The time out period.</value>
-			public int 					TimeOutPeriod
+			public int TimeOutPeriod
 			{
 				get 
 				{ 
 					return m_timeOutPeriod; 
 				}
 				
-				set
+				private set
 				{
 					m_timeOutPeriod	= value;
 				}
 			}
 			
-			[SerializeField]
-			private int 				m_maxRetryCount = 2;
 			/// <summary>
 			/// Gets or sets the max retry count, whenever polling fails.
 			/// </summary>
 			/// <value>The max retry count.</value>
-			public int 					MaxRetryCount
+			public int MaxRetryCount
 			{
 				get 
 				{ 
 					return m_maxRetryCount; //TODO should allow setters as well
 				}
 				
-				set
+				private set
 				{
 					m_maxRetryCount	= value;
 				}
 			}
 			
-			[SerializeField]
-			private float 				m_timeGapBetweenPolling = 2.0f;
 			/// <summary>
 			/// Gets or sets the time gap between successive polling.
 			/// </summary>
 			/// <value>The time gap between polling.</value>
-			public float 				TimeGapBetweenPolling
+			public float TimeGapBetweenPolling
 			{
 				get 
 				{ 
 					return m_timeGapBetweenPolling; //TODO should allow setters as well
 				}
 				
-				set
+				private set
 				{
 					m_timeGapBetweenPolling	= value;
 				}
@@ -145,60 +181,67 @@ namespace VoxelBusters.NativePlugins
 
 		#endregion
 
-		#region Properties
+		#endregion
+
+		#region Fields
 		
 		[SerializeField]
-		private string 					m_ipAddress = "8.8.8.8";
+		private 	string 			m_ipAddress 	= "8.8.8.8";
+		[SerializeField]
+		private 	EditorSettings	m_editor;
+		[SerializeField]
+		private 	AndroidSettings	m_android;
+
+		#endregion
+
+		#region Properties
+
 		/// <summary>
 		/// Gets or sets the IP Address. IP Address is used to check connectivity.
 		/// </summary>
 		/// <value>Address to check reachabilty.</value>
-		public string 					IPAddress
+		public string IPAddress
 		{
 			get 
 			{ 
 				return m_ipAddress; 
 			}
 
-		 	set 
+			private set 
 			{ 
 				m_ipAddress = value; 
 			}
 		}
 
-		[SerializeField]
-		private EditorSettings			m_editor;
 		/// <summary>
 		/// Gets or sets the Network Connectivity Settings specific to Unity Editor.
 		/// </summary>
 		/// <value>The android.</value>
-		public	EditorSettings			Editor
+		public EditorSettings Editor
 		{
 			get 
 			{ 
 				return m_editor; 
 			}
 			
-			set 
+			private set 
 			{ 
 				m_editor = value; 
 			}
 		}
 
-		[SerializeField]
-		private AndroidSettings			m_android;
 		/// <summary>
 		/// Gets or sets the Network Connectivity Settings specific to Android platform.
 		/// </summary>
 		/// <value>The android.</value>
-		public	AndroidSettings			Android
+		public AndroidSettings Android
 		{
 			get 
 			{ 
 				return m_android; 
 			}
 
-		 	set 
+		 	private set 
 			{ 
 				m_android = value; 
 			}

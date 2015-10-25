@@ -1,113 +1,106 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_ADDRESS_BOOK && UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using VoxelBusters.Utility;
 
-#if UNITY_EDITOR
 namespace VoxelBusters.NativePlugins.Internal
 {
 	public class EditorAddressBook : AdvancedScriptableObject <EditorAddressBook>
 	{
-		#region Properties
+		#region Constants
 		
+		private 	const 		string		kRequestAccessFinishedEvent			= "ABRequestAccessFinished";
+		private 	const 		string		kReadContactsFinishedEvent			= "ABReadContactsFinished";
+
+		#endregion
+
+		#region Fields
+
 		[SerializeField]
 		private				eABAuthorizationStatus		m_authorizationStatus;
-		public 				eABAuthorizationStatus		AuthorizationStatus
-		{
-			get 
-			{
-				return m_authorizationStatus;
-			}
-			private set
-			{
-				m_authorizationStatus	= value;
-			}
-		}
-
 		[SerializeField]
-		private 			AddressBookContact[] 		m_contactsList					= new AddressBookContact[0];
-		public 				AddressBookContact[]		ContactsList
+		private 			AddressBookContact[] 		m_contactsList			= new AddressBookContact[0];
+
+		#endregion
+
+		#region Auth Methods
+
+		public eABAuthorizationStatus GetAuthorizationStatus ()
 		{
-			get 
-			{
-				return m_contactsList;
-			}
+			return m_authorizationStatus;
+		}
+		
+		public void RequestForAuthorization ()
+		{
+			string 				_message		= string.Format("{0} would like to access your contacts.", UnityEditor.PlayerSettings.productName);	
+			string[]			_buttons		= new string[2] { 
+				"Ok", 
+				"Dont allow" 
+			};
+			
+			NPBinding.UI.ShowAlertDialogWithMultipleButtons(string.Empty, _message, _buttons, (string _pressedBtn)=>{
+
+				string			_error			= null;
+
+				if (_pressedBtn.Equals("Ok"))
+				{
+					m_authorizationStatus		= eABAuthorizationStatus.AUTHORIZED;
+				}
+				else
+				{
+					_error						= "The operation could not be completed because user denied access to AddressBook.";
+					m_authorizationStatus		= eABAuthorizationStatus.DENIED;
+				}
+
+				NPBinding.AddressBook.InvokeMethod(kRequestAccessFinishedEvent, new object[] { 
+					m_authorizationStatus, 
+					_error 
+				}, new Type[] { 
+					typeof(eABAuthorizationStatus), 
+					typeof(string)
+				});
+			});
 		}
 
 		#endregion
 
-		#region Constants
+		#region Read Contacts Methods
 
-		// Event callbacks
-		private const string			kABReadContactsFinishedEvent	= "ABReadContactsFinished";
-		private const string			kABReadContactsFailedEvent		= "ABReadContactsFailed";
-
-		#endregion
-
-		#region Static Methods
-
-		public static eABAuthorizationStatus GetAuthorizationStatus ()
+		public void ReadContacts ()
 		{
-			return Instance.AuthorizationStatus;
-		}
-
-		public static void ReadContacts ()
-		{
-			if (NPBinding.AddressBook == null)
-				return;
-
 			eABAuthorizationStatus 	_authStatus		= GetAuthorizationStatus();
 
-			if (_authStatus == eABAuthorizationStatus.DENIED || _authStatus == eABAuthorizationStatus.RESTRICTED)
+			if (_authStatus == eABAuthorizationStatus.AUTHORIZED)
 			{
-				// Send contacts read failed event
-				NPBinding.AddressBook.InvokeMethod(kABReadContactsFailedEvent, ((int)_authStatus).ToString());
-				return;
-			}
-			else if (_authStatus == eABAuthorizationStatus.NOT_DETERMINED)
-			{
-				string 				_message		= string.Format("{0} would like to access your contacts.", UnityEditor.PlayerSettings.productName);	
-				string[]			_buttons		= new string[2] { "Ok", "Dont allow" };
-
-				NPBinding.UI.ShowAlertDialogWithMultipleButtons(string.Empty, _message, _buttons, (string _pressedBtn)=>{
-
-					if (_pressedBtn.Equals("Ok"))
-					{
-						Instance.AuthorizationStatus	= eABAuthorizationStatus.AUTHORIZED;
-
-						// Read contacts
-						OnAuthorizedToReadContacts();
-					}
-					else
-					{
-						Instance.AuthorizationStatus	= eABAuthorizationStatus.DENIED;
-
-						// Send contacts read failed event
-						NPBinding.AddressBook.InvokeMethod(kABReadContactsFailedEvent, ((int)Instance.AuthorizationStatus).ToString());
-					}
-				});
+				int 					_totalContacts		= m_contactsList.Length;
+				AddressBookContact[]	_contactsListCopy	= new AddressBookContact[_totalContacts];
+				
+				for (int _iter = 0; _iter < _totalContacts; _iter++)
+					_contactsListCopy[_iter]				= new EditorAddressBookContact(m_contactsList[_iter]);
+				
+				// Callback is sent to binding event listener
+				SendReadContactsFinishedEvent(eABAuthorizationStatus.AUTHORIZED, _contactsListCopy);
 			}
 			else
 			{
-				// Read contacts
-				OnAuthorizedToReadContacts();
+				SendReadContactsFinishedEvent(_authStatus, null);
+				return;
 			}
-
 		}
 
-		private static void OnAuthorizedToReadContacts ()
+		private void SendReadContactsFinishedEvent (eABAuthorizationStatus _authStatus, AddressBookContact[] _contactsList)
 		{
-			AddressBookContact[] _contactsList		= Instance.ContactsList;
-			int _totalContacts						= _contactsList.Length;
-			AddressBookContact[] _contactsListCopy	= new AddressBookContact[_totalContacts];
-			
-			for (int _iter = 0; _iter < _totalContacts; _iter++)
-			{
-				_contactsListCopy[_iter]			= new EditorAddressBookContact(_contactsList[_iter]);
-			}
-			
-			// Callback is sent to binding event listener
-			NPBinding.AddressBook.InvokeMethod(kABReadContactsFinishedEvent, _contactsListCopy);
+			NPBinding.AddressBook.InvokeMethod(kReadContactsFinishedEvent, new object[] { 
+				_authStatus, 
+				_contactsList 
+			}, new Type[] { 
+				typeof(eABAuthorizationStatus), 
+				typeof(AddressBookContact[])
+			});
 		}
 
 		#endregion

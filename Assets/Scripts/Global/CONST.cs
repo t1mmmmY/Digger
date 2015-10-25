@@ -6,8 +6,8 @@ public enum Scene
 	Splash = 0,
 	Lobby = 1,
 	SinglePlayer = 2,
-	Multiplayer = 3,
-	Tavern = 4
+//	Multiplayer = 3,
+	Tavern = 3
 }
 
 
@@ -24,13 +24,15 @@ public static class CONST
 
 	public static readonly string IOS_LEADERBOARD_ID = "SmartestDigger";
 
+//	public static readonly string IOS_BUY_CHARACTER_ID = "com.octogames.digger.coins";
+
 	public static readonly string[] PLAYER_NAMES = { 
 		"DrunkenDigger",
 		"WalterWhite",
 		"Batman",
 		"Charlie",
 		"Finn",
-		"Grandpa",
+		"Pippi",
 		"Leprechaun"
 	};
 
@@ -40,7 +42,7 @@ public static class CONST
 		"BadMan",
 		"Charlie",
 		"Finn",
-		"Grandpa",
+		"Pippi",
 		"Leprechaun"
 	};
 
@@ -50,19 +52,19 @@ public static class CONST
 		"Batman",
 		"Charlie",
         "Finn",
-		"Grandpa",
+		"Pippi",
 		"Leprechaun"
 	};
 
-	public static readonly float[] CHARACTER_COSTS = {
-		0.99f,
-		0.99f,
-		0.99f,
-		0.99f,
-		0.99f,
-		0.99f,
-		1.99f
-	};
+//	public static readonly float[] CHARACTER_COSTS = {
+//		0.99f,
+//		0.99f,
+//		0.99f,
+//		0.99f,
+//		0.99f,
+//		0.99f,
+//		1.99f
+//	};
 
 	public static readonly int[] SPECIAL_CHARACTER_NUMBERS = {
 		6
@@ -82,7 +84,7 @@ public static class CONST
 
 	public static bool InGame()
 	{
-		if (Application.loadedLevel == (int)Scene.SinglePlayer || Application.loadedLevel == (int)Scene.Multiplayer)
+		if (Application.loadedLevel == (int)Scene.SinglePlayer /*|| Application.loadedLevel == (int)Scene.Multiplayer*/)
 		{
 			return true;
 		}

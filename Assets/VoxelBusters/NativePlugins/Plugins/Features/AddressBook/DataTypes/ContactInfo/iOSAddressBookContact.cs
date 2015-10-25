@@ -31,23 +31,42 @@ namespace VoxelBusters.NativePlugins.Internal
 
 		#region Constructors
 
-		public iOSAddressBookContact (IDictionary _contactInfoJsontDict)
+		public iOSAddressBookContact (IDictionary _contactInfoDict)
 		{
-			FirstName		= _contactInfoJsontDict[kFirstName] as string;
-			LastName		= _contactInfoJsontDict[kLastName] as string;
-			ImagePath		= _contactInfoJsontDict[kImagePath] as string;
-			PhoneNumberList	= new List<string>();
-			EmailIDList		= new List<string>();
-			
-			// Add phone numbers
-			IList _phoneNumJsonList	= _contactInfoJsontDict[kPhoneNumList] as IList;
-			foreach (string _phoneNo in _phoneNumJsonList)
-				PhoneNumberList.Add(_phoneNo);
-			
-			// Add email id's
-			IList _emailIDJsonList	= _contactInfoJsontDict[kEmailIDList] as IList;
-			foreach (string _emailID in _emailIDJsonList)
-				EmailIDList.Add(_emailID);
+			// Set first name and last name
+			FirstName		= _contactInfoDict.GetIfAvailable<string>(kFirstName);
+			LastName		= _contactInfoDict.GetIfAvailable<string>(kLastName);
+			ImagePath		= _contactInfoDict.GetIfAvailable<string>(kImagePath);
+
+			// Set phone numbers
+			IList 		_phoneNumJSONList	= _contactInfoDict.GetIfAvailable<IList>(kPhoneNumList);
+			string[] 	_newPhoneNumList	= null;
+
+			if (_phoneNumJSONList != null)
+			{
+				int		_totalCount			= _phoneNumJSONList.Count;
+				_newPhoneNumList			= new string[_totalCount];
+
+				for (int _iter = 0; _iter < _totalCount; _iter++)
+					_newPhoneNumList[_iter]	= (string)_phoneNumJSONList[_iter];
+			}
+
+			PhoneNumberList		= _newPhoneNumList;
+
+			// Set email id list
+			IList 		_emailIDJsonList	= _contactInfoDict.GetIfAvailable<IList>(kEmailIDList);
+			string[] 	_newEmailIDList		= null;
+
+			if (_emailIDJsonList != null)
+			{
+				int		_totalCount			= _emailIDJsonList.Count;
+				_newEmailIDList				= new string[_totalCount];
+				
+				for (int _iter = 0; _iter < _totalCount; _iter++)
+					_newEmailIDList[_iter]	= (string)_emailIDJsonList[_iter];
+			}
+
+			EmailIDList			= _newEmailIDList;
 		}
 
 		#endregion

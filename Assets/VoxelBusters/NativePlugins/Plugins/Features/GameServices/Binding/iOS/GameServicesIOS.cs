@@ -1,21 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
+
+#if USES_GAME_SERVICES && UNITY_IOS
 using System;
 using System.Runtime.InteropServices;
-using UnityEngine.SocialPlatforms.GameCenter;
-using UnityEngine.SocialPlatforms;
+using VoxelBusters.Utility;
 using VoxelBusters.DebugPRO;
 
-#if UNITY_IOS
 namespace VoxelBusters.NativePlugins
 {
 	using Internal;
 
-	public sealed class GameServicesIOS : GameServices 
+	public sealed partial class GameServicesIOS : GameServices 
 	{
 		#region Fields
 
-		private		iOSLocalUser		m_localUser;
+		private			iOSLocalUser	m_localUser;
 
 		#endregion
 
@@ -42,6 +42,18 @@ namespace VoxelBusters.NativePlugins
 		private static extern bool isGameCenterAvailable ();
 
 		[DllImport("__Internal")]
+		private static extern void loadAchievementDescriptions ();
+		
+		[DllImport("__Internal")]
+		private static extern void loadAchievements ();
+
+		[DllImport("__Internal")]
+		private static extern void loadPlayers (string _identifiersJSON);
+
+		[DllImport("__Internal")]
+		private static extern void showDefaultAchievementCompletionBanner (bool _show);
+
+		[DllImport("__Internal")]
 		private static extern void showLeaderboardView (string _leaderboardID, int _timeScope);
 
 		[DllImport("__Internal")]
@@ -53,10 +65,13 @@ namespace VoxelBusters.NativePlugins
 
 		protected override void Awake ()
 		{
-			base.Awake ();
+			base.Awake();
 
 			// Initialize
-			LocalUser		= new iOSLocalUser();
+			LocalUser	= new iOSLocalUser();
+
+			// Set Settings
+			ShowDefaultAchievementCompletionBanner(NPSettings.GameServicesSettings.IOS.ShowDefaultAchievementCompletionBanner);
 		}
 
 		#endregion
@@ -72,180 +87,137 @@ namespace VoxelBusters.NativePlugins
 		
 		#region Leaderboard Methods
 
-		public override Leaderboard CreateLeaderboard (string _leaderboardID)
+		protected override Leaderboard CreateLeaderboard (string _leaderboarGID, string _leaderboardID)
 		{
-			// Verify user authentication state before proceeding
-			if (VerifyUser())
-				return new iOSLeaderboard(_leaderboardID);
+			// Verify auth status
+			if (!VerifyUser())
+				return null;
 
-			return null;
+			// Check if identifier is valid
+			if (string.IsNullOrEmpty(_leaderboardID))
+				return null;
+			
+			return new iOSLeaderboard(_leaderboarGID, _leaderboardID);
+		}
+
+		#endregion
+
+		#region Achievement Description Methods
+		
+		protected override void LoadAchievementDescriptions (bool _needsVerification, AchievementDescription.LoadAchievementDescriptionsCompletion _onCompletion)
+		{
+			base.LoadAchievementDescriptions(_needsVerification, _onCompletion);
+			
+			// Verify auth status
+			if (_needsVerification && !VerifyUser())
+				return;
+
+			// Native method call
+			loadAchievementDescriptions();
 		}
 
 		#endregion
 
 		#region Achievement Methods
 
-		public override Achievement CreateAchievement (string _achievementID)
+		protected override Achievement CreateAchievement (string _achievementGID, string _achievementID)
 		{
-			// Verify user authentication state before proceeding
-			if (VerifyUser())
-				return new iOSAchievement(_achievementID);
-
-			return null;
-		}
-
-		protected override void LoadAchievementDescriptions (bool _needsVerification, Action<AchievementDescription[]> _onCompletion)
-		{
-			base.LoadAchievementDescriptions(_needsVerification, _onCompletion);
-
-			// Verify user authentication state before proceeding
-			if (_needsVerification && !VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-
-				return;
-			}
-
-			// Load achievement descriptions
-			Social.LoadAchievementDescriptions((IAchievementDescription[] _achievementDescriptionList)=>{
-
-				// Call handle method
-				OnLoadAchievementDescriptionsFinished(iOSAchievementDescription.ConvertAchievementDescriptionList(_achievementDescriptionList));
-			});
-		}
-		
-		public override void LoadAchievements (Action<Achievement[]> _onCompletion)
-		{
-			// Verify user authentication state before proceeding
+			// Verify auth status
 			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-				
-				return;
-			}
+				return null;
 
-			// Load achievements
-			Social.LoadAchievements((IAchievement[] _achievements)=>{
-				
-				// Send callback
-				if (_onCompletion != null)
-				{
-					_onCompletion(iOSAchievement.ConvertAchievementList(_achievements));
-				}
-			});
-		}
-		
-		public override void ReportProgress (string _achievementID, int _pointsScored, Action<bool> _onCompletion)
-		{
-			base.ReportProgress(_achievementID, _pointsScored, _onCompletion);
-			
+			// Check if identifier is valid
 			if (string.IsNullOrEmpty(_achievementID))
-				return;
+				return null;
 
-			// Verify user authentication state before proceeding
+			return new iOSAchievement(_achievementGID, _achievementID);
+		}
+
+		public override void LoadAchievements (Achievement.LoadAchievementsCompletion _onCompletion)
+		{
+			base.LoadAchievements(_onCompletion);
+
+			// Verify auth status
 			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(false);
-				
 				return;
-			}
 
-			// Create new achievement instance
-			iOSAchievement	_achievement	= new iOSAchievement(_achievementID);
-			
-			// Set new score and report
-			_achievement.PointsScored		= _pointsScored;
-			_achievement.ReportProgress(_onCompletion);
+			// Native method call
+			loadAchievements();
 		}
 		
 		#endregion
 		
 		#region User Methods
-		
-		public override void LoadUsers (string[] _userIDs, Action<User[]> _onCompletion)
+
+		public override void LoadUsers (string[] _userIDs, User.LoadUsersCompletion _onCompletion)
 		{
 			base.LoadUsers(_userIDs, _onCompletion);
 
+			// Verify auth status
+			if (!VerifyUser())
+				return;
+
+			// Verify id's
 			if (_userIDs == null)
 				return;
 
-			// Verify user authentication state before proceeding
-			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(null);
-				
-				return;
-			}
-
-			// Load users
-			Social.LoadUsers(_userIDs, (IUserProfile[] _userProfileList)=>{
-
-				if (_onCompletion != null)
-				{
-					_onCompletion(iOSUser.ConvertToUserList(_userProfileList));
-				}
-			});
+			loadPlayers(_userIDs.ToJSON());
 		}
-		
-		public override void ReportScore (string _leaderboardID, long _score, Action<bool> _onCompletion)
-		{
-			base.ReportScore(_leaderboardID, _score, _onCompletion);
-			
-			if (string.IsNullOrEmpty(_leaderboardID))
-				return;
 
-			// Verify user authentication state before proceeding
+		#endregion
+
+		#region Score Methods
+
+		protected override Score CreateScoreForLocalUser (string _leaderboardGID, string _leaderboardID)
+		{
+			// Verify auth status
 			if (!VerifyUser())
-			{
-				if (_onCompletion != null)
-					_onCompletion(false);
-				
-				return;
-			}
+				return null ;
+			
+			// Verify id
+			if (string.IsNullOrEmpty(_leaderboardID))
+				return null;
 
 			// Create instance
-			iOSScore		_newScore		= new iOSScore(_leaderboardID, LocalUser, _score);
-
-			// Report score
-			_newScore.ReportScore(_onCompletion);
+			return new iOSScore(_leaderboardGID, _leaderboardID, LocalUser);
 		}
 
 		#endregion
 
 		#region UI Methods
 
-		public override void ShowDefaultAchievementCompletionBanner (bool _canShow)
-		{
-			GameCenterPlatform.ShowDefaultAchievementCompletionBanner(_canShow);
-		}
-
 		public override void ShowAchievementsUI (GameServiceViewClosed _onCompletion)
 		{
 			base.ShowAchievementsUI(_onCompletion);
 
+			// Verify auth status
 			if (!VerifyUser())
 				return;
 
-			// Native call
+			// Native method call
 			showAchievementView();
 		}
 		
-		public override void ShowLeaderboardUI (string _leaderboardID, eLeaderboardTimeScope _timeScope, GameServiceViewClosed _onCompletion)
+		public override void ShowLeaderboardUIWithID (string _leaderboardID, eLeaderboardTimeScope _timeScope, GameServiceViewClosed _onCompletion)
 		{
-			base.ShowLeaderboardUI(_leaderboardID, _timeScope, _onCompletion);
+			base.ShowLeaderboardUIWithID(_leaderboardID, _timeScope, _onCompletion);
 			
-			if (string.IsNullOrEmpty(_leaderboardID))
-				return;
-			
+			// Verify auth status
 			if (!VerifyUser())
 				return;
 
-			// Native call
+			// Native method call
 			showLeaderboardView(_leaderboardID, (int)_timeScope);
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void ShowDefaultAchievementCompletionBanner (bool _canShow)
+		{
+			// Native method call
+			showDefaultAchievementCompletionBanner(_canShow);
 		}
 
 		#endregion

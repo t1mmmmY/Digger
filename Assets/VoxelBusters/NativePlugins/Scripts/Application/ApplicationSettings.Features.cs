@@ -1,19 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections;
-using VoxelBusters.Utility;
 
 namespace VoxelBusters.NativePlugins
 {
+	using Internal;
+
 	public partial class ApplicationSettings 
 	{
 		[System.Serializable]
 		public class Features
 		{
+			#region Fields
+
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesAddressBook 	= true;
+#if !NATIVE_PLUGINS_LITE_VERSION
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesBilling 		= true;
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesGameServices 	= true;
+			[SerializeField, NotifyNPSettingsOnValueChange]	
+			private		bool	m_usesMediaLibrary 	= true;
+#endif
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesNetworkConnectivity = true;
+#if !NATIVE_PLUGINS_LITE_VERSION
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesNotificationService = true;
+#endif
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesSharing 		= true;
+#if !NATIVE_PLUGINS_LITE_VERSION
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesTwitter 		= true;
+			[SerializeField, NotifyNPSettingsOnValueChange]
+			private		bool	m_usesWebView 		= true;
+#endif
+
+			#endregion
+
 			#region Properties
-			
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesAddressBook = true;
-			public				bool			UsesAddressBook
+
+			public bool UsesAddressBook
 			{
 				get
 				{
@@ -21,31 +49,43 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			#if !NATIVE_PLUGINS_LITE_VERSION
-			[SerializeField, ExecuteOnValueChange("OnBillingConfigurationChanged")]
-			private				bool			m_usesBilling = true;
-			public				bool			UsesBilling
+			public bool UsesBilling
 			{
 				get
 				{
+#if !NATIVE_PLUGINS_LITE_VERSION
 					return m_usesBilling;
+#else
+					return false;
+#endif
 				}
 			}
 			
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesMediaLibrary = true;
-			public				bool			UsesMediaLibrary
+			public bool UsesGameServices
 			{
 				get
 				{
-					return m_usesMediaLibrary;
+#if !NATIVE_PLUGINS_LITE_VERSION
+					return m_usesGameServices;
+#else
+					return false;
+#endif
 				}
 			}
-			#endif
+			
+			public bool UsesMediaLibrary
+			{
+				get
+				{
+#if !NATIVE_PLUGINS_LITE_VERSION
+					return m_usesMediaLibrary;
+#else
+					return false;
+#endif
+				}
+			}
 
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesNetworkConnectivity = true;
-			public				bool			UsesNetworkConnectivity
+			public bool UsesNetworkConnectivity
 			{
 				get
 				{
@@ -53,21 +93,19 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 			
-			#if !NATIVE_PLUGINS_LITE_VERSION
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesNotificationService = true;
-			public				bool			UsesNotificationService
+			public bool UsesNotificationService
 			{
 				get
 				{
+#if !NATIVE_PLUGINS_LITE_VERSION
 					return m_usesNotificationService;
+#else
+					return false;
+#endif
 				}
 			}
-			#endif
-			
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesSharing = true;
-			public				bool			UsesSharing
+
+			public bool UsesSharing
 			{
 				get
 				{
@@ -75,28 +113,29 @@ namespace VoxelBusters.NativePlugins
 				}
 			}
 
-			#if !NATIVE_PLUGINS_LITE_VERSION
-			[SerializeField, ExecuteOnValueChange("OnTwitterConfigurationChanged")]
-			private				bool			m_usesTwitter = false;
-			public				bool			UsesTwitter
+			public bool UsesTwitter
 			{
 				get
 				{
+#if !NATIVE_PLUGINS_LITE_VERSION
 					return m_usesTwitter;
+#else
+					return false;
+#endif
 				}
 			}
 
-			[SerializeField, ExecuteOnValueChange("OnApplicationConfigurationChanged")]
-			private				bool			m_usesGameServices = false;
-			public				bool			UsesGameServices
+			public bool UsesWebView
 			{
 				get
 				{
-					return m_usesGameServices;
+#if !NATIVE_PLUGINS_LITE_VERSION
+					return m_usesWebView;
+#else
+					return false;
+#endif
 				}
 			}
-			
-			#endif
 			
 			#endregion
 		}

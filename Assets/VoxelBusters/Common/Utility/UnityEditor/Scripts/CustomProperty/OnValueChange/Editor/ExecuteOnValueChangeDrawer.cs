@@ -5,16 +5,16 @@ using System.Reflection;
 
 namespace VoxelBusters.Utility
 {
-	[CustomPropertyDrawer(typeof(ExecuteOnValueChangeAttribute))]
+	[CustomPropertyDrawer(typeof(ExecuteOnValueChangeAttribute), true)]
 	public class ExecuteOnValueChangeDrawer : PropertyDrawer 
 	{
 		#region Properties
 
-		private 		ExecuteOnValueChangeAttribute 	ExecuteOnValueChange 
+		private ExecuteOnValueChangeAttribute ExecuteOnValueChange 
 		{ 
 			get 
 			{ 
-				return attribute as ExecuteOnValueChangeAttribute; 
+				return (ExecuteOnValueChangeAttribute)attribute; 
 			} 
 		}
 
@@ -24,30 +24,30 @@ namespace VoxelBusters.Utility
 
 		public override float GetPropertyHeight (SerializedProperty _property, GUIContent _label) 
 		{
-			return base.GetPropertyHeight(_property, _label);
+			return EditorGUI.GetPropertyHeight (_property);
 		}
 
 		public override void OnGUI (Rect _position, SerializedProperty _property, GUIContent _label)
 		{
-			EditorGUI.BeginProperty(_position, _label, _property);
+			EditorGUI.BeginProperty (_position, _label, _property);
 
 			// Start checking if property was changed
 			EditorGUI.BeginChangeCheck();
-
-			// Call base class to draw property
-			EditorGUI.PropertyField(_position, _property, _label, true);
-
-			// Finish checking and invoke method if value is changed
-			if (EditorGUI.EndChangeCheck())
 			{
-				// Apply value change
-				_property.serializedObject.ApplyModifiedProperties();
+				EditorGUI.PropertyField (_position, _property, _label, true);
+			}
+			bool _valueChanged	= EditorGUI.EndChangeCheck ();
 
-				// Trigger callback
-				_property.serializedObject.targetObject.InvokeMethod(ExecuteOnValueChange.CallbackMethod);
+			// If value has changed then invoke the method
+			if (_valueChanged)
+			{
+				SerializedObject	_serializedObject	= _property.serializedObject;
+
+				_serializedObject.ApplyModifiedProperties ();
+				_serializedObject.targetObject.InvokeMethod (ExecuteOnValueChange.InvokeMethod);
 			}
 
-			EditorGUI.EndProperty();
+			EditorGUI.EndProperty ();
 		}
 
 		#endregion

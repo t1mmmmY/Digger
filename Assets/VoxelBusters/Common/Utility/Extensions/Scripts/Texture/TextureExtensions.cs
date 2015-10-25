@@ -216,5 +216,48 @@ namespace VoxelBusters.Utility
 		}
 
 		#endregion
+
+		#region Scale Operation
+
+		public static Texture2D Scale (this Texture2D _inputTex, float _scaleFactor) 
+		{
+			if (_scaleFactor == 1f)
+			{
+				return _inputTex;
+			}
+			else if (_scaleFactor == 0f)
+			{
+				return Texture2D.blackTexture;
+			}
+
+			int _newWidth	=	Mathf.RoundToInt(_inputTex.width 	* _scaleFactor);
+			int _newHeight	=	Mathf.RoundToInt(_inputTex.height 	* _scaleFactor);
+			
+
+			// Create Color Buffer
+			Color[] _scaledTexPixels	= new Color[_newWidth * _newHeight];
+	
+			for (int _yCord	= 0; _yCord	< _newHeight; _yCord++)
+			{
+				float _vCord 			= _yCord / (_newHeight - 1f);
+				int   _scanLineIndex	= _yCord * _newWidth;
+				
+				for (int _xCord	= 0; _xCord	< _newWidth; _xCord++)
+				{
+					float _uCord = _xCord / (_newWidth - 1f);
+					
+					_scaledTexPixels[_scanLineIndex + _xCord] = _inputTex.GetPixelBilinear(_uCord, _vCord);
+				}
+			}
+
+			// Create Scaled Texture
+			Texture2D _scaledTex	= new Texture2D(_newWidth,	_newHeight,	_inputTex.format, false);
+			_scaledTex.SetPixels(_scaledTexPixels, 0);
+			_scaledTex.Apply();
+
+			return _scaledTex;
+		}
+
+		#endregion
 	}
 }
