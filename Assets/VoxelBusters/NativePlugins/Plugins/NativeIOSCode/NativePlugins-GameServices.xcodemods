@@ -1,0 +1,1 @@
+{"group":"NativePlugins-GameServices","frameworks":["GameKit.framework"],"folders":["GameServices\/Assets","GameServices\/Source:-fno-objc-arc"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"]}

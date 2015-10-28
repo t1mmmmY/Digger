@@ -1,0 +1,1 @@
+{"group":"NativePlugins-Twitter","files":["Twitter\/Framework\/Fabric.framework","Twitter\/Framework\/TwitterKit.framework"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"]}

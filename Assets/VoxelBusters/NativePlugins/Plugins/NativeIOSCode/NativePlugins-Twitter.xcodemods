@@ -1,0 +1,1 @@
+{"group":"NativePlugins-Twitter","frameworks":["Accounts.framework:weak","Social.framework:weak","Security.framework:weak"],"folders":["Twitter\/Assets","Twitter\/Source:-fno-objc-arc"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"]}

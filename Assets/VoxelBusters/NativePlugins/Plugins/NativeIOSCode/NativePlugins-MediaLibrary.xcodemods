@@ -1,0 +1,1 @@
+{"group":"NativePlugins-MediaLibrary","frameworks":["MobileCoreServices.framework"],"folders":["MediaLibrary\/Assets","MediaLibrary\/Source:-fno-objc-arc"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"]}

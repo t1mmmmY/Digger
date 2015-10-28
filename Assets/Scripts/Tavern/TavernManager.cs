@@ -22,6 +22,8 @@ public class TavernManager : BaseSingleton<TavernManager>
 	int hideDescriptionHash = Animator.StringToHash("HideDescription");
 	int selectCharacterHash = Animator.StringToHash("SelectCharacter");
 
+	bool canSwipe = true;
+
     int currentCharacterNumber = 0;
 
     public int currentCharacter
@@ -39,8 +41,6 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void Start()
 	{
-
-
 		StartCoroutine("LoadCharacters");
 		ShowDescription(0);
 	}
@@ -48,7 +48,6 @@ public class TavernManager : BaseSingleton<TavernManager>
 	void OnEnable()
 	{
 		ScrollArea.onChangePosition += OnChangePosition;
-//		ScrollArea.onStartMoving += OnStartMoving;
 		ScrollArea.onEndMoving += OnEndMoving;
 	}
 
@@ -56,7 +55,6 @@ public class TavernManager : BaseSingleton<TavernManager>
 	void OnDisable()
 	{
 		ScrollArea.onChangePosition -= OnChangePosition;
-//		ScrollArea.onStartMoving -= OnStartMoving;
 		ScrollArea.onEndMoving -= OnEndMoving;
 	}
 
@@ -107,8 +105,6 @@ public class TavernManager : BaseSingleton<TavernManager>
             }
 
 			number++;
-
-
 		}
 
 		//Add empty right wall
@@ -116,9 +112,6 @@ public class TavernManager : BaseSingleton<TavernManager>
 		AddWall(false);
 
 		yield return null;
-
-        
-        
 
 		Debug.Log("Done loading characters");
 	}
@@ -186,7 +179,7 @@ public class TavernManager : BaseSingleton<TavernManager>
 	{
 		GameObject go = GameObject.Instantiate<GameObject>(obj);
 		go.transform.parent = wallPart.characterPosition;
-		go.transform.localPosition = Vector3.zero;
+		go.transform.localPosition = new Vector3(0, go.transform.position.y, 0);
 
 		Character character = go.GetComponent<Character>();
 
@@ -205,18 +198,29 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void OnStartMoving()
 	{
-//		Debug.Log("HideDescription");
+		if (!canSwipe)
+		{
+			return;
+		}
+
 		HideDescription();
 	}
 
 	void OnEndMoving()
 	{
-//		ShowDescription();
+		if (!canSwipe)
+		{
+			return;
+		}
 	}
 
 	void OnChangePosition(int newPositionNumber)
 	{
-//		Debug.Log("OnChangePosition");
+		if (!canSwipe)
+		{
+			return;
+		}
+
         currentCharacterNumber = newPositionNumber;
 		ShowDescription(newPositionNumber);
 	}
@@ -228,21 +232,29 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	void ShowDescription(int positionNumber)
 	{
-//		if (PlayerStatsController.Instance != null)
-//		{
+		if (InGameStore.Instance.IsProductPurchased(positionNumber))
+		{
+			buyCharacterButton.gameObject.SetActive(false);
+			playCharacterButton.gameObject.SetActive(true);
+		}
+		else
+		{
+			buyCharacterButton.gameObject.SetActive(true);
+			BuyCharacterCost.text = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+			playCharacterButton.gameObject.SetActive(false);
+		}
 
-			switch (InGameStore.Instance.IsProductPurchased(positionNumber))
-			{
-			case false:
-				buyCharacterButton.gameObject.SetActive(true);
-				BuyCharacterCost.text = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
-				playCharacterButton.gameObject.SetActive(false);
-				break;
-			case true:
-				buyCharacterButton.gameObject.SetActive(false);
-				playCharacterButton.gameObject.SetActive(true);
-				break;
-			}
+//		switch (InGameStore.Instance.IsProductPurchased(positionNumber))
+//		{
+//		case false:
+//			buyCharacterButton.gameObject.SetActive(true);
+//			BuyCharacterCost.text = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+//			playCharacterButton.gameObject.SetActive(false);
+//			break;
+//		case true:
+//			buyCharacterButton.gameObject.SetActive(false);
+//			playCharacterButton.gameObject.SetActive(true);
+//			break;
 //		}
 
 		characterNameLabel.text = CONST.DESCRIPTOIN_NAMES[positionNumber];
@@ -257,7 +269,6 @@ public class TavernManager : BaseSingleton<TavernManager>
     public void SelectCharacter()
     {
 		SelectCharacter(currentCharacterNumber);
-
     }
 
 	public void SelectCharacter(Character character)
@@ -267,44 +278,51 @@ public class TavernManager : BaseSingleton<TavernManager>
 
 	public void SelectCharacter(int characterNumber)
 	{
-		//		Debug.Log("Select " + character.number);
-		switch (InGameStore.Instance.IsProductPurchased(characterNumber))
-		{
-		case false:
-			
-			InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
+		BlockSwipe();
 
-			break;
-		case true:
+		if (InGameStore.Instance.IsProductPurchased(characterNumber))
+		{
 			PlaySelectAnimation(characterNumber);
 			
 			if (GeneralGameController.Instance != null)
 			{
 				GeneralGameController.Instance.SelectCharacter(characterNumber);
 			}
-			break;
 		}
-		
-//		if (PlayerStatsController.Instance != null)
+		else
+		{
+			InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
+		}
+
+//		switch (InGameStore.Instance.IsProductPurchased(characterNumber))
 //		{
-//			PlayerStatus playerStatus = PlayerStatsController.Instance.GetStatus(characterNumber);
-//			switch (playerStatus)
+//		case false:
+//			
+//			InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
+//
+//			break;
+//		case true:
+//			PlaySelectAnimation(characterNumber);
+//			
+//			if (GeneralGameController.Instance != null)
 //			{
-//			case PlayerStatus.Bought:
-//				PlaySelectAnimation(characterNumber);
-//				
-//				if (GeneralGameController.Instance != null)
-//				{
-//					GeneralGameController.Instance.SelectCharacter(characterNumber);
-//				}
-//				break;
-//			case PlayerStatus.NotBought:
-//
-//				InGameStore.Instance.BuyProduct(characterNumber, OnTransacionFinishedCallback);
-//
-//				break;
+//				GeneralGameController.Instance.SelectCharacter(characterNumber);
 //			}
+//			break;
 //		}
+
+	}
+
+	void BlockSwipe()
+	{
+		canSwipe = false;
+		ScrollArea.canSwipe = false;
+	}
+
+	void UnblockSwipe()
+	{
+		canSwipe = true;
+		ScrollArea.canSwipe = true;
 	}
 
 	void OnTransacionFinishedCallback(bool success)
@@ -320,6 +338,8 @@ public class TavernManager : BaseSingleton<TavernManager>
 		}
 		else
 		{
+			UnblockSwipe();
+
 			Debug.LogWarning("Transacion finished with error");
 		}
 	}
@@ -337,7 +357,6 @@ public class TavernManager : BaseSingleton<TavernManager>
             {
                 currentCharacterNumber--;
                 ShowDescription(currentCharacterNumber);
-                //Debug.Log("Left");
             }
         }
         else if (direction > 0)
@@ -346,7 +365,6 @@ public class TavernManager : BaseSingleton<TavernManager>
             {
                 currentCharacterNumber++;
                 ShowDescription(currentCharacterNumber);
-                //Debug.Log("Right");
             }
         }
     }
@@ -355,12 +373,12 @@ public class TavernManager : BaseSingleton<TavernManager>
 	{
 		canvasAnimator.SetTrigger(selectCharacterHash);
 		StartCoroutine("InvokeLoadLevel", 1.0f);
-//		playCharacterButton.Select();
 	}
 
 	IEnumerator InvokeLoadLevel(float time)
 	{
 		yield return new WaitForSeconds(time);
+		UnblockSwipe();
 		LevelLoader.Instance.LoadLevel(Scene.Lobby);
 	}
 }

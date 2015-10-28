@@ -1,0 +1,1 @@
+{"group":"NativePlugins-Sharing","frameworks":["MessageUI.framework","Social.framework:weak"],"folders":["Sharing\/Assets","Sharing\/Source:-fno-objc-arc"],"excludes":["^.*.meta$","^.*.mdown$","^.*.pdf$","^.*.DS_Store"]}

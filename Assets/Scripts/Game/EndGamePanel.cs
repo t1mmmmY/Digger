@@ -50,6 +50,7 @@ public class EndGamePanel : MonoBehaviour
 
 	public void BuyCharacter()
 	{
+//		InGameStore.Instance.BuyProduct(buyCharacterNumber, );
 		ShopInGame.Instance.BuyCharacter(buyCharacterNumber);
 		//BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
 		SingleplayerGameManager.Instance.RestartGame();
