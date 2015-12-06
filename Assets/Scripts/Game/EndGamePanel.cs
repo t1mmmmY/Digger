@@ -50,11 +50,26 @@ public class EndGamePanel : MonoBehaviour
 
 	public void BuyCharacter()
 	{
-//		InGameStore.Instance.BuyProduct(buyCharacterNumber, );
-		ShopInGame.Instance.BuyCharacter(buyCharacterNumber);
-		//BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
-		SingleplayerGameManager.Instance.RestartGame();
+////		InGameStore.Instance.BuyProduct(buyCharacterNumber, );
+		ShopInGame.Instance.BuyCharacter(buyCharacterNumber, OnTransacionFinished);
+////		BankController.RemoveCoins(CONST.RANDOM_CHARACTER_COST);
+//		SingleplayerGameManager.Instance.RestartGame();
 		//Debug.Log("Buy");
+	}
+
+	void OnTransacionFinished(bool isSuccess)
+	{
+		if (isSuccess)
+		{
+			SingleplayerGameManager.Instance.RestartGame();
+			if (GeneralGameController.Instance != null)
+			{
+				GeneralGameController.Instance.SelectCharacter(buyCharacterNumber);
+			}
+		}
+		else
+		{
+		}
 	}
 
     void OnShowAdvertising(int reward)

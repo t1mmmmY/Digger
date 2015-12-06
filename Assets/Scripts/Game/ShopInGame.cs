@@ -107,14 +107,11 @@ public class ShopInGame : BaseSingleton<ShopInGame>
 		return randomCharacterNumber;
 	}
 
-	public bool BuyCharacter(int characterNumber)
+	public void BuyCharacter(int characterNumber, System.Action<bool> callback)
 	{
 		
-		if (GeneralGameController.Instance != null)
-		{
-			GeneralGameController.Instance.SelectCharacter(characterNumber);
-		}
+		InGameStore.Instance.BuyProduct(characterNumber, callback);
 		
-		return true;
+//		return true;
 	}
 }

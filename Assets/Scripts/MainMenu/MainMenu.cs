@@ -19,10 +19,10 @@ public class MainMenu : MonoBehaviour
     [SerializeField] GameObject treasureChest;
     [SerializeField] Text bestScoreLabel;
     [SerializeField] Grammophone grammophone;
-
+	[SerializeField] GameObject loginButton;
+	
     GameObject currentCharacterGameObject;
     bool isMusicPlaying = true;
-
 
 
 	public static MainMenu Instance;
@@ -32,6 +32,17 @@ public class MainMenu : MonoBehaviour
 	{
 		Instance = this;
 	}
+
+	void OnEnable()
+	{
+		GeneralGameController.onLogin += OnSignInCallback;
+	}
+
+	void OnDisable()
+	{
+		GeneralGameController.onLogin -= OnSignInCallback;
+	}
+
 
 	void Start()
 	{
@@ -54,6 +65,11 @@ public class MainMenu : MonoBehaviour
         	treasureChest.SetActive(AdvertisingController.Instance.NeedToShowChestInMainMenu());
 		}
         bestScoreLabel.text = PlayerPrefs.GetInt("BestLevel", 0).ToString();
+
+		if (GeneralGameController.Instance.isLoginSuccess)
+		{
+			HideLoginButton();
+		}
 	}
 
     private void LoadCharacter()
@@ -72,7 +88,6 @@ public class MainMenu : MonoBehaviour
             currentCharacterGameObject.transform.localPosition = Vector3.zero;
 
             currentCharacterGameObject.GetComponent<Rigidbody>().useGravity = false;
-            //follower.SetTarget(characterGO.transform);
         }
         else
         {
@@ -114,42 +129,33 @@ public class MainMenu : MonoBehaviour
 #if UNITY_ANDROID
 		MultiplayerController.Instance.SignIn();
 #elif UNITY_IOS
-//		UnityEngine.Social.localUser.Authenticate(null);
-		MultiplayerController.Instance.SignIn();
+		MultiplayerController.Instance.SignIn(OnSignInCallback);
 #endif
 	}
 
-//	void OnGUI()
-//	{
-//		if (GUILayout.Button("Authenticate"))
-//		{
-//			UnityEngine.Social.localUser.Authenticate((bool success) => {});
-//		}
-//		if (GUILayout.Button("ShowLeaderboardUI"))
-//		{
-//			UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
-//		}
-//	}
+	private void OnSignInCallback(bool isSuccess)
+	{
+		if (true)
+		{
+			HideLoginButton();
+		}
+		else
+		{
+		}
+	}
+
+	private void HideLoginButton()
+	{
+		loginButton.SetActive(false);
+	}
+
 
 	public void ShowLeaderboard()
 	{
 #if UNITY_ANDROID
 		MultiplayerController.Instance.ShowLeaderboard();
 #elif UNITY_IOS
-//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
-		
 		MultiplayerController.Instance.ShowLeaderboard();
-		
-//		if (localUser.IsAuthenticated)
-//		{
-//			GameServicesIOS gs;
-//			gs = new GameServicesIOS();
-//			gs.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
-//		}
-//		else
-//		{
-//			SignInToGoogle();
-//		}
 #endif
 	}
 
@@ -171,14 +177,10 @@ public class MainMenu : MonoBehaviour
 
 	public void MoveToShop()
 	{
-//		SetActiveAllButtons(false);
-//		mainMenuAnimator.SetBool("InShop", true);
 	}
 
 	public void ReturnToMenu()
 	{
-//		SetActiveAllButtons(true);
-//		mainMenuAnimator.SetBool("InShop", false);
 	}
 
 	public void EnterTavern()

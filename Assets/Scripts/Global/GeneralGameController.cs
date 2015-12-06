@@ -4,13 +4,11 @@ using System.Collections;
 public class GeneralGameController : BaseSingleton<GeneralGameController> 
 {
 	public AudioSource music;
-//	Character currentCharacter;
 	int currentCharacterNumber = 0;
     string muteAudioKey = "MUTE_AUDIO";
 
 	public float goldMultiplier { get; private set; }
-	
-    //Object backgroundMusic;
+	public bool isLoginSuccess { get; private set; }
 
 	public int characterNumber
 	{
@@ -33,10 +31,11 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 
 	public static System.Action onLoadLobby;
 	public static System.Action<int> onSelectCharacter;
+	public static System.Action<bool> onLogin;
 
 	void Start()
 	{
-		//Application.targetFrameRate = 30;
+//		Application.targetFrameRate = 30;
 		BankController.Init();
 		currentCharacterNumber = PlayerStatsController.Instance.GetCurrentPlayerNumber();
 	}
@@ -65,7 +64,6 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 	{
 		PlayerStatsController.Instance.SetStatus(characterNumber, PlayerStatus.Bought);
 
-//		currentCharacter = character;
 		currentCharacterNumber = characterNumber;
 
 		if (onSelectCharacter != null)
@@ -79,15 +77,6 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 		goldMultiplier = multiplier;
 	}
 
-//	public BonusCharacter GetBonusCharacter()
-//	{
-//		return bonusCharacter;
-//	}
-//	
-//	public void SetBonusCharacter(BonusCharacter bonusCharacter)
-//	{
-//		this.bonusCharacter = bonusCharacter;
-//	}
 
     public void MuteAudio(bool isPlaying)
     {
@@ -140,7 +129,16 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 			onLoadLobby();
 		}
 
-		MultiplayerController.Instance.TrySilentSignIn();
+		MultiplayerController.Instance.TrySilentSignIn(OnSignInCallback);
+	}
+
+	private void OnSignInCallback(bool isSuccess)
+	{
+		isLoginSuccess = isSuccess;
+		if (onLogin != null)
+		{
+			onLogin(isSuccess);
+		}
 	}
 
 

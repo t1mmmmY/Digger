@@ -18,11 +18,8 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	bool signingIn = false;
 
 #if UNITY_IOS
-//	LocalUser localUser;
-//	GameServicesIOS gameServices;
 #endif
 
-//	private List<string> opponentId = "";
 
 	private MultiplayerController() 
 	{
@@ -30,7 +27,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.DebugLogEnabled = false;
 		PlayGamesPlatform.Activate ();
 #elif UNITY_IOS
-//		gameServices = new GameServicesIOS();
 #endif
 	}
 	
@@ -47,7 +43,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	}
 
 
-	public void SignIn() 
+	public void SignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
 		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
@@ -72,58 +68,12 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		}
 #elif UNITY_IOS
 
-		UnityEngine.Social.localUser.Authenticate(null);
+		UnityEngine.Social.localUser.Authenticate(callback);
 		
-
-//		UnityEngine.Social.localUser.Authenticate((bool success) =>
-//      	{
-////			signingIn = false;
-//			if (success)
-//			{
-//				Debug.Log("Sign-In Successfully");
-//				Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
-//			}
-//			else
-//			{
-//				Debug.Log("Sign-In Failed");
-//			}
-//		});
-
-//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
-
-
-////		if(NPBinding.GameServices.IsAvailable() && !signingIn)
-//		{
-////			if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-//			if (!signingIn)
-//			{
-//				signingIn = true;
-//				NPBinding.GameServices.LocalUser.Authenticate((bool _success)=>
-//            	{
-//					signingIn = false;
-//					if (_success)
-//					{
-//						Debug.Log("Sign-In Successfully");
-//						Debug.Log("Local User Details : " + NPBinding.GameServices.LocalUser.ToString());
-//					}
-//					else
-//					{
-//						Debug.Log("Sign-In Failed");
-//					}
-//				});
-				////			NPBinding.GameServices.LocalUser.Authenticate(null);
-//			}
-//		}
-////		else
-//		{
-////			Debug.LogWarning("Enable Game services feature in NPSettings.");
-//		}
-
-////		localUser.Authenticate(OnComleteAuthentication);
 #endif
 	}
 
-	public void TrySilentSignIn() 
+	public void TrySilentSignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
 		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
@@ -146,8 +96,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		}
 
 #elif UNITY_IOS
-		SignIn();
-//		localUser.Authenticate(OnComleteAuthentication);
+		SignIn(callback);
 #endif
 	}
 
@@ -162,11 +111,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
 #elif UNITY_IOS
 		UnityEngine.Social.ReportScore((long)score, CONST.IOS_LEADERBOARD_ID, callback);
-//		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-//		{
-//			NPBinding.GameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback);
-//		}
-//		gameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, (long)score, callback); 
 #endif
 	}
 
@@ -182,7 +126,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 #if UNITY_ANDROID
 		PlayGamesPlatform.Instance.ReportScore((long)(GetRang() + score), "CgkImYnr8fAKEAIQAw", callback);
 #elif UNITY_IOS
-//		gameServices.ReportScore(CONST.IOS_LEADERBOARD_ID, score, 
 #endif
 		PlayerPrefs.SetInt("PlayerRang", GetRang() + score);
 	}
@@ -193,33 +136,14 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.Instance.ShowLeaderboardUI();//"CgkImYnr8fAKEAIQAg");
 #elif UNITY_IOS
 		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
-		
-
-//		UnityEngine.SocialPlatforms.GameCenter.GameCenterPlatform.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, UnityEngine.SocialPlatforms.TimeScope.Today);
-		
-
-//		if (!NPBinding.GameServices.LocalUser.IsAuthenticated)
-//		{
-//			NPBinding.GameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
-//		}
-//		else
-//		{
-//			SignIn();
-//		}
-
-////		NPBinding.GameServices.CreateLeaderboard(CONST.IOS_LEADERBOARD_ID);
-////		gameServices.ShowLeaderboardUI(CONST.IOS_LEADERBOARD_ID, eLeaderboardTimeScope.TODAY, null);
 #endif
 	}
 
 
 	public void StartMatchMakingRealTime() 
 	{
-//		opponentId = new List<string>();
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-//		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
-//		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 	}
@@ -235,26 +159,13 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void StartMatchMakingRealTimeFast() 
 	{
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-//		LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
 #else
-//		MainMenu.Instance.StartTimerTimeout();
 		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
-		//		PlayGamesPlatform.Instance.TurnBased.CreateWithInvitationScreen(minimumOpponents, maximumOpponents, gameVariation, TurnCallback);
 	}
 
 	private void TurnCallback(bool success, TurnBasedMatch match)
 	{
-//		if (success) 
-//		{
-//			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
-//			ShowMPStatus("We are connected to the room! I would probably start our game now.");
-//		} 
-//		else 
-//		{
-//			MainMenu.Instance.SetActiveAllButtons(true);
-//			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
-//		}
 	}
 	
 	
@@ -271,16 +182,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 
 	public void OnRoomConnected (bool success)
 	{
-//		if (success) 
-//		{
-//			LevelLoader.Instance.LoadLevel(Scene.Multiplayer);
-//			ShowMPStatus("We are connected to the room! I would probably start our game now.");
-//		} 
-//		else 
-//		{
-//			MainMenu.Instance.SetActiveAllButtons(true);
-//			ShowMPStatus("Uh-oh. Encountered some error connecting to the room.");
-//		}
 	}
 
 	public void OnLeftRoom ()
@@ -292,10 +193,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	{
 		foreach (string participantID in participantIds) 
 		{
-//			if (participantID != PlayGamesPlatform.Instance.GetUserId())
-//			{
-//				opponentId.Add(participantID);
-//			}
 			ShowMPStatus ("Player " + participantID + " has joined.");
 		}
 	}
@@ -363,12 +260,10 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			{
 				if (opponent != PlayGamesPlatform.Instance.RealTime.GetSelf())
 				{
-//					Debug.LogWarning("Opponent");
 					PlayGamesPlatform.Instance.RealTime.SendMessage(reliable, opponent.ParticipantId, bData);
 				}
 				else
 				{
-//					Debug.LogWarning("Me");
 				}
 			}
 		}
@@ -379,7 +274,6 @@ public class MultiplayerController : RealTimeMultiplayerListener
 				if (opponent != PlayGamesPlatform.Instance.RealTime.GetSelf())
 				{
 					Debug.LogWarning("Opponent");
-//					PlayGamesPlatform.Instance.RealTime.SendMessage(reliable, opponent.ParticipantId, bData);
 				}
 				else
 				{

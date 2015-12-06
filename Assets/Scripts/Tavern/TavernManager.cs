@@ -58,13 +58,14 @@ public class TavernManager : BaseSingleton<TavernManager>
 		ScrollArea.onEndMoving -= OnEndMoving;
 	}
 
-	void OnGUI()
-	{
-		if (GUILayout.Button("Restore"))
-		{
-			InGameStore.Instance.RestoreCompletedTransactions();
-		}
-	}
+//	void OnGUI()
+//	{
+//		if (GUI.Button(new Rect(Screen.width - Screen.width / 4, Screen.height - Screen.height / 16, Screen.width / 4, Screen.height / 16), "Restore"))
+//		{
+//			InGameStore.Instance.RestoreCompletedTransactions();
+//			SelectCharacter(0);
+//		}
+//	}
 
 	IEnumerator LoadCharacters()
 	{

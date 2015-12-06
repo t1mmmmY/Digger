@@ -46,7 +46,9 @@ public class InGameStore : BaseSingleton<InGameStore>
 			return true;
 		}
 
-		return NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier);
+		return PlayerStatsController.Instance.GetStatus(characterNumber) == PlayerStatus.Bought ? true : false;
+		
+//		return NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier);
 	}
 
 	public string GetProductPrice(int characterNumber)
@@ -77,7 +79,7 @@ public class InGameStore : BaseSingleton<InGameStore>
 		}
 
 		//Do not buy the same products twice
-		if (!NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier))
+		if (!IsProductPurchased(characterNumber))
 		{
 			fadeButton.gameObject.SetActive(true);
 			onTransacionFinishedCallback = callback;
@@ -94,6 +96,11 @@ public class InGameStore : BaseSingleton<InGameStore>
 		NPBinding.Billing.RestoreCompletedTransactions();
 		NPBinding.Billing.RequestForBillingProducts(products);
 
+		//without standart digger
+		for (int i = 1; i < products.Length; i++)
+		{
+			PlayerStatsController.Instance.SetStatus(i, PlayerStatus.NotBought);
+		}
 		Debug.Log("Restore products");
 	}
 
@@ -141,6 +148,8 @@ public class InGameStore : BaseSingleton<InGameStore>
 				{
 					isSuccess = true;
 					NPBinding.Billing.RequestForBillingProducts(products);
+
+					PlayerStatsController.Instance.SetStatus(currentProductNumber, PlayerStatus.Bought);
 				}
 
 				if (onTransacionFinishedCallback != null)
