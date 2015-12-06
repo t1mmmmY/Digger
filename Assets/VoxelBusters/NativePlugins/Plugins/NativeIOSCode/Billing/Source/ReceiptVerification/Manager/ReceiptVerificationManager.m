@@ -13,7 +13,7 @@
 
 // Constants
 const NSString *bundleIdentifier	= @"com.octogames.digger";
-const NSString *bundleVersion		= @"0.8.22";
+const NSString *bundleVersion		= @"0.9";
 
 @interface ReceiptVerificationManager ()
 

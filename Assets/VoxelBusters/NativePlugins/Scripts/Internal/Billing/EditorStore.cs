@@ -93,7 +93,12 @@ namespace VoxelBusters.NativePlugins.Internal
 		{
 			CheckIfInitialised();
 
-			return System.Convert.ToBoolean(EditorPrefs.GetInt(_productID, 0));
+			if (!EditorPrefs.HasKey(_productID))
+			{
+				EditorPrefs.SetInt(_productID, 0);
+			}
+
+			return EditorPrefs.GetInt(_productID) == 1 ? true : false;
 		}
 		
 		public static void BuyProduct (string _productID)
@@ -151,6 +156,11 @@ namespace VoxelBusters.NativePlugins.Internal
 
 					// Add it to list of restored transactions
 					_restoredTransactions.Add(_transaction);
+
+					if (!_curProduct.IsConsumable)
+					{
+						EditorPrefs.SetInt(_curProduct.ProductIdentifier, 0);
+					}
 				}
 			}
 

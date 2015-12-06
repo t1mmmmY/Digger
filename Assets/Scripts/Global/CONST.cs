@@ -47,13 +47,13 @@ public static class CONST
 	};
 
 	public static readonly string[] PLAYER_KEYS = {
-		"DrunkenDigger",
-		"WalterWhite",
-		"Batman",
-		"Charlie",
-        "Finn",
-		"Pippi",
-		"Leprechaun"
+		"Standard",
+		"com.octogames.digger.walkerwhite",
+		"com.octogames.digger.badman",
+		"com.octogames.digger.charlie",
+		"com.octogames.digger.finn",
+		"com.octogames.digger.pippi",
+		"com.octogames.digger.leprechaun"
 	};
 
 //	public static readonly float[] CHARACTER_COSTS = {

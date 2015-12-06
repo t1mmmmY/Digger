@@ -82,7 +82,8 @@ namespace VoxelBusters.NativePlugins
 		public eBillingTransactionVerificationState VerificationState		
 		{ 
 			get; 
-			protected set; 
+			set; 
+//			protected set; 
 		}
 
 		/// <summary>

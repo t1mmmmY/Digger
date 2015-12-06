@@ -14,6 +14,9 @@ public class InGameStore : BaseSingleton<InGameStore>
 
 	protected override void Awake ()
 	{
+//		Billing.DidFinishProductsRequestEvent += DidFinishProductsRequestEvent;
+//		Billing.DidReceiveTransactionInfoEvent += DidReceiveTransactionInfoEvent;
+
 		Billing.TransactionFinishedEvent += HandleTransactionFinishedEvent;
 		Billing.BillingProductsRequestFinishedEvent += HandleBillingProductsRequestFinishedEvent;
 
@@ -28,6 +31,9 @@ public class InGameStore : BaseSingleton<InGameStore>
 
 	protected override void OnDestroy ()
 	{
+//		Billing.DidFinishProductsRequestEvent -= DidFinishProductsRequestEvent;
+//		Billing.DidReceiveTransactionInfoEvent -= DidReceiveTransactionInfoEvent;
+
 		Billing.TransactionFinishedEvent -= HandleTransactionFinishedEvent;
 		Billing.BillingProductsRequestFinishedEvent -= HandleBillingProductsRequestFinishedEvent;
 
@@ -46,8 +52,11 @@ public class InGameStore : BaseSingleton<InGameStore>
 			return true;
 		}
 
-		return PlayerStatsController.Instance.GetStatus(characterNumber) == PlayerStatus.Bought ? true : false;
-		
+
+//		return PlayerStatsController.Instance.GetStatus(characterNumber) == PlayerStatus.Bought ? true : false;
+//		Debug.LogWarning(products[characterNumber].ProductIdentifier);
+		return PlayerStatsController.Instance.GetStatus(products[characterNumber].ProductIdentifier) == PlayerStatus.Bought ? true : false;
+
 //		return NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier);
 	}
 
@@ -94,7 +103,7 @@ public class InGameStore : BaseSingleton<InGameStore>
 	public void RestoreCompletedTransactions()
 	{
 		NPBinding.Billing.RestoreCompletedTransactions();
-		NPBinding.Billing.RequestForBillingProducts(products);
+//		NPBinding.Billing.RequestForBillingProducts(products);
 
 		//without standart digger
 		for (int i = 1; i < products.Length; i++)
@@ -136,30 +145,62 @@ public class InGameStore : BaseSingleton<InGameStore>
 	void HandleTransactionFinishedEvent (List<BillingTransaction> _finishedTransactions)
 	{
 		fadeButton.gameObject.SetActive(false);
+
+		// This is the extra code that needs to be included, as a temp fix for handling this issue
+//		foreach(BillingTransaction _eachTransaction in _finishedTransactions)
+//		{
+//			_eachTransaction.VerificationState = eBillingTransactionVerificationState.SUCCESS;
+//			
+//			// marking verification is successful, on doing so this transaction will added to purchase history 
+//			NPBinding.Billing.CustomVerificationFinished(_eachTransaction);
+//		}
 		
-		foreach (VoxelBusters.NativePlugins.BillingTransaction transaction in _finishedTransactions)
+		foreach (BillingTransaction transaction in _finishedTransactions)
 		{
 			Debug.Log(transaction.ToString());
-			if (transaction.ProductIdentifier == products[currentProductNumber].ProductIdentifier)
+//			if (transaction.ProductIdentifier == products[currentProductNumber].ProductIdentifier)
+//			{
+			bool isSuccess = false;
+
+			if (transaction.TransactionState == eBillingTransactionState.PURCHASED)
 			{
-				bool isSuccess = false;
+				isSuccess = true;
+				NPBinding.Billing.RequestForBillingProducts(products);
 
-				if (transaction.TransactionState == eBillingTransactionState.PURCHASED)
-				{
-					isSuccess = true;
-					NPBinding.Billing.RequestForBillingProducts(products);
-
-					PlayerStatsController.Instance.SetStatus(currentProductNumber, PlayerStatus.Bought);
-				}
-
-				if (onTransacionFinishedCallback != null)
-				{
-					onTransacionFinishedCallback(isSuccess);
-				}
+				PlayerStatsController.Instance.SetStatus(currentProductNumber, PlayerStatus.Bought);
 			}
+
+			if (onTransacionFinishedCallback != null)
+			{
+				onTransacionFinishedCallback(isSuccess);
+			}
+//			}
 		}
 
 	}
+
+//	void DidFinishProductsRequestEvent (BillingProduct[] _regProductsList, string _error)
+//	{
+//		Debug.Log(string.Format("Billing products request finished. Error = {0}.", _error));
+//		
+//		if (_regProductsList != null)
+//		{
+//			foreach (BillingProduct _eachProduct in _regProductsList)
+//			{
+//				Debug.Log(_eachProduct.ToString());
+//			}
+//		}
+//	}
+//
+//	void DidReceiveTransactionInfoEvent (BillingTransaction[] _finishedTransactions, string _error)
+//	{
+//		Debug.Log(string.Format("Billing transaction finished. Error = {0}.", _error));
+//
+//		foreach (BillingTransaction transaction in _finishedTransactions)
+//		{
+//			Debug.Log(transaction.ToString());
+//		}
+//	}
 	
 
 

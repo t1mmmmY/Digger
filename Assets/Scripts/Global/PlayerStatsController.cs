@@ -44,7 +44,12 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	public PlayerStatus GetStatus(int number)
 	{
-		return LoadState(number);
+		return GetStatus(CONST.PLAYER_KEYS[number]);
+	}
+
+	public PlayerStatus GetStatus(string id)
+	{
+		return LoadState(id);
 	}
 
 	public void SetStatus(int number, PlayerStatus status)
@@ -52,15 +57,27 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 		SaveState(number, status);
 	}
 
-	PlayerStatus LoadState(int number)
+//	PlayerStatus LoadState(int number)
+//	{
+//		if (number == 0)
+//		{
+//			return PlayerStatus.Bought;
+//		}
+//		else
+//		{
+//			return (PlayerStatus)PlayerPrefs.GetInt(CONST.PLAYER_KEYS[number], (int)PlayerStatus.NotBought);
+//		}
+//	}
+
+	PlayerStatus LoadState(string id)
 	{
-		if (number == 0)
+		if (id == "Standard")
 		{
 			return PlayerStatus.Bought;
 		}
 		else
 		{
-			return (PlayerStatus)PlayerPrefs.GetInt(CONST.PLAYER_KEYS[number], (int)PlayerStatus.NotBought);
+			return NPBinding.Billing.IsProductPurchased(id) ? PlayerStatus.Bought : PlayerStatus.NotBought;
 		}
 	}
 
