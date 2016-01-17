@@ -42,6 +42,9 @@ public class InGameStore : BaseSingleton<InGameStore>
 
 	public bool IsProductPurchased(int characterNumber)
 	{
+//#if UNITY_EDITOR
+//		return true;
+//#endif
 		if (characterNumber >= products.Length)
 		{
 			return false;
@@ -60,19 +63,39 @@ public class InGameStore : BaseSingleton<InGameStore>
 //		return NPBinding.Billing.IsProductPurchased(products[characterNumber].ProductIdentifier);
 	}
 
-	public string GetProductPrice(int characterNumber)
+	public float GetProductPrice(int characterNumber)
+	{
+		if (characterNumber >= products.Length)
+		{
+			Debug.LogError("GetProductPrice Out of range!");
+			return 0;
+		}
+
+		if (characterNumber == 0)
+		{
+			return 0;
+		}
+
+		return products[characterNumber].Price;
+
+//		return string.Format("{0} {1}", products[characterNumber].CurrencyCode, products[characterNumber].Price);
+	}
+
+	public string GetProductCurrency(int characterNumber)
 	{
 		if (characterNumber >= products.Length)
 		{
 			return "out of range";
 		}
-
+		
 		if (characterNumber == 0)
 		{
 			return "free";
 		}
-
-		return string.Format("{0} {1}", products[characterNumber].CurrencyCode, products[characterNumber].Price);
+		
+		return products[characterNumber].CurrencyCode;
+		
+//		return string.Format("{0} {1}", products[characterNumber].CurrencyCode, products[characterNumber].Price);
 	}
 
 	public bool BuyProduct(int characterNumber, System.Action<bool> callback)
@@ -103,7 +126,7 @@ public class InGameStore : BaseSingleton<InGameStore>
 	public void RestoreCompletedTransactions()
 	{
 		NPBinding.Billing.RestoreCompletedTransactions();
-//		NPBinding.Billing.RequestForBillingProducts(products);
+		NPBinding.Billing.RequestForBillingProducts(products);
 
 		//without standart digger
 		for (int i = 1; i < products.Length; i++)
@@ -165,7 +188,7 @@ public class InGameStore : BaseSingleton<InGameStore>
 			if (transaction.TransactionState == eBillingTransactionState.PURCHASED)
 			{
 				isSuccess = true;
-				NPBinding.Billing.RequestForBillingProducts(products);
+//				NPBinding.Billing.RequestForBillingProducts(products);
 
 				PlayerStatsController.Instance.SetStatus(currentProductNumber, PlayerStatus.Bought);
 			}
@@ -176,6 +199,9 @@ public class InGameStore : BaseSingleton<InGameStore>
 			}
 //			}
 		}
+
+		NPBinding.Billing.RequestForBillingProducts(products);
+		
 
 	}
 

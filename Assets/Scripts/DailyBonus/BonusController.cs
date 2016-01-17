@@ -26,6 +26,8 @@ public class BonusController : BaseSingleton<BonusController>
         if (!PlayerPrefs.HasKey(timeKey))
         {
             PlayerPrefs.SetString(timeKey, currentTime.ToString());
+			_isBonusActive = true;
+			return true;
         }
         string lastBonusTimeString = PlayerPrefs.GetString(timeKey);
         //Debug.Log(lastBonusTimeString);

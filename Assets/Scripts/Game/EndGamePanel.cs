@@ -127,7 +127,11 @@ public class EndGamePanel : MonoBehaviour
 				{
 					//Show proposal to buy a character for real money
 					buyCharacterNumber = ShopInGame.Instance.GetRandomCharacterNumber(true);
-					ShowProposalToBuyCharacterForRealMoney(buyCharacterNumber, animate);
+					if (!ShowProposalToBuyCharacterForRealMoney(buyCharacterNumber, animate))
+					{
+						ShowSomeLabel(level, animate);
+						Debug.Log("Show default label because of not connection");
+					}
 				}
 				else
 				{
@@ -208,7 +212,7 @@ public class EndGamePanel : MonoBehaviour
         buyRandomCharacterCost.text = CONST.RANDOM_CHARACTER_COST + " coins";
     }
 
-	void ShowProposalToBuyCharacterForRealMoney(int characterNumber, bool animate = true)
+	bool ShowProposalToBuyCharacterForRealMoney(int characterNumber, bool animate = true)
 	{
 		if (animate)
 		{
@@ -235,7 +239,18 @@ public class EndGamePanel : MonoBehaviour
 		}
 		buyCharacterText.enabled = true;
 		buyCharacterCost.enabled = true;
-		buyCharacterCost.text = InGameStore.Instance.GetProductPrice(characterNumber);// "USD " + CONST.CHARACTER_COSTS[characterNumber];
+
+		float price = InGameStore.Instance.GetProductPrice(characterNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+		string currency = InGameStore.Instance.GetProductCurrency(characterNumber);
+		if (price == 0)
+		{
+			buyCharacterCost.text = "X";
+			return false;
+		}
+		else
+		{
+			buyCharacterCost.text = string.Format("{0} {1}", currency, price);
+		}
 
 		buyCharacterContainer.SetActive(true);
 
@@ -255,11 +270,15 @@ public class EndGamePanel : MonoBehaviour
 			}
 			characterGO.transform.localScale = new Vector3(2, 2, 1);
 			//characterGO.GetComponent<Animator>().SetTrigger("Idle");
+
+			return true;
 		}
 		else
 		{
 			Debug.LogError("Cannot load character!");
+			return false;
 		}
+
 
 	}
 

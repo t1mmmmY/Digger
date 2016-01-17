@@ -21,6 +21,8 @@ public class TavernManager : BaseSingleton<TavernManager>
 	int showDescriptionHash = Animator.StringToHash("ShowDescription");
 	int hideDescriptionHash = Animator.StringToHash("HideDescription");
 	int selectCharacterHash = Animator.StringToHash("SelectCharacter");
+	int showRestorePopupHash = Animator.StringToHash("ShowRestorePopup");
+	int hideRestorePopupHash = Animator.StringToHash("HideRestorePopup");
 
 	bool canSwipe = true;
 
@@ -58,14 +60,13 @@ public class TavernManager : BaseSingleton<TavernManager>
 		ScrollArea.onEndMoving -= OnEndMoving;
 	}
 
-	void OnGUI()
-	{
-		if (GUI.Button(new Rect(Screen.width - Screen.width / 4, Screen.height - Screen.height / 16, Screen.width / 4, Screen.height / 16), "Restore"))
-		{
-			InGameStore.Instance.RestoreCompletedTransactions();
-			SelectCharacter(0);
-		}
-	}
+//	void OnGUI()
+//	{
+//		if (GUI.Button(new Rect(Screen.width - Screen.width / 4, Screen.height - Screen.height / 16, Screen.width / 4, Screen.height / 16), "Restore"))
+//		{
+//			RestoreTransactions();
+//		}
+//	}
 
 	IEnumerator LoadCharacters()
 	{
@@ -241,7 +242,18 @@ public class TavernManager : BaseSingleton<TavernManager>
 		else
 		{
 			buyCharacterButton.gameObject.SetActive(true);
-			BuyCharacterCost.text = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+			float price = InGameStore.Instance.GetProductPrice(positionNumber);// "USD " + CONST.CHARACTER_COSTS[positionNumber].ToString();
+			string currency = InGameStore.Instance.GetProductCurrency(positionNumber);
+//			Debug.Log(price);
+			if (price == 0)
+			{
+				BuyCharacterCost.text = "X";
+				buyCharacterButton.gameObject.SetActive(false);
+			}
+			else
+			{
+				BuyCharacterCost.text = string.Format("{0} {1}", currency, price);
+			}
 			playCharacterButton.gameObject.SetActive(false);
 		}
 
@@ -312,6 +324,24 @@ public class TavernManager : BaseSingleton<TavernManager>
 //			break;
 //		}
 
+	}
+
+	public void OpenRestorePopup()
+	{
+		BlockSwipe();
+		canvasAnimator.SetTrigger(showRestorePopupHash);
+	}
+
+	public void CloseRestorePopup()
+	{
+		UnblockSwipe();
+		canvasAnimator.SetTrigger(hideRestorePopupHash);
+	}
+
+	public void RestoreTransactions()
+	{
+		InGameStore.Instance.RestoreCompletedTransactions();
+		SelectCharacter(0);
 	}
 
 	void BlockSwipe()

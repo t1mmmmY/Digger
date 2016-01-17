@@ -31,6 +31,11 @@ namespace VoxelBusters.NativePlugins.Internal
 		
 		public iOSBillingProduct (IDictionary _productJsonDict)
 		{
+			foreach (string key in _productJsonDict.Keys)
+			{
+				Debug.Log((string)_productJsonDict.GetIfAvailable<string>(key));
+			}
+
 			Name				= _productJsonDict.GetIfAvailable<string>(kTitle);
 			IOSProductID		= _productJsonDict.GetIfAvailable<string>(kProductID);
 			Description			= _productJsonDict.GetIfAvailable<string>(kDescription);

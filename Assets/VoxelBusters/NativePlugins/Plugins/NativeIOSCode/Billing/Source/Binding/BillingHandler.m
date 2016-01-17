@@ -210,10 +210,10 @@
 	// Incase if its non consumable product then track its purchase
 	if (transactionState == SKPaymentTransactionStatePurchased || transactionState == SKPaymentTransactionStateRestored)
 	{
-		if ([self.nonConsumableProductIDs containsObject:productID])
+//		if ([self.nonConsumableProductIDs containsObject:productID])
 		{
 			// Add this info, only if it doesn't exist
-			if (![self.purchasedProductIDs containsObject:productID])
+//			if (![self.purchasedProductIDs containsObject:productID])
 			{
 				[self.purchasedProductIDs addObject:productID];
 				
