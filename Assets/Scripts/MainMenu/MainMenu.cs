@@ -107,7 +107,7 @@ public class MainMenu : MonoBehaviour
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
 
 #if UNITY_ANDROID
-		MultiplayerController.Instance.StartMatchMakingRealTime();
+//		MultiplayerController.Instance.StartMatchMakingRealTime();
 #elif UNITY_IOS
 
 #endif
@@ -118,7 +118,7 @@ public class MainMenu : MonoBehaviour
 		SetActiveAllButtons(false);
 		mainMenuAnimator.SetBool("ButtonsVisible", false);
 #if UNITY_ANDROID
-		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
+//		MultiplayerController.Instance.StartMatchMakingRealTimeFast();
 #elif UNITY_IOS
 
 #endif
@@ -127,7 +127,7 @@ public class MainMenu : MonoBehaviour
 	public void SignInToGoogle()
 	{
 #if UNITY_ANDROID
-		MultiplayerController.Instance.SignIn();
+		MultiplayerController.Instance.SignIn(OnSignInCallback);
 #elif UNITY_IOS
 		MultiplayerController.Instance.SignIn(OnSignInCallback);
 #endif

@@ -24,8 +24,8 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private MultiplayerController() 
 	{
 #if UNITY_ANDROID
-		PlayGamesPlatform.DebugLogEnabled = false;
-		PlayGamesPlatform.Activate ();
+//		PlayGamesPlatform.DebugLogEnabled = false;
+//		PlayGamesPlatform.Activate ();
 #elif UNITY_IOS
 #endif
 	}
@@ -46,26 +46,30 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void SignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
-		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-		{
-			PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
-			{
-				if (success) 
-				{
-					Debug.Log ("We're signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-					// We could start our game now
-				} 
-				else 
-				{
-					Debug.Log ("Oh... we're not signed in.");
-				}
-			});
-		} 
-		else 
-		{
-			Debug.Log ("You're already signed in.");
-			// We could also start our game now
-		}
+		UnityEngine.Social.localUser.Authenticate(callback);
+		
+
+
+//		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
+//		{
+//			PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
+//			{
+//				if (success) 
+//				{
+//					Debug.Log ("We're signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
+//					// We could start our game now
+//				} 
+//				else 
+//				{
+//					Debug.Log ("Oh... we're not signed in.");
+//				}
+//			});
+//		} 
+//		else 
+//		{
+//			Debug.Log ("You're already signed in.");
+//			// We could also start our game now
+//		}
 #elif UNITY_IOS
 
 		UnityEngine.Social.localUser.Authenticate(callback);
@@ -76,24 +80,28 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void TrySilentSignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
-		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-		{
-			PlayGamesPlatform.Instance.Authenticate((bool success) => 
-			{
-				if (success) 
-				{
-					Debug.Log ("Silently signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-				} 
-				else 
-				{
-					Debug.Log ("Oh... we're not signed in.");
-				}
-			}, true);
-		} 
-		else 
-		{
-			Debug.Log("We're already signed in");
-		}
+		SignIn(callback);
+		
+
+
+//		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
+//		{
+//			PlayGamesPlatform.Instance.Authenticate((bool success) => 
+//			{
+//				if (success) 
+//				{
+//					Debug.Log ("Silently signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
+//				} 
+//				else 
+//				{
+//					Debug.Log ("Oh... we're not signed in.");
+//				}
+//			}, true);
+//		} 
+//		else 
+//		{
+//			Debug.Log("We're already signed in");
+//		}
 
 #elif UNITY_IOS
 		SignIn(callback);
@@ -108,7 +116,10 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void SetBestSore(int score, System.Action<bool> callback = null)
 	{
 #if UNITY_ANDROID
-		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
+		UnityEngine.Social.ReportScore((long)score, CONST.ANDROID_LEADERBOARD_ID, callback);
+		
+
+//		PlayGamesPlatform.Instance.ReportScore((long)score, "CgkImYnr8fAKEAIQAg", callback);
 #elif UNITY_IOS
 		UnityEngine.Social.ReportScore((long)score, CONST.IOS_LEADERBOARD_ID, callback);
 #endif
@@ -124,7 +135,7 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void ChangeRang(int score, System.Action<bool> callback = null)
 	{
 #if UNITY_ANDROID
-		PlayGamesPlatform.Instance.ReportScore((long)(GetRang() + score), "CgkImYnr8fAKEAIQAw", callback);
+//		PlayGamesPlatform.Instance.ReportScore((long)(GetRang() + score), "CgkImYnr8fAKEAIQAw", callback);
 #elif UNITY_IOS
 #endif
 		PlayerPrefs.SetInt("PlayerRang", GetRang() + score);
