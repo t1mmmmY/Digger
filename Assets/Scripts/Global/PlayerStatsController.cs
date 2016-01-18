@@ -71,12 +71,18 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	PlayerStatus LoadState(string id)
 	{
+
+
 		if (id == "Standard")
 		{
 			return PlayerStatus.Bought;
 		}
 		else
 		{
+#if UNITY_ANDROID
+			return PlayerStatus.NotBought;
+#endif
+
 			return NPBinding.Billing.IsProductPurchased(id) ? PlayerStatus.Bought : PlayerStatus.NotBought;
 		}
 	}

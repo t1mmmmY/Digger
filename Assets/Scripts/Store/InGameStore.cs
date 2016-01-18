@@ -14,25 +14,22 @@ public class InGameStore : BaseSingleton<InGameStore>
 
 	protected override void Awake ()
 	{
-//		Billing.DidFinishProductsRequestEvent += DidFinishProductsRequestEvent;
-//		Billing.DidReceiveTransactionInfoEvent += DidReceiveTransactionInfoEvent;
-
-		Billing.TransactionFinishedEvent += HandleTransactionFinishedEvent;
-		Billing.BillingProductsRequestFinishedEvent += HandleBillingProductsRequestFinishedEvent;
+		//ANDROID CHANGES
+//		Billing.TransactionFinishedEvent += HandleTransactionFinishedEvent;
+//		Billing.BillingProductsRequestFinishedEvent += HandleBillingProductsRequestFinishedEvent;
 
 		base.Awake ();
 	}
 
 	void Start()
 	{
-		products = NPSettings.Billing.Products;
-		NPBinding.Billing.RequestForBillingProducts(products);
+		//ANDROID CHANGES
+//		products = NPSettings.Billing.Products;
+//		NPBinding.Billing.RequestForBillingProducts(products);
 	}
 
 	protected override void OnDestroy ()
 	{
-//		Billing.DidFinishProductsRequestEvent -= DidFinishProductsRequestEvent;
-//		Billing.DidReceiveTransactionInfoEvent -= DidReceiveTransactionInfoEvent;
 
 		Billing.TransactionFinishedEvent -= HandleTransactionFinishedEvent;
 		Billing.BillingProductsRequestFinishedEvent -= HandleBillingProductsRequestFinishedEvent;

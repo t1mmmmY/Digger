@@ -22,7 +22,7 @@ public static class CONST
 
 	public static readonly string TAVERN_PREFIX = "_Tavern";
 
-	public static readonly string ANDROID_LEADERBOARD_ID = "SmartestDigger";
+	public static readonly string ANDROID_LEADERBOARD_ID = "CgkImYnr8fAKEAIQAg";
 	public static readonly string IOS_LEADERBOARD_ID = "SmartestDigger";
 
 //	public static readonly string IOS_BUY_CHARACTER_ID = "com.octogames.digger.coins";

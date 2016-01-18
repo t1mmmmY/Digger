@@ -134,6 +134,7 @@ public class GeneralGameController : BaseSingleton<GeneralGameController>
 
 	private void OnSignInCallback(bool isSuccess)
 	{
+		Debug.Log("OnSignInCallback " + isSuccess.ToString());
 		isLoginSuccess = isSuccess;
 		if (onLogin != null)
 		{

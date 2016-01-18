@@ -46,30 +46,36 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void SignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
-		UnityEngine.Social.localUser.Authenticate(callback);
+		//ANDROID CHANGES
+//		UnityEngine.Social.localUser.Authenticate(callback);
 		
 
 
-//		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-//		{
-//			PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
-//			{
-//				if (success) 
-//				{
-//					Debug.Log ("We're signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-//					// We could start our game now
-//				} 
-//				else 
-//				{
-//					Debug.Log ("Oh... we're not signed in.");
-//				}
-//			});
-//		} 
-//		else 
-//		{
-//			Debug.Log ("You're already signed in.");
+		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
+		{
+			PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
+			{
+				if (success) 
+				{
+					Debug.Log ("We're signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
+					// We could start our game now
+				} 
+				else 
+				{
+					Debug.Log ("Oh... we're not signed in.");
+				}
+
+				if (callback != null)
+				{
+					callback(success);
+				}
+			});
+		} 
+		else 
+		{
+			Debug.Log ("You're already signed in.");
 //			// We could also start our game now
-//		}
+		}
 #elif UNITY_IOS
 
 		UnityEngine.Social.localUser.Authenticate(callback);
@@ -80,28 +86,34 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	public void TrySilentSignIn(System.Action<bool> callback) 
 	{
 #if UNITY_ANDROID
-		SignIn(callback);
+//		SignIn(callback);
 		
 
 
-//		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-//		{
-//			PlayGamesPlatform.Instance.Authenticate((bool success) => 
-//			{
-//				if (success) 
-//				{
-//					Debug.Log ("Silently signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-//				} 
-//				else 
-//				{
-//					Debug.Log ("Oh... we're not signed in.");
-//				}
-//			}, true);
-//		} 
-//		else 
-//		{
-//			Debug.Log("We're already signed in");
-//		}
+		if (!PlayGamesPlatform.Instance.localUser.authenticated) 
+		{
+			PlayGamesPlatform.Instance.Authenticate((bool success) => 
+			{
+				if (success) 
+				{
+					Debug.Log ("Silently signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
+				} 
+				else 
+				{
+					Debug.Log ("Oh... we're not signed in.");
+				}
+
+				if (callback != null)
+				{
+					callback(success);
+				}
+
+			}, true);
+		} 
+		else 
+		{
+			Debug.Log("We're already signed in");
+		}
 
 #elif UNITY_IOS
 		SignIn(callback);
