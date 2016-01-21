@@ -24,8 +24,8 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private MultiplayerController() 
 	{
 #if UNITY_ANDROID
-//		PlayGamesPlatform.DebugLogEnabled = false;
-//		PlayGamesPlatform.Activate ();
+		PlayGamesPlatform.DebugLogEnabled = false;
+		PlayGamesPlatform.Activate ();
 #elif UNITY_IOS
 #endif
 	}
@@ -186,18 +186,18 @@ public class MultiplayerController : RealTimeMultiplayerListener
 		PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
 #endif
 	}
-
+//
 	private void TurnCallback(bool success, TurnBasedMatch match)
 	{
 	}
-	
-	
+//	
+//	
 	private void ShowMPStatus(string message) 
 	{
 		Debug.Log(message);
 	}
-
-
+//
+//
 	public void OnRoomSetupProgress (float percent)
 	{
 		ShowMPStatus ("We are " + percent + "% done with setup");
@@ -306,6 +306,11 @@ public class MultiplayerController : RealTimeMultiplayerListener
 			PlayGamesPlatform.Instance.RealTime.SendMessageToAll(reliable, bData);
 		}
 #endif
+	}
+
+	public void OnParticipantLeft (Participant participant)
+	{
+//		throw new System.NotImplementedException ();
 	}
 
 	public bool IsFirstPlayer()

@@ -67,7 +67,7 @@ public class FormulaDrawer : MonoBehaviour
 //		allFormulas = null;
 		Digger.onDig += OnDig;
 		SingleplayerGameManager.OnStartSinglePlayerGame += OnStartSinglePlayerGame;
-		MultiplayerGameManager.OnStartMultiplayerGame += OnStartMultiplayerGame;
+//		MultiplayerGameManager.OnStartMultiplayerGame += OnStartMultiplayerGame;
 //		GameManager.OnStartGame += OnStartGame;
 		GameManager.OnWrongAnswer += OnWrongAnswer;
 		GameManager.OnGameOver += OnGameOver;
@@ -81,7 +81,7 @@ public class FormulaDrawer : MonoBehaviour
 //		Debug.Log("OnEnable");
 		Digger.onDig -= OnDig;
 		SingleplayerGameManager.OnStartSinglePlayerGame -= OnStartSinglePlayerGame;
-		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
+//		MultiplayerGameManager.OnStartMultiplayerGame -= OnStartMultiplayerGame;
 		GameManager.OnWrongAnswer -= OnWrongAnswer;
 		GameManager.OnGameOver -= OnGameOver;
 	}
@@ -169,8 +169,8 @@ public class FormulaDrawer : MonoBehaviour
 
 		EnableButtons();
 
-		MultiplayerGameManager.OnOpponentTurn += OnOpponentTurn;
-		MultiplayerGameManager.OnTick += OnTick;
+//		MultiplayerGameManager.OnOpponentTurn += OnOpponentTurn;
+//		MultiplayerGameManager.OnTick += OnTick;
 	}
 
 	void OnOpponentTurn(Messages.OneTurn oneTurn)
@@ -248,8 +248,8 @@ public class FormulaDrawer : MonoBehaviour
 	void OnGameOver()
 	{
 		gameOver = true;
-		MultiplayerGameManager.OnOpponentTurn -= OnOpponentTurn;
-		MultiplayerGameManager.OnTick -= OnTick;
+//		MultiplayerGameManager.OnOpponentTurn -= OnOpponentTurn;
+//		MultiplayerGameManager.OnTick -= OnTick;
 
 		DisableButtons();
 	}

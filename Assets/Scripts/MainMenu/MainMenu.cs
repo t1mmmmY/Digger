@@ -141,6 +141,7 @@ public class MainMenu : MonoBehaviour
 		}
 		else
 		{
+			loginButton.SetActive(true);
 		}
 	}
 

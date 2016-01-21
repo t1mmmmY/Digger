@@ -1,31 +1,32 @@
-/*
- * Copyright (C) 2014 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// <copyright file="IRealTimeMultiplayerClient.cs" company="Google Inc.">
+// Copyright (C) 2014 Google Inc.  All Rights Reserved.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//    limitations under the License.
+// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Collections;
-using GooglePlayGames.BasicApi.Multiplayer;
+namespace GooglePlayGames.BasicApi.Multiplayer
+{
+  using System;
+  using System.Collections.Generic;
+  using GooglePlayGames.BasicApi.Multiplayer;
 
-namespace GooglePlayGames.BasicApi.Multiplayer {
-/// <summary>
-/// API entry point for Real-Time multiplayer. To know more about multiplayer,
-/// terminology, etc, please refer to the online guide at:
-/// https://github.com/playgameservices/play-games-plugin-for-unity
-/// </summary>
-public interface IRealTimeMultiplayerClient {
+  /// <summary>
+  /// API entry point for Real-Time multiplayer. To know more about multiplayer,
+  /// terminology, etc, please refer to the online guide at:
+  /// https://github.com/playgameservices/play-games-plugin-for-unity
+  /// </summary>
+  public interface IRealTimeMultiplayerClient
+  {
     /// <summary>
     /// Creates a game with random automatch opponents. No UI will be shown.
     /// The participants will be automatically selected among users who are currently
@@ -45,7 +46,30 @@ public interface IRealTimeMultiplayerClient {
     /// <param name="variant">Variant. Use 0 for default.</param>
     /// <param name="listener">Listener. The listener to notify of relevant events.</param>
     void CreateQuickGame(uint minOpponents, uint maxOpponents, uint variant,
-                             Multiplayer.RealTimeMultiplayerListener listener);
+                         RealTimeMultiplayerListener listener);
+
+    /// <summary>
+    /// Creates a game with random automatch opponents using exclusiveBitMask No UI will be shown.
+    /// The participants will be automatically selected among users who are currently
+    /// looking for opponents.
+    /// After calling this method, your listener's
+    /// <see cref="RealTimeMultiplayerListener.OnRoomSetupProgress" />
+    /// method will be called to indicate room setup progress. Eventually,
+    /// <see cref="RealTimeMultiplayerListener.OnRoomConnected" />
+    /// will be called to indicate that the room setup is either complete or has failed
+    /// (check the <b>success</b> parameter of the callback). If you wish to
+    /// cancel room setup, call <see cref="LeaveRoom"/>.
+    /// </summary>
+    /// <param name="minOpponents">Minimum number of opponents (not counting the
+    /// current player -- so for a 2-player game, pass 1).</param>
+    /// <param name="maxOpponents">Max number of opponents (not counting the current
+    /// player -- so for a 2-player game, pass 1).</param>
+    /// <param name="variant">Variant. Use 0 for default.</param>
+    /// <param name="exclusiveBitMask">Exclusive bit mask. Players are matched if the masks logically AND'ed = 0</param>
+    /// <param name="listener">Listener. The listener to notify of relevant events.</param>
+    void CreateQuickGame(uint minOpponents, uint maxOpponents, uint variant,
+        ulong exclusiveBitMask,
+        RealTimeMultiplayerListener listener);
 
     /// <summary>
     /// Creates a game with an invitation screen. An invitation screen will be shown
@@ -66,7 +90,16 @@ public interface IRealTimeMultiplayerClient {
     /// <param name="listener">Listener. This listener will be notified of relevant
     /// events.</param>
     void CreateWithInvitationScreen(uint minOpponents, uint maxOppponents, uint variant,
-                                        Multiplayer.RealTimeMultiplayerListener listener);
+                                    RealTimeMultiplayerListener listener);
+
+    /// <summary>
+    /// Shows the waiting room UI and waits for all participants to join.
+    /// </summary>
+    void ShowWaitingRoomUI();
+
+    /// <summary>Gets all invitations.</summary>
+    /// <param name="callback">Callback.</param>
+    void GetAllInvitations(Action<Invitation[]> callback);
 
     /// <summary>
     /// Creates a real-time game starting with the inbox screen. On the inbox screen,
@@ -93,9 +126,7 @@ public interface IRealTimeMultiplayerClient {
     /// <param name="listener">Listener. Listener to notify of relevant events.</param>
     void AcceptInvitation(string invitationId, RealTimeMultiplayerListener listener);
 
-    /// <summary>
-    /// Sends a message to all other participants.
-    /// </summary>
+    /// <summary>Sends a message to all other participants.</summary>
     /// <param name="reliable">If set to <c>true</c>, mesasge is reliable; if not,
     /// it is unreliable. Unreliable messages are faster, but are not guaranteed to arrive
     /// and may arrive out of order.</param>
@@ -129,26 +160,24 @@ public interface IRealTimeMultiplayerClient {
     /// </summary>
     void SendMessage(bool reliable, string participantId, byte[] data, int offset, int length);
 
-    /// <summary>
-    /// Gets the connected participants, including self.
-    /// </summary>
+    /// <summary>Gets the connected participants, including self.</summary>
     /// <returns>The connected participants, including self. This list is guaranteed
     /// to be ordered lexicographically by Participant ID, which means the ordering will be
     /// the same to all participants.</returns>
     List<Multiplayer.Participant> GetConnectedParticipants();
 
-    /// <summary>
-    /// Gets the participant that represents the current player.
-    /// </summary>
+    /// <summary>Gets the participant that represents the current player.</summary>
     /// <returns>Self.</returns>
     Multiplayer.Participant GetSelf();
 
-    /// <summary>
-    /// Gets a participant by ID.
-    /// </summary>
+    /// <summary>Gets a participant by ID.</summary>
     /// <returns>The participant, or <c>null</c> if not found.</returns>
     /// <param name="participantId">Participant id.</param>
-    Multiplayer.Participant GetParticipant(string participantId);
+    Participant GetParticipant(string participantId);
+
+    /// <summary>Gets the invitation used to create the game, if any.</summary>
+    /// <returns>The invitation.  Will be null if no invitation was accepted.</returns>
+    Invitation GetInvitation();
 
     /// <summary>
     /// Leaves the room. Call this method to leave the room after you have
@@ -169,10 +198,8 @@ public interface IRealTimeMultiplayerClient {
     /// <returns><c>true</c> if the room is connected; otherwise, <c>false</c>.</returns>
     bool IsRoomConnected();
 
-    /// <summary>
-    /// Declines the invitation.
-    /// </summary>
+    /// <summary>Declines the invitation.</summary>
     /// <param name="invitationId">Invitation id to decline.</param>
     void DeclineInvitation(string invitationId);
-}
+  }
 }

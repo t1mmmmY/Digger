@@ -1,171 +1,347 @@
-/*
- * Copyright (C) 2014 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// <copyright file="PlayGamesLocalUser.cs" company="Google Inc.">
+// Copyright (C) 2014 Google Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//    limitations under the License.
+// </copyright>
 
-using System;
-using System.Collections;
-using UnityEngine.SocialPlatforms;
-using UnityEngine;
-using System.Collections.Generic;
-
-namespace GooglePlayGames {
-/// <summary>
-/// Represents the Google Play Games local user.
-/// </summary>
-public class PlayGamesLocalUser : PlayGamesUserProfile, ILocalUser {
-    PlayGamesPlatform mPlatform;
-
-    private WWW mAvatarUrl;
-
-    internal PlayGamesLocalUser(PlayGamesPlatform plaf) {
-        mPlatform = plaf;
-        mAvatarUrl = null;
-    }
+namespace GooglePlayGames
+{
+    using System;
+    using GooglePlayGames.BasicApi;
+    using UnityEngine.SocialPlatforms;
 
     /// <summary>
-    /// Authenticates the local user. Equivalent to calling
-    /// <see cref="PlayGamesPlatform.Authenticate" />.
+    /// Represents the Google Play Games local user.
     /// </summary>
-    public void Authenticate(Action<bool> callback) {
-        mPlatform.Authenticate(callback);
-    }
+    public class PlayGamesLocalUser : PlayGamesUserProfile, ILocalUser
+    {
+        internal PlayGamesPlatform mPlatform;
 
-    /// <summary>
-    /// Authenticates the local user. Equivalent to calling
-    /// <see cref="PlayGamesPlatform.Authenticate" />.
-    /// </summary>
-    public void Authenticate(Action<bool> callback, bool silent) {
-        mPlatform.Authenticate(callback, silent);
-    }
+        private string emailAddress;
 
-    /// <summary>
-    /// Not implemented. Calls the callback with <c>false</c>.
-    /// </summary>
-    public void LoadFriends(Action<bool> callback) {
-        if (callback != null) {
-            callback.Invoke(false);
+        private PlayerStats mStats;
+
+        internal PlayGamesLocalUser(PlayGamesPlatform plaf)
+            : base("localUser", string.Empty, string.Empty)
+        {
+            mPlatform = plaf;
+            emailAddress = null;
+            mStats = null;
         }
-    }
 
-    /// <summary>
-    /// Not implemented. Returns an empty list.
-    /// </summary>
-    public IUserProfile[] friends {
-        get {
-            return new IUserProfile[0];
+        /// <summary>
+        /// Authenticates the local user. Equivalent to calling
+        /// <see cref="PlayGamesPlatform.Authenticate" />.
+        /// </summary>
+        public void Authenticate(Action<bool> callback)
+        {
+            mPlatform.Authenticate(callback);
         }
-    }
 
-    /// <summary>
-    /// Returns whether or not the local user is authenticated to Google Play Games.
-    /// </summary>
-    /// <returns>
-    /// <c>true</c> if authenticated; otherwise, <c>false</c>.
-    /// </returns>
-    public bool authenticated {
-        get {
-            return mPlatform.IsAuthenticated();
+        /// <summary>
+        /// Authenticates the local user. Equivalent to calling
+        /// <see cref="PlayGamesPlatform.Authenticate" />.
+        /// </summary>
+        public void Authenticate(Action<bool> callback, bool silent)
+        {
+            mPlatform.Authenticate(callback, silent);
         }
-    }
 
-    /// <summary>
-    /// Not implemented. As safety placeholder, returns true.
-    /// </summary>
-    public bool underage {
-        get {
-            return true;
+        /// <summary>
+        /// Loads all friends of the authenticated user.
+        /// </summary>
+        public void LoadFriends(Action<bool> callback)
+        {
+            mPlatform.LoadFriends(this, callback);
         }
-    }
 
-    /// <summary>
-    /// Gets the display name of the user.
-    /// </summary>
-    /// <returns>
-    /// The display name of the user.
-    /// </returns>
-    public new string userName {
-        get {
-            return authenticated ? mPlatform.GetUserDisplayName() : "";
+        /// <summary>
+        /// Not implemented. Returns an empty list.
+        /// </summary>
+        public IUserProfile[] friends
+        {
+            get
+            {
+                return mPlatform.GetFriends();
+            }
         }
-    }
 
-    /// <summary>
-    /// Gets the user's Google id.
-    /// </summary>
-    /// <returns>
-    /// The user's Google id.
-    /// </returns>
-    public new string id {
-        get {
-            return authenticated ? mPlatform.GetUserId() : "";
+        /// <summary>
+        /// Returns whether or not the local user is authenticated to Google Play Games.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if authenticated; otherwise, <c>false</c>.
+        /// </returns>
+        public bool authenticated
+        {
+            get
+            {
+                return mPlatform.IsAuthenticated();
+            }
         }
-    }
 
-    /// <summary>
-    /// Returns true (since this is the local user).
-    /// </summary>
-    public new bool isFriend {
-        get {
-            return true;
+        /// <summary>
+        /// Not implemented. As safety placeholder, returns true.
+        /// </summary>
+        public bool underage
+        {
+            get
+            {
+                return true;
+            }
         }
-    }
 
-    /// <summary>
-    /// Gets the local user's state. This is always <c>UserState.Online</c> for
-    /// the local user.
-    /// </summary>
-    public new UserState state {
-        get {
-            return UserState.Online;
+        /// <summary>
+        /// Gets the display name of the user.
+        /// </summary>
+        /// <returns>
+        /// The display name of the user.
+        /// </returns>
+        public new string userName
+        {
+            get
+            {
+                string retval = string.Empty;
+                if (authenticated)
+                {
+                    retval = mPlatform.GetUserDisplayName();
+                    if (!base.userName.Equals(retval))
+                    {
+                        ResetIdentity(retval, mPlatform.GetUserId(), mPlatform.GetUserImageUrl());
+                    }
+                }
+                return retval;
+            }
         }
-    }
 
-    /// <summary>
-    /// Loads the local user's image from the url.  Loading urls
-    /// is asynchronous so the return from this call is fast,
-    /// the image is returned once it is loaded.  null is returned
-    /// up to that point.
-    /// </summary>
-    private Texture2D LoadImage() {
-        string url = mPlatform.GetUserImageUrl();
-
-        // the url can be null if the user does not have an
-        // avatar configured.
-        if (url != null) {
-          if (mAvatarUrl == null || mAvatarUrl.url != url) {
-              mAvatarUrl = new WWW(url);
-          }
-          if(mAvatarUrl.isDone) {
-              return mAvatarUrl.texture;
-          }
+        /// <summary>
+        /// Gets the user's Google id.
+        /// </summary>
+        /// <returns>
+        /// The user's Google id.
+        /// </returns>
+        public new string id
+        {
+            get
+            {
+                string retval = string.Empty;
+                if (authenticated)
+                {
+                    retval = mPlatform.GetUserId();
+                    if (!base.id.Equals(retval))
+                    {
+                        ResetIdentity(mPlatform.GetUserDisplayName(), retval, mPlatform.GetUserImageUrl());
+                    }
+                }
+                return retval;
+            }
         }
-        // if there is no url, always return null.
-        return null;
-    }
 
-    /// <summary>
-    /// Gets the display image of the user.
-    /// </summary>
-    /// <returns>
-    /// null if the user has no avatar, or it has not loaded yet.
-    /// </returns>
-    public new Texture2D image {
-        get {
-            return LoadImage();           
+        /// <summary>
+        /// Gets an id token for the user.
+        /// NOTE: This property can only be accessed using the main Unity thread.
+        /// </summary>
+        /// <returns>
+        /// An id token for the user.
+        /// </returns>
+        public string idToken
+        {
+            get
+            {
+                return authenticated ? mPlatform.GetIdToken() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets an access token for the user.
+        /// NOTE: This property can only be accessed using the main Unity thread.
+        /// </summary>
+        /// <returns>
+        /// An id token for the user.
+        /// </returns>
+        public string accessToken
+        {
+            get
+            {
+                return authenticated ? mPlatform.GetAccessToken() : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Returns true (since this is the local user).
+        /// </summary>
+        public new bool isFriend
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets the local user's state. This is always <c>UserState.Online</c> for
+        /// the local user.
+        /// </summary>
+        public new UserState state
+        {
+            get
+            {
+                return UserState.Online;
+            }
+        }
+
+
+        public new string AvatarURL
+        {
+            get
+            {
+                string retval = string.Empty;
+                if (authenticated)
+                {
+                    retval = mPlatform.GetUserImageUrl();
+                    if (!base.id.Equals(retval))
+                    {
+                        ResetIdentity(mPlatform.GetUserDisplayName(),
+                            mPlatform.GetUserId(), retval);
+                    }
+                }
+                return retval;
+            }
+        }
+
+        /// <summary>
+        /// Gets the email of the signed in player.  This is only available
+        /// if the web client id is added to the setup (which enables additional
+        /// permissions for the application).
+        /// NOTE: This property can only be accessed using the main Unity thread.
+        /// </summary>
+        /// <value>The email.</value>
+        public string Email
+        {
+            get
+            {
+                // treat null as unitialized, empty as no email.  This can
+                // happen when the web client is not initialized.
+                if (authenticated && string.IsNullOrEmpty(emailAddress))
+                {
+                    emailAddress = mPlatform.GetUserEmail();
+                    emailAddress = emailAddress ?? string.Empty;
+                }
+                return authenticated ? emailAddress : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the player's stats.
+        /// </summary>
+        /// <param name="callback">Callback when they are available.</param>
+        public void GetStats(Action<CommonStatusCodes, PlayerStats> callback)
+        {
+            if (mStats == null)
+            {
+                mPlatform.GetPlayerStats((rc, stats) =>
+                    {
+                        mStats = stats;
+                        callback(rc, stats);
+                    });
+            }
+            else
+            {
+                // 0 = success
+                callback(CommonStatusCodes.Success, mStats);
+            }
+        }
+
+        /// <summary>
+        /// Player stats. See https://developers.google.com/games/services/android/stats
+        /// </summary>
+        public class PlayerStats
+        {
+            /// <summary>
+            /// The number of in-app purchases.
+            /// </summary>
+            public int NumberOfPurchases
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The length of the avg sesson in minutes.
+            /// </summary>
+            public float AvgSessonLength
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The days since last played.
+            /// </summary>
+            public int DaysSinceLastPlayed
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The number of sessions based on sign-ins.
+            /// </summary>
+            public int NumOfSessions
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The approximation of sessions percentile for the player,
+            /// given as a decimal value between 0 and 1 (inclusive).
+            /// This value indicates how many sessions the current player has
+            /// played in comparison to the rest of this game's player base.
+            /// Higher numbers indicate that this player has played more sessions.
+            /// A return value  less than zero indicates this value is not available.
+            /// </summary>
+            public float SessPercentile
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The approximate spend percentile of the player,
+            /// given as a decimal value between 0 and 1 (inclusive). This
+            /// value indicates how much the current player has spent in
+            /// comparison to the rest of this game's player base. Higher
+            /// numbers indicate that this player has spent more.
+            /// A return value  less than zero indicates this value is not available.
+            /// </summary>
+            public float SpendPercentile
+            {
+                get;
+                set;
+            }
+
+            /// <summary>
+            /// The approximate probability of the player not returning
+            /// to play the game. Higher values indicate that a player
+            /// is less likely to return.
+            /// A return value  less than zero indicates this value is not available.
+            /// </summary>
+            public float ChurnProbability
+            {
+                get;
+                set;
+            }
         }
     }
 }
-}
-

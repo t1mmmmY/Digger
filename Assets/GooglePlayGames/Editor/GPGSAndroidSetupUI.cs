@@ -1,161 +1,408 @@
-/*
- * Copyright (C) 2014 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// <copyright file="GPGSAndroidSetupUI.cs" company="Google Inc.">
+// Copyright (C) Google Inc. All Rights Reserved.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//    limitations under the License.
+// </copyright>
 
-using UnityEngine;
-using UnityEditor;
-using System.Collections;
-using System.IO;
+namespace GooglePlayGames
+{
+    using System;
+    using System.Collections;
+    using System.IO;
+    using System.Xml;
+    using UnityEditor;
+    using UnityEngine;
 
-namespace GooglePlayGames {
-    public class GPGSAndroidSetupUI : EditorWindow {
-        string mAppId = "";
+    /// <summary>
+    /// Google Play Game Services Setup dialog for Android.
+    /// </summary>
+    public class GPGSAndroidSetupUI : EditorWindow
+    {
+        /// <summary>
+        /// The configuration data from the play games console "resource data"
+        /// </summary>
+        private string mConfigData = string.Empty;
 
-        [MenuItem("Google Play Games/Android Setup...", false, 0)]
-        public static void MenuItemGPGSAndroidSetup() {
-            EditorWindow.GetWindow(typeof(GPGSAndroidSetupUI));
+        /// <summary>
+        /// The name of the class to generate containing the resource constants.
+        /// </summary>
+        private string mClassName = "GPGSIds";
+
+        /// <summary>
+        /// The scroll position
+        /// </summary>
+        private Vector2 scroll;
+
+        /// <summary>
+        /// The directory for the constants class.
+        /// </summary>
+        private string mConstantDirectory = "Assets";
+
+        /// <summary>
+        /// The web client identifier.
+        /// </summary>
+        private string mWebClientId = string.Empty;
+
+        /// <summary>
+        /// Menus the item for GPGS android setup.
+        /// </summary>
+        [MenuItem("Window/Google Play Games/Setup/Android setup...", false, 1)]
+        public static void MenuItemFileGPGSAndroidSetup()
+        {
+            EditorWindow window = EditorWindow.GetWindow(
+                                      typeof(GPGSAndroidSetupUI), true, GPGSStrings.AndroidSetup.Title);
+            window.minSize = new Vector2(500, 400);
         }
 
-        [MenuItem("File/Play Games - Android setup...")]
-        public static void MenuItemFileGPGSAndroidSetup() {
-            EditorWindow.GetWindow(typeof(GPGSAndroidSetupUI));
-        }
-
-        void OnEnable() {
-            mAppId = GPGSProjectSettings.Instance.Get("proj.AppId");
-        }
-
-        void OnGUI() {
-            GUILayout.BeginArea(new Rect(20, 20, position.width - 40, position.height - 40));
-            GUILayout.Label(GPGSStrings.AndroidSetup.Title, EditorStyles.boldLabel);
-            GUILayout.Label(GPGSStrings.AndroidSetup.Blurb);
-            GUILayout.Space(10);
-
-            GUILayout.Label(GPGSStrings.Setup.AppId, EditorStyles.boldLabel);
-            GUILayout.Label(GPGSStrings.Setup.AppIdBlurb);
-            mAppId = EditorGUILayout.TextField(GPGSStrings.Setup.AppId, mAppId);
-
-            GUILayout.Space(10);
-            if (GUILayout.Button(GPGSStrings.Setup.SetupButton)) {
-                DoSetup();
+        /// <summary>
+        /// Performs setup using the Android resources downloaded XML file
+        /// from the play console.
+        /// </summary>
+        /// <returns><c>true</c>, if setup was performed, <c>false</c> otherwise.</returns>
+        /// <param name="clientId">The web client id.</param>
+        /// <param name="classDirectory">the directory to write the constants file to.</param>
+        /// <param name="className">Fully qualified class name for the resource Ids.</param>
+        /// <param name="resourceXmlData">Resource xml data.</param>
+        /// <param name="nearbySvcId">Nearby svc identifier.</param>
+        public static bool PerformSetup(
+            string clientId, 
+            string classDirectory,
+            string className,
+            string resourceXmlData,
+            string nearbySvcId)
+        {
+            if (string.IsNullOrEmpty(resourceXmlData) &&
+                !string.IsNullOrEmpty(nearbySvcId))
+            {
+                return PerformSetup(
+                    clientId,
+                    GPGSProjectSettings.Instance.Get(GPGSUtil.APPIDKEY),
+                    nearbySvcId);
             }
-            GUILayout.EndArea();
+
+            if (ParseResources(classDirectory, className, resourceXmlData))
+            {
+                GPGSProjectSettings.Instance.Set(GPGSUtil.CLASSDIRECTORYKEY, classDirectory);
+                GPGSProjectSettings.Instance.Set(GPGSUtil.CLASSNAMEKEY, className);
+                GPGSProjectSettings.Instance.Set(GPGSUtil.ANDROIDRESOURCEKEY, resourceXmlData);
+                return PerformSetup(
+                    clientId,
+                    GPGSProjectSettings.Instance.Get(GPGSUtil.APPIDKEY),
+                    nearbySvcId);
+            }
+
+            return false;
         }
 
-        void DoSetup() {
-    		PerformSetup(mAppId);
-    	}
+        /// <summary>
+        /// Provide static access to setup for facilitating automated builds.
+        /// </summary>
+        /// <param name="webClientId">The oauth2 client id for the game.  This is only
+        /// needed if the ID Token or access token are needed.</param>
+        /// <param name="appId">App identifier.</param>
+        /// <param name="nearbySvcId">Optional nearby connection serviceId</param>
+        /// <returns>true if successful</returns>
+        public static bool PerformSetup(string webClientId, string appId, string nearbySvcId)
+        {
+            bool needTokenPermissions = false;
 
-    	//Provide static access to setup for facilitating automated builds.
-    	public static void PerformSetup(string appId) {
-            string sdkPath = GPGSUtil.GetAndroidSdkPath();
-            string libProjPath = sdkPath +
-                                 GPGSUtil.SlashesToPlatformSeparator(
-                                     "/extras/google/google_play_services/libproject/google-play-services_lib");
-            string libProjAM =
-                libProjPath + GPGSUtil.SlashesToPlatformSeparator("/AndroidManifest.xml");
-            string libProjDestDir = GPGSUtil.SlashesToPlatformSeparator(
-                                        "Assets/Plugins/Android/google-play-services_lib");
-            string projAM = GPGSUtil.SlashesToPlatformSeparator(
-                                "Assets/Plugins/Android/MainLibProj/AndroidManifest.xml");
+            if (!string.IsNullOrEmpty(webClientId))
+            {
+                if (!GPGSUtil.LooksLikeValidClientId(webClientId))
+                {
+                    GPGSUtil.Alert(GPGSStrings.Setup.ClientIdError);
+                    return false;
+                }
 
-            GPGSProjectSettings.Instance.Set("proj.AppId", appId);
-            GPGSProjectSettings.Instance.Save();
+                string serverAppId = webClientId.Split('-')[0];
+                if (!serverAppId.Equals(appId))
+                {
+                    GPGSUtil.Alert(GPGSStrings.Setup.AppIdMismatch);
+                    return false;
+                }
+
+                needTokenPermissions = true;
+            }
+            else
+            {
+                needTokenPermissions = false;
+            }
 
             // check for valid app id
-            if (!GPGSUtil.LooksLikeValidAppId(appId)) {
+            if (!GPGSUtil.LooksLikeValidAppId(appId) && string.IsNullOrEmpty(nearbySvcId))
+            {
                 GPGSUtil.Alert(GPGSStrings.Setup.AppIdError);
-                return;
+                return false;
             }
 
-            // check that Android SDK is there
-            if (!GPGSUtil.HasAndroidSdk()) {
-                Debug.LogError("Android SDK not found.");
-                EditorUtility.DisplayDialog(GPGSStrings.AndroidSetup.SdkNotFound,
-                    GPGSStrings.AndroidSetup.SdkNotFoundBlurb, GPGSStrings.Ok);
-                return;
-            }
-
-            // check that the Google Play Services lib project is there
-            if (!System.IO.Directory.Exists(libProjPath) || !System.IO.File.Exists(libProjAM)) {
-                Debug.LogError("Google Play Services lib project not found at: " + libProjPath);
-                EditorUtility.DisplayDialog(GPGSStrings.AndroidSetup.LibProjNotFound,
-                    GPGSStrings.AndroidSetup.LibProjNotFoundBlurb, GPGSStrings.Ok);
-                return;
-            }
-
-            string supportJarPath = sdkPath +
-                                    GPGSUtil.SlashesToPlatformSeparator(
-                                        "/extras/android/support/v4/android-support-v4.jar");
-            string supportJarDest =
-                GPGSUtil.SlashesToPlatformSeparator("Assets/Plugins/Android/android-support-v4.jar");
-
-            if (!System.IO.File.Exists(supportJarPath)) {
-
-		// check for the new location
-		supportJarPath = sdkPath + GPGSUtil.SlashesToPlatformSeparator(
-                                       "/extras/android/support/v7/appcompat/libs/android-support-v4.jar");
-                Debug.LogError("Android support library v4 not found at: " + supportJarPath);
-		if (!System.IO.File.Exists(supportJarPath)) {
-                    EditorUtility.DisplayDialog(GPGSStrings.AndroidSetup.SupportJarNotFound,
-                        GPGSStrings.AndroidSetup.SupportJarNotFoundBlurb, GPGSStrings.Ok);
-                    return;
+            if (nearbySvcId != null)
+            {
+                if (!NearbyConnectionUI.PerformSetup(nearbySvcId, true))
+                {
+                    return false;
                 }
             }
 
-            // create needed directories
-            EnsureDirExists("Assets/Plugins");
-            EnsureDirExists("Assets/Plugins/Android");
+            GPGSProjectSettings.Instance.Set(GPGSUtil.APPIDKEY, appId);
+            GPGSProjectSettings.Instance.Set(GPGSUtil.WEBCLIENTIDKEY, webClientId);
+            GPGSProjectSettings.Instance.Save();
+            GPGSUtil.UpdateGameInfo();
 
-            // clear out the destination library project
-            DeleteDirIfExists(libProjDestDir);
+            // check that Android SDK is there
+            if (!GPGSUtil.HasAndroidSdk())
+            {
+                Debug.LogError("Android SDK not found.");
+                EditorUtility.DisplayDialog(
+                    GPGSStrings.AndroidSetup.SdkNotFound,
+                    GPGSStrings.AndroidSetup.SdkNotFoundBlurb,
+                    GPGSStrings.Ok);
+                return false;
+            }
 
-            // Clear out any stale version of the support jar.
-            System.IO.File.Delete(supportJarDest);
-
-            // Copy Google Play Services library
-            FileUtil.CopyFileOrDirectory(libProjPath, libProjDestDir);
-
-            // Copy Android Support Library
-            FileUtil.CopyFileOrDirectory(supportJarPath, supportJarDest);
+            GPGSUtil.CopySupportLibs();
 
             // Generate AndroidManifest.xml
-            string manifestBody = GPGSUtil.ReadEditorTemplate("template-AndroidManifest");
-            manifestBody = manifestBody.Replace("___APP_ID___", appId);
-            GPGSUtil.WriteFile(projAM, manifestBody);
-            GPGSUtil.UpdateGameInfo();
+            GPGSUtil.GenerateAndroidManifest(needTokenPermissions);
 
             // refresh assets, and we're done
             AssetDatabase.Refresh();
-            GPGSProjectSettings.Instance.Set("android.SetupDone", true);
+            GPGSProjectSettings.Instance.Set(GPGSUtil.ANDROIDSETUPDONEKEY, true);
             GPGSProjectSettings.Instance.Save();
-            EditorUtility.DisplayDialog(GPGSStrings.Success,
-                GPGSStrings.AndroidSetup.SetupComplete, GPGSStrings.Ok);
+
+            return true;
         }
 
-        private static void EnsureDirExists(string dir) {
-            dir = dir.Replace("/", System.IO.Path.DirectorySeparatorChar.ToString());
-            if (!System.IO.Directory.Exists(dir)) {
-                System.IO.Directory.CreateDirectory(dir);
+        /// <summary>
+        /// Called when this object is enabled by Unity editor.
+        /// </summary>
+        public void OnEnable()
+        {
+            mConstantDirectory = GPGSProjectSettings.Instance.Get("ConstDir", mConstantDirectory);
+            mClassName = GPGSProjectSettings.Instance.Get(GPGSUtil.CLASSNAMEKEY);
+            mConfigData = GPGSProjectSettings.Instance.Get(GPGSUtil.ANDROIDRESOURCEKEY);
+            mWebClientId = GPGSProjectSettings.Instance.Get(GPGSUtil.WEBCLIENTIDKEY);
+        }
+
+        /// <summary>
+        /// Called when the GUI should be rendered.
+        /// </summary>
+        public void OnGUI()
+        {
+            GUI.skin.label.wordWrap = true;
+            GUILayout.BeginVertical();
+
+            GUIStyle link = new GUIStyle(GUI.skin.label);
+            link.normal.textColor = new Color(.7f, .7f, 1f);
+           
+            GUILayout.Space(10);
+            GUILayout.Label(GPGSStrings.AndroidSetup.Blurb);
+            if (GUILayout.Button("Open Play Games Console", link, GUILayout.ExpandWidth(false)))
+            {
+                Application.OpenURL("https://play.google.com/apps/publish");
+            }
+
+            Rect last = GUILayoutUtility.GetLastRect();
+            last.y += last.height - 2;
+            last.x += 3;
+            last.width -= 6;
+            last.height = 2;
+
+            GUI.Box(last, string.Empty);
+
+            GUILayout.Space(15);
+            GUILayout.Label("Constants class name", EditorStyles.boldLabel);
+            GUILayout.Label("Enter the fully qualified name of the class to create containing the constants");
+            GUILayout.Space(10);
+
+            mConstantDirectory = EditorGUILayout.TextField(
+                "Directory to save constants",
+                mConstantDirectory,
+                GUILayout.Width(480));
+            
+            mClassName = EditorGUILayout.TextField(
+                "Constants class name",
+                mClassName,
+                GUILayout.Width(480));
+
+            GUILayout.Label("Resources Definition", EditorStyles.boldLabel);
+            GUILayout.Label("Paste in the Android Resources from the Play Console");
+            GUILayout.Space(10);
+
+            scroll = GUILayout.BeginScrollView(scroll);
+            mConfigData = EditorGUILayout.TextArea(
+                mConfigData,
+                GUILayout.Width(475),
+                GUILayout.Height(Screen.height));
+            GUILayout.EndScrollView();
+            GUILayout.Space(10);
+
+            // Client ID field
+            GUILayout.Label(GPGSStrings.Setup.WebClientIdTitle, EditorStyles.boldLabel);
+            GUILayout.Label(GPGSStrings.AndroidSetup.WebClientIdBlurb);
+
+            mWebClientId = EditorGUILayout.TextField(
+                GPGSStrings.Setup.ClientId,
+                mWebClientId,
+                GUILayout.Width(450));
+
+            GUILayout.Space(10);
+
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(GPGSStrings.Setup.SetupButton, GUILayout.Width(100)))
+            {
+                // check that the classname entered is valid
+                try
+                {
+                    if (GPGSUtil.LooksLikeValidPackageName(mClassName))
+                    {
+                        DoSetup();
+                    }
+                }
+                catch (Exception e)
+                {
+                    GPGSUtil.Alert(
+                        GPGSStrings.Error,
+                        "Invalid classname: " + e.Message);
+                }
+            }
+
+            if (GUILayout.Button("Cancel", GUILayout.Width(100)))
+            {
+                this.Close();
+            }
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.Space(20);
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Starts the setup process.
+        /// </summary>
+        public void DoSetup()
+        {
+            if (PerformSetup(mWebClientId, mConstantDirectory, mClassName, mConfigData, null))
+            {
+                // Check the package id.  If one is set the gpgs properties,
+                // and the player settings are the default or empty, set it.
+                // if the player settings is not the default, then prompt before
+                // overwriting.
+                string packageName = GPGSProjectSettings.Instance.Get(
+                                         GPGSUtil.ANDROIDBUNDLEIDKEY, string.Empty);
+                string currentId = PlayerSettings.bundleIdentifier;
+                if (!string.IsNullOrEmpty(packageName))
+                {
+                    if (string.IsNullOrEmpty(currentId) ||
+                        currentId == "com.Company.ProductName")
+                    {
+                        PlayerSettings.bundleIdentifier = packageName;
+                    }
+                    else if (currentId != packageName)
+                    {
+                        if (EditorUtility.DisplayDialog(
+                                "Set Bundle Identifier?",
+                                "The server configuration is using " +
+                                packageName + ", but the player settings is set to " +
+                                currentId + ".\nSet the Bundle Identifier to " +
+                                packageName + "?",
+                                "OK",
+                                "Cancel"))
+                        {
+                            PlayerSettings.bundleIdentifier = packageName;
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log("NULL package!!");
+                }
+
+                EditorUtility.DisplayDialog(
+                    GPGSStrings.Success,
+                    GPGSStrings.AndroidSetup.SetupComplete,
+                    GPGSStrings.Ok);
+                
+                GPGSProjectSettings.Instance.Set(GPGSUtil.ANDROIDSETUPDONEKEY, true);
+                this.Close();
+            }
+            else
+            {
+                GPGSUtil.Alert(
+                    GPGSStrings.Error,
+                    "Invalid or missing XML resource data.  Make sure the data is" +
+                    " valid and contains the app_id element");
             }
         }
 
-        private static void DeleteDirIfExists(string dir) {
-            if (System.IO.Directory.Exists(dir)) {
-                System.IO.Directory.Delete(dir, true);
+        /// <summary>
+        /// Parses the resources xml and set the properties.  Also generates the 
+        /// constants file.
+        /// </summary>
+        /// <returns><c>true</c>, if resources was parsed, <c>false</c> otherwise.</returns>
+        /// <param name="classDirectory">Class directory.</param>
+        /// <param name="className">Class name.</param>
+        /// <param name="res">Res. the data to parse.</param>
+        private static bool ParseResources(string classDirectory, string className, string res)
+        {
+            XmlTextReader reader = new XmlTextReader(new StringReader(res));
+            bool inResource = false;
+            string lastProp = null;
+            Hashtable resourceKeys = new Hashtable();
+            string appId = null;
+            while (reader.Read())
+            {
+                if (reader.Name == "resources")
+                {
+                    inResource = true;
+                }
+
+                if (inResource && reader.Name == "string")
+                {
+                    lastProp = reader.GetAttribute("name");
+                }
+                else if (inResource && !string.IsNullOrEmpty(lastProp))
+                {
+                    if (reader.HasValue)
+                    {
+                        if (lastProp == "app_id")
+                        {
+                            appId = reader.Value;
+                            GPGSProjectSettings.Instance.Set(GPGSUtil.APPIDKEY, appId);
+                        }
+                        else if (lastProp == "package_name")
+                        {
+                            GPGSProjectSettings.Instance.Set(GPGSUtil.ANDROIDBUNDLEIDKEY, reader.Value);
+                        }
+                        else
+                        {
+                            resourceKeys[lastProp] = reader.Value;
+                        }
+
+                        lastProp = null;
+                    }
+                }
             }
+
+            reader.Close();
+            if (resourceKeys.Count > 0)
+            {
+                GPGSUtil.WriteResourceIds(classDirectory, className, resourceKeys);
+            }
+
+            return appId != null;
         }
     }
 }
