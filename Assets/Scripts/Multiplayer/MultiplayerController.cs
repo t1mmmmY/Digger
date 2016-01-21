@@ -6,6 +6,9 @@ using GooglePlayGames.BasicApi.Multiplayer;
 using Newtonsoft.Json;
 using VoxelBusters.NativePlugins;
 
+using GooglePlayGames.BasicApi;
+using UnityEngine.SocialPlatforms;
+
 public class MultiplayerController : RealTimeMultiplayerListener
 {
 	private static MultiplayerController _instance = null;
@@ -24,8 +27,26 @@ public class MultiplayerController : RealTimeMultiplayerListener
 	private MultiplayerController() 
 	{
 #if UNITY_ANDROID
-		PlayGamesPlatform.DebugLogEnabled = false;
-		PlayGamesPlatform.Activate ();
+		PlayGamesClientConfiguration config = new PlayGamesClientConfiguration.Builder()
+			// enables saving game progress.
+			.EnableSavedGames()
+				// registers a callback to handle game invitations received while the game is not running.
+//				.WithInvitationDelegate(() => {})
+				// registers a callback for turn based match notifications received while the
+				// game is not running.
+//				.WithMatchDelegate(() => {})
+				.Build();
+		
+		PlayGamesPlatform.InitializeInstance(config);
+		// recommended for debugging:
+		PlayGamesPlatform.DebugLogEnabled = true;
+		// Activate the Google Play Games platform
+		PlayGamesPlatform.Activate();
+
+
+
+//		PlayGamesPlatform.DebugLogEnabled = false;
+//		PlayGamesPlatform.Activate ();
 #elif UNITY_IOS
 #endif
 	}
