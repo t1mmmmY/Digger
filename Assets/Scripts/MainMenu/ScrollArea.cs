@@ -8,7 +8,7 @@ public class ScrollArea : MonoBehaviour
 	[SerializeField] Transform cameraTransform;
 	[SerializeField] List<Bounds> cameraPositions; //550
 	[SerializeField] Bounds scrollArea;
-	[SerializeField] float scale = 7.5f;
+	float scale = 1.0f;
 	[SerializeField] int currentPosition = 0;
 	[SerializeField] float minScrollVelocity = 0.0f;
 	int oldPositionNumber = 0;
@@ -34,6 +34,7 @@ public class ScrollArea : MonoBehaviour
 	
 	void Start()
 	{
+		scale = 1536 / Screen.width;
 		MoveToPosition(0);
 	}
 	
@@ -72,7 +73,7 @@ public class ScrollArea : MonoBehaviour
 					EndScroll();
 					break;
 				case TouchPhase.Moved:
-					Scroll(touch.deltaPosition);
+					Scroll(touch.deltaPosition * scale);
 					break;
 				case TouchPhase.Stationary:
 					break;
