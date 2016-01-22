@@ -71,8 +71,6 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 
 	PlayerStatus LoadState(string id)
 	{
-
-
 		if (id == "Standard")
 		{
 			return PlayerStatus.Bought;
@@ -80,10 +78,11 @@ public class PlayerStatsController : BaseSingleton<PlayerStatsController>
 		else
 		{
 #if UNITY_ANDROID
-			return PlayerStatus.NotBought;
-#endif
-
+			return PlayerPrefs.GetInt(id) == 1 ? PlayerStatus.Bought : PlayerStatus.NotBought;
+//			return PlayerStatus.NotBought;
+#elif UNITY_IOS
 			return NPBinding.Billing.IsProductPurchased(id) ? PlayerStatus.Bought : PlayerStatus.NotBought;
+#endif
 		}
 	}
 
